@@ -88,10 +88,6 @@ dependencies {
 
 }
 
-war {
-    archiveFileName = "${project.name}.war"
-}
-
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     sourceCompatibility = '17'
@@ -100,4 +96,11 @@ tasks.withType(JavaCompile) {
 
 test {
     useJUnitPlatform()
+}
+
+war {
+    from('src/main/webapp') {
+        into ''
+    }
+    archiveFileName = 'WebAppLunch.war'
 }
