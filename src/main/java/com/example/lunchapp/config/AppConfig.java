@@ -44,10 +44,26 @@ public class AppConfig {
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
+
+        // Ưu tiên đọc thông tin từ biến môi trường do Railway cung cấp
+        // Railway thường cung cấp các biến như DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD
+        // Chúng ta sẽ sử dụng chúng. Nếu không tìm thấy, nó sẽ dùng giá trị từ database.properties (dành cho môi trường local)
+        String dbUrl = System.getenv("DATABASE_URL") != null
+                ? System.getenv("DATABASE_URL")
+                : env.getProperty("db.url");
+
+        String dbUsername = System.getenv("DATABASE_USER") != null
+                ? System.getenv("DATABASE_USER")
+                : env.getProperty("db.username");
+
+        String dbPassword = System.getenv("DATABASE_PASSWORD") != null
+                ? System.getenv("DATABASE_PASSWORD")
+                : env.getProperty("db.password");
+
         dataSource.setDriverClassName(env.getProperty("db.driver"));
-        dataSource.setUrl(env.getProperty("db.url"));
-        dataSource.setUsername(env.getProperty("db.username"));
-        dataSource.setPassword(env.getProperty("db.password"));
+        dataSource.setUrl(dbUrl);
+        dataSource.setUsername(dbUsername);
+        dataSource.setPassword(dbPassword);
         return dataSource;
     }
 
@@ -77,10 +93,24 @@ public class AppConfig {
 
     private Properties additionalProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+
+        // Ưu tiên đọc biến môi trường HIBERNATE_HBM2DDL_AUTO.
+        // Trên môi trường production (Railway), chúng ta nên để là "validate" hoặc "none"
+        // thay vì "update" để tránh mất dữ liệu không mong muốn.
+        String hbm2ddl = System.getenv("HIBERNATE_HBM2DDL_AUTO") != null
+                ? System.getenv("HIBERNATE_HBM2DDL_AUTO")
+                : env.getProperty("hibernate.hbm2ddl.auto");
+
+        properties.setProperty("hibernate.hbm2ddl.auto", hbm2ddl);
         properties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
         properties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
         properties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
+
+        // Thêm cấu hình timezone cho kết nối JDBC trên Railway
+        if (System.getenv("DATABASE_URL") != null) {
+            properties.setProperty("hibernate.connection.url", System.getenv("DATABASE_URL") + "?serverTimezone=UTC&useSSL=false");
+        }
+
         return properties;
     }
 

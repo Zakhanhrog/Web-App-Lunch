@@ -1,12 +1,11 @@
 package com.example.lunchapp.controller;
 
 import com.example.lunchapp.model.dto.OrderRequestDto;
-// import com.example.lunchapp.model.dto.SelectedFoodItemDto; // Không dùng trực tiếp trong file này nữa
 import com.example.lunchapp.model.dto.UserDto;
-import com.example.lunchapp.model.entity.Category; // Cần cho showOrderFormForAnyone
+import com.example.lunchapp.model.entity.Category;
 import com.example.lunchapp.model.entity.FoodItem;
 import com.example.lunchapp.model.entity.Order;
-import com.example.lunchapp.model.entity.OrderItem; // Cần cho foodItemSummary
+import com.example.lunchapp.model.entity.OrderItem;
 import com.example.lunchapp.model.entity.User;
 import com.example.lunchapp.repository.RoleRepository;
 import com.example.lunchapp.service.AppSettingService;
@@ -17,7 +16,6 @@ import com.example.lunchapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,7 +40,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-// import java.util.LinkedHashMap; // Bỏ nếu không dùng ordersByRecipientForDate
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,9 +61,6 @@ public class AdminController {
     private final RoleRepository roleRepository;
     private final Validator validator;
 
-    @Value("${app.upload.food-image-dir}")
-    private String foodImagePhysicalDir;
-
     @Autowired
     public AdminController(UserService userService, FoodItemService foodItemService, OrderService orderService,
                            CategoryService categoryService, ServletContext servletContext,
@@ -80,6 +74,19 @@ public class AdminController {
         this.appSettingService = appSettingService;
         this.roleRepository = roleRepository;
         this.validator = validator;
+    }
+
+    private String getFoodImageUploadDir() {
+        // Ưu tiên đọc từ biến môi trường của Railway.
+        // Biến này sẽ được đặt là /data/food trên Railway.
+        String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
+        if (uploadDir != null && !uploadDir.isEmpty()) {
+            return uploadDir;
+        }
+        // Nếu không có, quay lại dùng đường dẫn local cho việc phát triển
+        // Giả sử đường dẫn local của bạn là 'lunch-data/images/food'
+        // Đây là đường dẫn vật lý thực tế trên máy của bạn.
+        return "lunch-data/images/food";
     }
 
     private User getCurrentlyLoggedInAdmin(HttpSession session) {
@@ -189,7 +196,10 @@ public class AdminController {
             if (originalFilename != null && (originalFilename.toLowerCase().endsWith(".png") || originalFilename.toLowerCase().endsWith(".jpg") || originalFilename.toLowerCase().endsWith(".jpeg"))) {
                 try {
                     String fileName = "food_" + System.currentTimeMillis() + "_" + originalFilename.replaceAll("\\s+", "_");
-                    Path uploadPathDir = Paths.get(foodImagePhysicalDir);
+
+                    // Sử dụng phương thức mới để lấy đường dẫn
+                    Path uploadPathDir = Paths.get(getFoodImageUploadDir());
+
                     if (!Files.exists(uploadPathDir)) {
                         Files.createDirectories(uploadPathDir);
                     }
@@ -197,6 +207,7 @@ public class AdminController {
                     try (InputStream inputStream = imageFile.getInputStream()) {
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
                     }
+                    // URL ảo không thay đổi, vì WebConfig sẽ xử lý việc ánh xạ
                     foodItem.setImageUrl("/uploaded-images/food/" + fileName);
                     logger.debug("AdminController: Saved image {} to path {}", fileName, filePath);
                 } catch (IOException e) {

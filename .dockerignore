@@ -1,11 +1,17 @@
-.gradle
+# Thư mục build và cache của Gradle
 build/
+.gradle/
+
+# Thư mục chứa dữ liệu upload, sẽ được xử lý bằng Volume
+lunch-data/
+
+# Cấu hình của IDE
 .idea/
+.vscode/
 *.iml
-out/
-logs/
+
+# Log files
 *.log
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
+# Git
+.git/

@@ -3,7 +3,6 @@ package com.example.lunchapp.config;
 import com.example.lunchapp.interceptor.AdminAuthInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +19,8 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
+import java.io.File;
+
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {
@@ -33,12 +34,21 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-    @Value("${app.upload.food-image-dir}")
-    private String foodImagePhysicalDir;
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    private String getFoodImageUploadDir() {
+        // Ưu tiên đọc từ biến môi trường của Railway.
+        // Biến này sẽ được đặt là /data/food trên Railway.
+        String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
+        if (uploadDir != null && !uploadDir.isEmpty()) {
+            return uploadDir;
+        }
+        // Nếu không có, quay lại dùng đường dẫn local cho việc phát triển
+        // Giả sử đường dẫn local của bạn là 'lunch-data/images/food'
+        return "lunch-data/images/food";
     }
 
     @Override
@@ -78,10 +88,14 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Giữ nguyên cấu hình cho /assets/
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
-        String physicalPathWithPrefix = "file:" + (foodImagePhysicalDir.endsWith("/") ? foodImagePhysicalDir : foodImagePhysicalDir + "/");
+        // Cấu hình cho ảnh upload
+        String physicalPath = getFoodImageUploadDir();
+        String physicalPathWithPrefix = "file:" + physicalPath + (physicalPath.endsWith(File.separator) ? "" : File.separator);
+
         registry.addResourceHandler("/uploaded-images/food/**")
                 .addResourceLocations(physicalPathWithPrefix);
     }
