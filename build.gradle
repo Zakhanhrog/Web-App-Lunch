@@ -86,7 +86,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
     implementation "org.springframework.security:spring-security-core:5.8.12"
 
-
 }
 
 war {
