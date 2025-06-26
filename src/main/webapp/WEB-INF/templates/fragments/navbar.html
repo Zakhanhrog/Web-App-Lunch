@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+  <div class="container-fluid">
+    <a class="navbar-brand" th:href="@{/}">
+      <i class="fa-solid fa-utensils"></i>
+      Lunch App
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/}">Trang Chủ</a>
+        </li>
+        <li class="nav-item" th:if="${session.loggedInUser != null}">
+          <a class="nav-link" th:href="@{/order/menu}">Đặt Món</a>
+        </li>
+        <!-- Admin Dropdown Menu -->
+        <li class="nav-item dropdown" th:if="${session.loggedInUser != null and session.loggedInUser.roles.contains('ROLE_ADMIN')}">
+          <a class="nav-link dropdown-toggle" href="#" id="adminMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Quản trị
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="adminMenuDropdown">
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/dashboard}">
+                <i class="fa-solid fa-gauge fa-fw me-2"></i> Bảng Điều Khiển
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/food/all}">
+                <i class="fa-solid fa-burger fa-fw me-2"></i> Quản lý Món Ăn (Kho)
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/food/daily-menu}">
+                <i class="fa-solid fa-calendar-day fa-fw me-2"></i> Thực Đơn Hàng Ngày
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/users/list}">
+                <i class="fa-solid fa-users fa-fw me-2"></i> Quản lý Khách Hàng
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/orders/list}">
+                <i class="fa-solid fa-file-invoice-dollar fa-fw me-2"></i> Quản lý Đơn Hàng
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" th:href="@{/admin/config/order-time}">
+                <i class="fa-solid fa-clock fa-fw me-2"></i> Cấu hình Thời Gian
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        <th:block th:if="${session.loggedInUser == null}">
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/auth/register}">Đăng Ký</a>
+          </li>
+          <li class="nav-item">
+            <a th:href="@{/auth/login}" class="btn btn-outline-primary ms-2">Đăng Nhập</a>
+          </li>
+        </th:block>
+
+        <th:block th:if="${session.loggedInUser != null}">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-solid fa-user"></i>
+              <span th:text="${session.loggedInUser.username}"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+              <li><a class="dropdown-item" th:href="@{/user/profile}">Thông Tin Cá Nhân</a></li>
+              <li><a class="dropdown-item" th:href="@{/user/order-history}">Lịch Sử Đặt Món</a></li>
+              <li><a class="dropdown-item" th:href="@{/user/deposit}">Nạp Tiền</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" th:href="@{/auth/logout}"><i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất</a></li>
+            </ul>
+          </li>
+        </th:block>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+</body>
+</html>

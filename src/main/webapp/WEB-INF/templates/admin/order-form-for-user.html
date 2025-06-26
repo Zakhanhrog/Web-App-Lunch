@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head>
+  <title>Đặt Món Hộ - Admin Panel</title>
+</head>
+<body>
+<main class="col-md-12 px-md-4">
+<div layout:fragment="content">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Đặt Món Hộ</h1>
+  </div>
+
+  <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+  <div th:if="${infoMessage}" class="alert alert-info" th:text="${infoMessage}"></div>
+
+  <div th:if="${#fields.hasGlobalErrors()}">
+    <div th:each="err : ${#fields.globalErrors()}" class="alert alert-danger" th:text="${err}"></div>
+  </div>
+  <div th:if="${#fields.hasErrors('orderRequestDto.*')}" class="alert alert-danger">
+    <p>Vui lòng kiểm tra lại thông tin đơn hàng:</p>
+    <ul>
+      <li th:each="err : ${#fields.errors('orderRequestDto.*')}" th:text="${err}"></li>
+    </ul>
+  </div>
+
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form th:action="@{/admin/orders/place-as-admin}" th:object="${orderRequestDto}" method="post">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="recipientName" class="form-label">Tên người nhận (nếu không có tài khoản):</label>
+            <input type="text" id="recipientName" th:field="*{recipientName}" class="form-control" placeholder="Nhập tên người nhận..."/>
+            <div class="form-text">Để trống nếu chọn người dùng có sẵn ở dưới.</div>
+          </div>
+          <div class="col-md-6">
+            <label for="targetUserId" class="form-label">Hoặc chọn người dùng có tài khoản:</label>
+            <select id="targetUserId" th:field="*{targetUserId}" class="form-select">
+              <option value="">-- Chọn người dùng --</option>
+              <option th:each="user : ${allUsers}" th:value="${user.id}" th:text="${user.username + ' (' + user.department + ') - Số dư: ' + #numbers.formatDecimal(user.balance, 0, 'COMMA', 0, 'POINT') + ' VND'}"></option>
+            </select>
+            <div class="form-text">Để trống nếu đã nhập tên người nhận ở trên.</div>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label for="note" class="form-label">Ghi chú đơn hàng:</label>
+            <textarea id="note" th:field="*{note}" class="form-control" rows="2" placeholder="Ví dụ: không cay, thêm canh..."></textarea>
+          </div>
+        </div>
+
+        <hr/>
+        <h4 class="mb-3">Chọn Món Ăn</h4>
+
+        <p th:if="${#lists.isEmpty(groupedFoodItems)}" class="text-muted">Không có món ăn nào trong thực đơn hôm nay.</p>
+
+        <div th:each="entry, iterStatOuter : ${groupedFoodItems}" class="mb-4">
+          <h5 class="mb-3" th:text="${entry.key.name}"></h5>
+          <div th:each="item, iterStat : ${entry.value}" class="d-flex align-items-center border-bottom py-2 food-item-row-admin">
+            <input type="hidden" th:name="|selectedItems[${iterStatOuter.index * 100 + iterStat.index}].foodItemId|" th:value="${item.id}" />
+            <img th:src="${item.imageUrl != null && !item.imageUrl.isEmpty() ? item.imageUrl : '/assets/images/default-food.png'}" th:alt="${item.name}" class="food-item-image-admin me-3" />
+            <div class="flex-grow-1">
+              <strong th:text="${item.name}"></strong>
+              <div class="text-muted small" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + ' VND'}"></div>
+              <div th:if="${item.dailyQuantity != null && item.dailyQuantity > 0}" class="text-success small">Còn: <span th:text="${item.dailyQuantity}"></span> suất</div>
+              <div th:if="${item.dailyQuantity == null || item.dailyQuantity <= 0}" class="text-danger small">Hết hàng</div>
+            </div>
+            <div style="width: 100px;">
+              <input type="number" class="form-control form-control-sm" th:id="|quantity_admin_${item.id}|"
+                     th:name="|selectedItems[${iterStatOuter.index * 100 + iterStat.index}].quantity|"
+                     value="0" min="0" th:max="${item.dailyQuantity != null ? item.dailyQuantity : 0}"
+                     th:disabled="${item.dailyQuantity == null || item.dailyQuantity <= 0}"
+                     placeholder="SL">
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-center" th:if="${not #lists.isEmpty(groupedFoodItems)}">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-cart-plus me-2"></i>Xác nhận Đặt Hộ
+          </button>
+          <a th:href="@{/admin/dashboard}" class="btn btn-secondary btn-lg ms-2">Hủy</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<th:block layout:fragment="scripts">
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const recipientNameInput = document.getElementById('recipientName');
+      const targetUserIdSelect = document.getElementById('targetUserId');
+
+      if(recipientNameInput && targetUserIdSelect) {
+        recipientNameInput.addEventListener('input', function() {
+          if (this.value.trim() !== '') {
+            targetUserIdSelect.value = ''; // Reset dropdown
+            targetUserIdSelect.disabled = true;
+          } else {
+            targetUserIdSelect.disabled = false;
+          }
+        });
+
+        targetUserIdSelect.addEventListener('change', function() {
+          if (this.value !== '') {
+            recipientNameInput.value = ''; // Reset input text
+            recipientNameInput.disabled = true;
+          } else {
+            recipientNameInput.disabled = false;
+          }
+        });
+
+        // Initial check in case of form resubmission with errors
+        if (recipientNameInput.value.trim() !== '') {
+          targetUserIdSelect.value = '';
+          targetUserIdSelect.disabled = true;
+        } else if (targetUserIdSelect.value !== '') {
+          recipientNameInput.value = '';
+          recipientNameInput.disabled = true;
+        }
+      }
+    });
+  </script>
+</th:block>
+</main>
+</body>
+</html>

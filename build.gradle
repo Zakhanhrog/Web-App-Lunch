@@ -1,0 +1,104 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springVersion = '5.3.34'
+    javaeeVersion = '8.0.1'
+    hibernateVersion = '5.6.15.Final'
+    mysqlConnectorVersion = '8.0.33'
+    lombokVersion = '1.18.30'
+    jacksonVersion = '2.15.3'
+    commonsFileUploadVersion = '1.5'
+    commonsIoVersion = '2.11.0'
+    aspectjVersion = '1.9.21'
+    validationApiVersion = '2.0.1.Final'
+    hibernateValidatorVersion = '6.2.5.Final'
+    slf4jVersion = '2.0.9'
+    logbackVersion = '1.4.14'
+    junitJupiterVersion = '5.10.0'
+    springDataJpaVersion = '2.7.18'
+    thymeleafVersion = '3.1.2.RELEASE'
+    thymeleafSpring5Version = '3.1.2.RELEASE'
+    thymeleafExtrasJava8timeVersion = '3.0.4.RELEASE'
+}
+
+dependencies {
+    // Spring MVC
+    implementation "org.springframework:spring-webmvc:${springVersion}"
+    implementation "org.springframework:spring-context:${springVersion}"
+    implementation "org.springframework:spring-orm:${springVersion}"
+    implementation "org.springframework:spring-tx:${springVersion}"
+
+    // Spring Data JPA
+    implementation "org.springframework.data:spring-data-jpa:${springDataJpaVersion}"
+
+    // JPA & Hibernate
+    implementation "javax.persistence:javax.persistence-api:2.2"
+    implementation "org.hibernate:hibernate-core:${hibernateVersion}"
+    implementation "org.hibernate:hibernate-entitymanager:${hibernateVersion}"
+
+    // Database
+    implementation "mysql:mysql-connector-java:${mysqlConnectorVersion}"
+
+    // Thymeleaf
+    implementation "org.thymeleaf:thymeleaf:${thymeleafVersion}"
+    implementation "org.thymeleaf:thymeleaf-spring5:${thymeleafSpring5Version}"
+    implementation "org.thymeleaf.extras:thymeleaf-extras-java8time:${thymeleafExtrasJava8timeVersion}"
+
+    // Servlet API (provided by Tomcat)
+    providedCompile "javax.servlet:javax.servlet-api:4.0.1"
+
+    // JSON Processing
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+
+    // File Upload
+    implementation "commons-fileupload:commons-fileupload:${commonsFileUploadVersion}"
+    implementation "commons-io:commons-io:${commonsIoVersion}"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    // AOP
+    implementation "org.springframework:spring-aop:${springVersion}"
+    implementation "org.aspectj:aspectjrt:${aspectjVersion}"
+    implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
+
+    // Validation API
+    implementation "javax.validation:validation-api:${validationApiVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+
+    // Logging
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "ch.qos.logback:logback-core:${logbackVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    implementation "org.springframework.security:spring-security-core:5.8.12"
+
+
+}
+
+war {
+    archiveFileName = "${project.name}.war"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="sidebar" id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+  <div class="position-sticky pt-3">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/dashboard}">
+          <i class="fa-solid fa-gauge fa-fw me-2"></i> Bảng Điều Khiển
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/food/all}">
+          <i class="fa-solid fa-burger fa-fw me-2"></i> Quản lý Món Ăn (Kho)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/food/daily-menu}">
+          <i class="fa-solid fa-calendar-day fa-fw me-2"></i> Thực Đơn Hàng Ngày
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/users/list}">
+          <i class="fa-solid fa-users fa-fw me-2"></i> Quản lý Khách Hàng
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/orders/list}">
+          <i class="fa-solid fa-file-invoice-dollar fa-fw me-2"></i> Quản lý Đơn Hàng
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/admin/config/order-time}">
+          <i class="fa-solid fa-clock fa-fw me-2"></i> Cấu hình Thời Gian
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</body>
+</html>

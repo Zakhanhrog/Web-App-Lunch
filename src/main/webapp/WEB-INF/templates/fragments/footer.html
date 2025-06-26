@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<footer th:fragment="footer" class="bg-light text-center text-muted mt-auto py-3 border-top">
+  <div class="container">
+    <p class="mb-0">© <span th:text="${#dates.year(#dates.createNow())}">2024</span> Lunch App. Dev by Zakhanh</p>
+  </div>
+</footer>
+
+</body>
+</html>

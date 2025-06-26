@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Kho Món Ăn - Lunch App</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid">
+  <div class="row">
+<!--    <div th:replace="~{fragments/admin_sidebar :: sidebar}"></div>-->
+
+    <main class="col-md-12 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Quản lý Món ăn (Kho)</h1>
+        <a th:href="@{/admin/food/add}" class="btn btn-success"><i class="fa-solid fa-plus me-2"></i>Thêm Món Ăn Mới</a>
+      </div>
+
+      <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+      <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p th:if="${#lists.isEmpty(foodItems)}" class="text-muted">Chưa có món ăn nào trong kho. Vui lòng thêm mới!</p>
+          <div th:if="${not #lists.isEmpty(foodItems)}" class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+              <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Tên Món</th>
+                <th>Danh Mục</th>
+                <th class="text-end">Giá</th>
+                <th class="text-end">Tồn Kho</th>
+                <th class="text-center">Hành Động</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="item : ${foodItems}">
+                <td th:text="${item.id}"></td>
+                <td><img th:if="${item.imageUrl}" th:src="@{${item.imageUrl}}" th:alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"/></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.category?.name ?: 'N/A'}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + ' VND'}"></td>
+                <td class="text-end" th:text="${item.quantity}"></td>
+                <td class="text-center">
+                  <a th:href="@{/admin/food/edit/{id}(id=${item.id})}" class="btn btn-sm btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <form th:action="@{/admin/food/delete/{id}(id=${item.id})}" method="get" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa món này? Hành động này không thể hoàn tác.');">
+                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/main.js}"></script>
+</body>
+</html>
