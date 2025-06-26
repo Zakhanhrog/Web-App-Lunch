@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource; // Thêm import này nếu chưa có
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -27,7 +26,6 @@ import org.thymeleaf.templatemode.TemplateMode;
         "com.example.lunchapp.controller",
         "com.example.lunchapp.interceptor"
 })
-@PropertySource("classpath:application.properties") // Đảm bảo application.properties được load để @Value hoạt động
 public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Autowired
@@ -35,9 +33,8 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-    // Biến này sẽ được inject giá trị từ application.properties hoặc biến môi trường
     @Value("${app.upload.food-image-dir}")
-    private String foodImageUploadPath;
+    private String foodImagePhysicalDir;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -58,7 +55,7 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setCharacterEncoding("UTF-8");
-        templateResolver.setCacheable(false); // Nên là true cho production, false cho dev
+        templateResolver.setCacheable(false);
         return templateResolver;
     }
 
@@ -82,17 +79,17 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/assets/**")
-                .addResourceLocations("/assets/"); // Giả sử thư mục assets nằm trong webapp
+                .addResourceLocations("/assets/");
 
-        String resolvedImageUploadPath = foodImageUploadPath.endsWith("/") ? foodImageUploadPath : foodImageUploadPath + "/";
+        String physicalPathWithPrefix = "file:" + (foodImagePhysicalDir.endsWith("/") ? foodImagePhysicalDir : foodImagePhysicalDir + "/");
         registry.addResourceHandler("/uploaded-images/food/**")
-                .addResourceLocations("file:" + resolvedImageUploadPath);
+                .addResourceLocations(physicalPathWithPrefix);
     }
 
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-        multipartResolver.setMaxUploadSize(20 * 1024 * 1024); // 20MB
+        multipartResolver.setMaxUploadSize(20 * 1024 * 1024);
         return multipartResolver;
     }
 }
