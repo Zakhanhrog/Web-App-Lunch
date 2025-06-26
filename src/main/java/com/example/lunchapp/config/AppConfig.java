@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.StringUtils; // Thêm import này
 
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -45,9 +46,22 @@ public class AppConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getProperty("db.driver"));
-        dataSource.setUrl(env.getProperty("db.url"));
-        dataSource.setUsername(env.getProperty("db.username"));
-        dataSource.setPassword(env.getProperty("db.password"));
+
+        // Ưu tiên biến môi trường cho Railway
+        String railwayDbUrl = env.getProperty("SPRING_DATASOURCE_URL"); // Hoặc tên biến bạn đặt trên Railway
+        String railwayDbUsername = env.getProperty("SPRING_DATASOURCE_USERNAME");
+        String railwayDbPassword = env.getProperty("SPRING_DATASOURCE_PASSWORD");
+
+        if (StringUtils.hasText(railwayDbUrl) && StringUtils.hasText(railwayDbUsername) && StringUtils.hasText(railwayDbPassword)) {
+            dataSource.setUrl(railwayDbUrl);
+            dataSource.setUsername(railwayDbUsername);
+            dataSource.setPassword(railwayDbPassword);
+        } else {
+            // Fallback về cấu hình từ database.properties cho local
+            dataSource.setUrl(env.getProperty("db.url"));
+            dataSource.setUsername(env.getProperty("db.username"));
+            dataSource.setPassword(env.getProperty("db.password"));
+        }
         return dataSource;
     }
 
@@ -77,10 +91,16 @@ public class AppConfig {
 
     private Properties additionalProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
-        properties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
-        properties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
-        properties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
+        // Ưu tiên biến môi trường cho các thuộc tính Hibernate
+        String ddlAuto = env.getProperty("SPRING_JPA_HIBERNATE_DDL_AUTO", env.getProperty("hibernate.hbm2ddl.auto"));
+        String dialect = env.getProperty("SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT", env.getProperty("hibernate.dialect"));
+        String showSql = env.getProperty("SPRING_JPA_PROPERTIES_HIBERNATE_SHOW_SQL", env.getProperty("hibernate.show_sql"));
+        String formatSql = env.getProperty("SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL", env.getProperty("hibernate.format_sql"));
+
+        properties.setProperty("hibernate.hbm2ddl.auto", ddlAuto);
+        properties.setProperty("hibernate.dialect", dialect);
+        properties.setProperty("hibernate.show_sql", showSql);
+        properties.setProperty("hibernate.format_sql", formatSql);
         return properties;
     }
 
