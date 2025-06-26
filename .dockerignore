@@ -1,0 +1,11 @@
+.gradle
+build/
+.idea/
+*.iml
+out/
+logs/
+*.log
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
