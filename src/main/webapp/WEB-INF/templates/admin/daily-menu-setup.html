@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Thực đơn Hàng ngày - Lunch App</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
     <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
 </head>
 <body>
-
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-
 <div class="container-fluid">
     <div class="row">
-<!--        <div th:replace="~{fragments/admin_sidebar :: sidebar}"></div>-->
-
         <main class="col-md-12 px-md-4">
             <div class="pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Quản lý Thực đơn Hàng ngày</h1>
@@ -30,28 +25,42 @@
                 <div class="card-body">
                     <form th:action="@{/admin/food/daily-menu/save}" method="post">
                         <p th:if="${#lists.isEmpty(allFoodItems)}" class="text-muted">Không có món nào trong kho. Vui lòng thêm món mới trước khi tạo thực đơn!</p>
-                        <div th:if="${not #lists.isEmpty(allFoodItems)}" class="table-responsive">
-                            <table class="table table-striped table-hover align-middle">
-                                <thead class="table-light">
-                                <tr>
-                                    <th class="text-center">Bán Hôm Nay?</th>
-                                    <th>Tên Món</th>
-                                    <th>Danh Mục</th>
-                                    <th class="text-end">Tồn Kho</th>
-                                    <th>Số Lượng Bán</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="item : ${allFoodItems}">
-                                    <td class="text-center"><div class="form-check form-switch d-flex justify-content-center"><input class="form-check-input" type="checkbox" role="switch" name="selectedFoodItemIds" th:value="${item.id}" th:id="${'item_check_' + item.id}" th:checked="${item.availableToday}"></div></td>
-                                    <td><label th:for="${'item_check_' + item.id}" th:text="${item.name}"></label></td>
-                                    <td><label th:for="${'item_check_' + item.id}" th:text="${item.category?.name ?: 'N/A'}"></label></td>
-                                    <td class="text-end"><label th:for="${'item_check_' + item.id}" th:text="${item.quantity}"></label></td>
-                                    <td><input type="number" class="form-control form-control-sm" th:name="${'dailyQuantity_' + item.id}" th:id="${'dailyQuantity_' + item.id}" th:value="${item.dailyQuantity != null ? item.dailyQuantity : 0}" min="0" th:max="${item.quantity}"></td>
-                                </tr>
-                                </tbody>
-                            </table>
+
+                        <div th:if="${not #lists.isEmpty(allFoodItems)}">
+                            <!-- Toggle All Buttons -->
+                            <div class="d-flex justify-content-end mb-2">
+                                <button type="button" id="toggle-all-on" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="fa-solid fa-toggle-on"></i> Bật Tất Cả
+                                </button>
+                                <button type="button" id="toggle-all-off" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa-solid fa-toggle-off"></i> Tắt Tất Cả
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">Bán Hôm Nay?</th>
+                                        <th>Tên Món</th>
+                                        <th>Danh Mục</th>
+                                        <th class="text-end">Tồn Kho</th>
+                                        <th>Số Lượng Bán</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="item : ${allFoodItems}">
+                                        <td class="text-center"><div class="form-check form-switch d-flex justify-content-center"><input class="form-check-input" type="checkbox" role="switch" name="selectedFoodItemIds" th:value="${item.id}" th:id="${'item_check_' + item.id}" th:checked="${item.availableToday}"></div></td>
+                                        <td><label th:for="${'item_check_' + item.id}" th:text="${item.name}"></label></td>
+                                        <td><label th:for="${'item_check_' + item.id}" th:text="${item.category?.name ?: 'N/A'}"></label></td>
+                                        <td class="text-end"><label th:for="${'item_check_' + item.id}" th:text="${item.quantity}"></label></td>
+                                        <td><input type="number" class="form-control form-control-sm" th:name="${'dailyQuantity_' + item.id}" th:id="${'dailyQuantity_' + item.id}" th:value="${item.dailyQuantity != null ? item.dailyQuantity : 0}" min="0" th:max="${item.quantity}"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-primary btn-lg" th:disabled="${#lists.isEmpty(allFoodItems)}">Lưu Thực Đơn Hàng Ngày</button>
                         </div>
@@ -61,8 +70,57 @@
         </main>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('input[name="selectedFoodItemIds"]');
+        const btnToggleAllOn = document.getElementById('toggle-all-on');
+        const btnToggleAllOff = document.getElementById('toggle-all-off');
+
+// Logic for individual toggle
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const foodItemId = this.value;
+                const quantityInput = document.getElementById('dailyQuantity_' + foodItemId);
+                if (quantityInput) {
+                    if (this.checked) {
+                        if (quantityInput.value === '0') {
+                            quantityInput.value = 1000;
+                        }
+                    }
+                }
+            });
+        });
+
+// Logic for "Turn All On" button
+        if(btnToggleAllOn) {
+            btnToggleAllOn.addEventListener('click', function() {
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = true;
+                    const foodItemId = checkbox.value;
+                    const quantityInput = document.getElementById('dailyQuantity_' + foodItemId);
+                    if (quantityInput && quantityInput.value === '0') {
+                        quantityInput.value = 1000;
+                    }
+                });
+            });
+        }
+
+// Logic for "Turn All Off" button
+        if(btnToggleAllOff) {
+            btnToggleAllOff.addEventListener('click', function() {
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = false;
+                    const foodItemId = checkbox.value;
+                    const quantityInput = document.getElementById('dailyQuantity_' + foodItemId);
+                    if (quantityInput) {
+                        quantityInput.value = 0;
+                    }
+                });
+            });
+        }
+    });
+</script>
 </body>
 </html>
