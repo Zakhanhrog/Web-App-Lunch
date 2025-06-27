@@ -40,7 +40,7 @@ public class FoodItem {
     @Column(length = 500)
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY) // LAZY để không load category khi không cần
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     @NotNull(message = "Category cannot be null")
     private Category category;

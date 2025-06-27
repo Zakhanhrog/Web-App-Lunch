@@ -15,7 +15,6 @@
 
 <div class="container-fluid">
   <div class="row">
-<!--    <div th:replace="~{fragments/admin_sidebar :: sidebar}"></div>-->
 
     <main class="col-md-12 px-md-4">
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -26,9 +25,19 @@
       <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
       <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
+      <!-- Search Form -->
+      <div class="mb-3">
+        <form th:action="@{/admin/food/all}" method="get" class="d-flex">
+          <input type="text" name="keyword" class="form-control me-2" placeholder="Nhập tên món ăn để tìm..." th:value="${keyword}">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
+        </form>
+      </div>
+
       <div class="card shadow-sm">
         <div class="card-body">
-          <p th:if="${#lists.isEmpty(foodItems)}" class="text-muted">Chưa có món ăn nào trong kho. Vui lòng thêm mới!</p>
+          <p th:if="${#lists.isEmpty(foodItems) and keyword != null}" class="text-muted" th:text="'Không tìm thấy món ăn nào với từ khóa: ' + ${keyword}"></p>
+          <p th:if="${#lists.isEmpty(foodItems) and keyword == null}" class="text-muted">Chưa có món ăn nào trong kho. Vui lòng thêm mới!</p>
+
           <div th:if="${not #lists.isEmpty(foodItems)}" class="table-responsive">
             <table class="table table-striped table-hover align-middle">
               <thead class="table-light">

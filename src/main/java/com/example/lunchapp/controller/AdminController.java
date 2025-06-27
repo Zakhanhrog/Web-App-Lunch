@@ -77,15 +77,10 @@ public class AdminController {
     }
 
     private String getFoodImageUploadDir() {
-        // Ưu tiên đọc từ biến môi trường của Railway.
-        // Biến này sẽ được đặt là /data/food trên Railway.
         String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
         if (uploadDir != null && !uploadDir.isEmpty()) {
             return uploadDir;
         }
-        // Nếu không có, quay lại dùng đường dẫn local cho việc phát triển
-        // Giả sử đường dẫn local của bạn là 'lunch-data/images/food'
-        // Đây là đường dẫn vật lý thực tế trên máy của bạn.
         return "lunch-data/images/food";
     }
 
@@ -130,15 +125,24 @@ public class AdminController {
 
 
     @GetMapping("/food/all")
-    public String showAllFoodItems(Model model, HttpSession session) {
-        logger.info("AdminController: Accessing /admin/food/all");
+    public String showAllFoodItems(@RequestParam(value = "keyword", required = false) String keyword, Model model, HttpSession session) {
+        logger.info("AdminController: Accessing /admin/food/all with keyword: {}", keyword);
         User adminUser = getCurrentlyLoggedInAdmin(session);
         if (adminUser == null) {
             logger.warn("AdminController: Admin user is null for /admin/food/all. Redirecting to /auth/login.");
             return "redirect:/auth/login";
         }
-        List<FoodItem> foodItems = foodItemService.getAllFoodItems();
+
+        List<FoodItem> foodItems;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            foodItems = foodItemService.findByNameContaining(keyword);
+            logger.info("Found {} food items for keyword '{}'", foodItems.size(), keyword);
+        } else {
+            foodItems = foodItemService.getAllFoodItems();
+        }
+
         model.addAttribute("foodItems", foodItems);
+        model.addAttribute("keyword", keyword); // Pass keyword back to the view
         return "admin/food-list-all";
     }
 
@@ -197,7 +201,6 @@ public class AdminController {
                 try {
                     String fileName = "food_" + System.currentTimeMillis() + "_" + originalFilename.replaceAll("\\s+", "_");
 
-                    // Sử dụng phương thức mới để lấy đường dẫn
                     Path uploadPathDir = Paths.get(getFoodImageUploadDir());
 
                     if (!Files.exists(uploadPathDir)) {
@@ -207,7 +210,6 @@ public class AdminController {
                     try (InputStream inputStream = imageFile.getInputStream()) {
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
                     }
-                    // URL ảo không thay đổi, vì WebConfig sẽ xử lý việc ánh xạ
                     foodItem.setImageUrl("/uploaded-images/food/" + fileName);
                     logger.debug("AdminController: Saved image {} to path {}", fileName, filePath);
                 } catch (IOException e) {
@@ -605,7 +607,6 @@ public class AdminController {
                 for (Order order : ordersToDelete) {
                     orderService.deleteOrderById(order.getId());
                 }
-                // Sau khi xóa tất cả đơn hàng thành công, reset trạng thái món ăn hàng ngày
                 foodItemService.resetDailyFoodItemStatus();
                 logger.info("AdminController: Đã reset trạng thái món ăn hàng ngày sau khi xóa tất cả đơn hàng ngày {}.", date);
                 redirectAttributes.addFlashAttribute("successMessage", "Tất cả đơn hàng cho ngày " + date.toString() + " đã được xóa và trạng thái món ăn đã được reset.");
