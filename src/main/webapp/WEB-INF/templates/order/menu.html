@@ -12,7 +12,6 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container my-4">
   <h1 class="mb-4">Thực Đơn Hôm Nay</h1>
-  Generated code
   <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
     <span th:text="${successMessage}"></span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -174,7 +173,6 @@
       </div>
     </div>
   </form>
-  Use code with caution.
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
