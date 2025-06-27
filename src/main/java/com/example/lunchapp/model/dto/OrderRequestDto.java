@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,4 +19,7 @@ public class OrderRequestDto {
     private String note;
     private String recipientName;
     private Long targetUserId;
+
+    // Field mới để chứa giá suất ăn
+    private BigDecimal mealPrice;
 }

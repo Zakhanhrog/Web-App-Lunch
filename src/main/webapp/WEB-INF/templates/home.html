@@ -74,17 +74,13 @@
     const dontShowAgainBtn = document.getElementById('dont-show-again-btn');
     const guideDismissedKey = 'lunchAppGuideDismissed';
 
-// Kiểm tra trong localStorage xem người dùng đã chọn "không hiện lại" chưa
     if (localStorage.getItem(guideDismissedKey) !== 'true') {
-// Nếu chưa, thì hiển thị modal
       const guideModal = new bootstrap.Modal(guideModalElement);
       guideModal.show();
     }
 
-// Gán sự kiện click cho nút "Không bao giờ hiện lại"
     if (dontShowAgainBtn) {
       dontShowAgainBtn.addEventListener('click', function() {
-// Lưu lựa chọn của người dùng vào localStorage
         localStorage.setItem(guideDismissedKey, 'true');
       });
     }

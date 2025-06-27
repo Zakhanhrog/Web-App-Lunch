@@ -66,10 +66,10 @@ public class OrderServiceImpl implements OrderService {
             order.setNote(orderRequestDto.getNote().trim());
         }
 
-        BigDecimal totalAmount = processOrderItems(order, orderRequestDto.getSelectedItems());
-        chargeUser(user, totalAmount);
+        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
+        chargeUser(user, amountToCharge);
 
-        logger.info("Đặt món thành công cho người dùng {}. Tổng tiền: {}. Ghi chú: {}", userId, totalAmount, order.getNote());
+        logger.info("Đặt món thành công cho người dùng {}. Tổng tiền: {}. Ghi chú: {}", userId, amountToCharge, order.getNote());
         return orderRepository.save(order);
     }
 
@@ -101,13 +101,13 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Phải cung cấp tên người nhận hoặc ID người dùng mục tiêu khi Admin đặt hộ.");
         }
 
-        BigDecimal totalAmount = processOrderItems(order, orderRequestDto.getSelectedItems());
-        chargeUser(adminUser, totalAmount);
+        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
+        chargeUser(adminUser, amountToCharge);
 
         logger.info("Admin {} đặt món thành công. Người nhận: {}. Tổng tiền: {}. Ghi chú: {}",
                 adminUserId,
                 targetUserForOrder != null ? targetUserForOrder.getUsername() : order.getRecipientName(),
-                totalAmount,
+                amountToCharge,
                 order.getNote());
         return orderRepository.save(order);
     }
@@ -133,13 +133,13 @@ public class OrderServiceImpl implements OrderService {
             order.setNote(orderRequestDto.getNote().trim());
         }
 
-        BigDecimal totalAmount = processOrderItems(order, orderRequestDto.getSelectedItems());
-        chargeUser(placingUser, totalAmount);
+        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
+        chargeUser(placingUser, amountToCharge);
 
         logger.info("Người dùng {} (ID: {}) đặt hộ thành công cho '{}'. Tổng tiền: {}. Ghi chú: {}",
                 placingUser.getUsername(), placingUserId,
                 order.getRecipientName(),
-                totalAmount,
+                amountToCharge,
                 order.getNote());
         return orderRepository.save(order);
     }
@@ -153,7 +153,9 @@ public class OrderServiceImpl implements OrderService {
         userRepository.save(user);
     }
 
-    private BigDecimal processOrderItems(Order order, List<SelectedFoodItemDto> selectedItems) {
+    private BigDecimal processOrderItems(Order order, OrderRequestDto orderRequestDto) {
+        List<SelectedFoodItemDto> selectedItems = orderRequestDto.getSelectedItems();
+
         if (selectedItems == null || selectedItems.isEmpty()) {
             throw new IllegalArgumentException("Không thể đặt đơn hàng trống. Vui lòng chọn món.");
         }
@@ -186,6 +188,17 @@ public class OrderServiceImpl implements OrderService {
         if (!hasValidItem) {
             throw new IllegalArgumentException("Đơn hàng không có món ăn nào hợp lệ được chọn (số lượng > 0).");
         }
+
+        // LOGIC MỚI: KIỂM TRA ĐẶT SUẤT
+        if (orderRequestDto.getMealPrice() != null && orderRequestDto.getMealPrice().compareTo(BigDecimal.ZERO) > 0) {
+            logger.info("Đây là đơn hàng 'Đặt Suất'. Ghi đè tổng tiền thành {}", orderRequestDto.getMealPrice());
+            order.setTotalAmount(orderRequestDto.getMealPrice());
+
+            String mealNote = "(suất " + orderRequestDto.getMealPrice().toBigInteger() + ")";
+            String currentNote = order.getNote() != null ? order.getNote() : "";
+            order.setNote(currentNote.isEmpty() ? mealNote : currentNote + " " + mealNote);
+        }
+
         return order.getTotalAmount();
     }
 
@@ -265,7 +278,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Đã quá thời gian cho phép hủy đơn hàng hôm nay.");
         }
 
-        deleteOrderById(orderId); // Gọi lại logic xóa và hoàn tiền/số lượng
+        deleteOrderById(orderId);
         logger.info("Người dùng {} đã hủy thành công đơn hàng ID {} và đã được hoàn tiền/số lượng.", currentUser.getUsername(), orderId);
     }
 }

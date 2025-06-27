@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -70,7 +71,7 @@ public class OrderController {
         Map<Category, List<FoodItem>> groupedFoodItems = foodItemService.getGroupedAvailableFoodItemsForToday();
         model.addAttribute("groupedFoodItems", groupedFoodItems);
 
-        if (!model.containsAttribute("orderRequestDto")) { // Check if not already added by redirect
+        if (!model.containsAttribute("orderRequestDto")) {
             model.addAttribute("orderRequestDto", new OrderRequestDto());
         }
 
@@ -101,6 +102,7 @@ public class OrderController {
             @RequestParam(name = "selectedItemCheck", required = false) List<Long> selectedFoodItemIds,
             @RequestParam(name = "note", required = false) String noteFromForm,
             @RequestParam(name = "recipientName", required = false) String recipientNameFromParam,
+            @RequestParam(name = "mealPrice", required = false) BigDecimal mealPrice, // THAM SỐ MỚI
             HttpSession session,
             RedirectAttributes redirectAttributes, Model model) {
 
@@ -108,6 +110,7 @@ public class OrderController {
         logger.info("Received selectedFoodItemIds: {}", selectedFoodItemIds);
         logger.info("Received noteFromForm: {}", noteFromForm);
         logger.info("Received recipientNameFromParam: {}", recipientNameFromParam);
+        logger.info("Received mealPrice: {}", mealPrice); // Log giá trị mới
 
         UserDto currentUser = (UserDto) session.getAttribute(LOGGED_IN_USER_SESSION_KEY);
         if (currentUser == null) {
@@ -130,6 +133,7 @@ public class OrderController {
         }
         constructedOrderRequestDto.setSelectedItems(selectedItemsList);
         constructedOrderRequestDto.setNote(noteFromForm);
+        constructedOrderRequestDto.setMealPrice(mealPrice); // Đưa giá suất vào DTO
 
         if (recipientNameFromParam != null && !recipientNameFromParam.trim().isEmpty()) {
             constructedOrderRequestDto.setRecipientName(recipientNameFromParam.trim());
@@ -164,7 +168,7 @@ public class OrderController {
             session.setAttribute(LOGGED_IN_USER_SESSION_KEY, userAfterOrder);
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("Đặt món thành công %s! Mã đơn hàng: %d. Tổng tiền: %.2f VND.",
+                    String.format("Đặt món thành công %s! Mã đơn hàng: %d. Tổng tiền: %.0f VND.",
                             successMessageRecipientPart,
                             placedOrder.getId(),
                             placedOrder.getTotalAmount()

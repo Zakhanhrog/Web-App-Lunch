@@ -10,10 +10,9 @@
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-
 <main class="container my-4">
   <h1 class="mb-4">Thực Đơn Hôm Nay</h1>
-
+  Generated code
   <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
     <span th:text="${successMessage}"></span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -28,17 +27,17 @@
     <h4 class="mb-3">Các đơn hàng bạn đã đặt hôm nay:</h4>
     <div th:each="placedOrder, iterStat : ${todaysPlacedOrders}" class="alert alert-info d-flex justify-content-between align-items-center mb-2">
       <div>
-                <span>
-                    <strong th:text="${iterStat.count + '. '}"></strong>
-                    Đơn hàng <strong th:text="${'#'+placedOrder.id}"></strong>
-                    <th:block th:if="${placedOrder.recipientName != null and !placedOrder.recipientName.isEmpty()}">
-                        cho <strong th:text="${placedOrder.recipientName}"></strong>
-                    </th:block>
-                    <th:block th:unless="${placedOrder.recipientName != null and !placedOrder.recipientName.isEmpty()}">
-                        (cho bạn)
-                    </th:block>
-                    - <span th:text="${#numbers.formatDecimal(placedOrder.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}"></span>
-                </span>
+            <span>
+                <strong th:text="${iterStat.count + '. '}"></strong>
+                Đơn hàng <strong th:text="${'#'+placedOrder.id}"></strong>
+                <th:block th:if="${placedOrder.recipientName != null and !placedOrder.recipientName.isEmpty()}">
+                    cho <strong th:text="${placedOrder.recipientName}"></strong>
+                </th:block>
+                <th:block th:unless="${placedOrder.recipientName != null and !placedOrder.recipientName.isEmpty()}">
+                    (cho bạn)
+                </th:block>
+                - <span th:text="${#numbers.formatDecimal(placedOrder.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}"></span>
+            </span>
         <ul class="list-unstyled list-inline mb-0 ms-3 small text-muted">
           <li th:each="item : ${placedOrder.orderItems}" class="list-inline-item" th:text="${item.foodItem.name + ' (x' + item.quantity + ')'}"></li>
         </ul>
@@ -66,6 +65,8 @@
   </div>
 
   <form th:if="${orderTimeAllowed}" id="orderForm" th:action="@{/order/place}" method="post" th:object="${orderRequestDto}" novalidate>
+    <input type="hidden" name="mealPrice" id="hiddenMealPrice"> <!-- INPUT ẨN ĐỂ GỬI GIÁ SUẤT -->
+
     <div th:if="${#lists.isEmpty(groupedFoodItems)}">
       <p class="alert alert-secondary">Hiện không có món nào trong thực đơn hôm nay. Vui lòng quay lại sau!</p>
     </div>
@@ -123,24 +124,60 @@
           <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Tên người nhận..." th:value="*{recipientName}"/>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center gap-2">
-          <button type="button" id="placeOrderForSelfBtn" class="btn btn-primary btn-lg w-100">
-            <i class="fa-solid fa-cart-shopping"></i> Đặt Cho Mình
+        <div id="mealPriceSection" class="mb-3 p-3 border rounded bg-light" style="display: none;">
+          <label class="form-label fw-bold">Chọn suất ăn:</label>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice25" value="25000">
+            <label class="form-check-label" for="mealPrice25">25,000 VND</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice30" value="30000">
+            <label class="form-check-label" for="mealPrice30">30,000 VND</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice35" value="35000">
+            <label class="form-check-label" for="mealPrice35">35,000 VND</label>
+          </div>
+          <div class="mt-2">
+            <label for="customMealPrice" class="form-label">Hoặc nhập giá khác (chẵn 5,000):</label>
+            <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
+          </div>
+        </div>
+
+        <!-- CÁC NÚT BẤM -->
+        <div id="mainActions" class="d-flex justify-content-between align-items-center gap-3">
+          <button type="button" id="placeOrderForSelfBtn" class="btn btn-primary w-100">
+            <i class="fa-solid fa-cart-shopping"></i> Đặt Ngay
           </button>
-          <button type="button" id="toggleProxyOrderBtn" class="btn btn-info btn-lg w-100">
-            <i class="fa-solid fa-user-friends"></i> Đặt Hộ Người Khác
+          <button type="button" id="toggleProxyOrderBtn" class="btn btn-info w-100">
+            <i class="fa-solid fa-user-friends"></i> Đặt Hộ
+          </button>
+          <button type="button" id="toggleMealPriceBtn" class="btn btn-secondary w-100">
+            <i class="fa-solid fa-tag"></i> Đặt Suất
           </button>
         </div>
-        <button type="button" id="confirmProxyOrderBtn" class="btn btn-success btn-lg w-100 mt-2" style="display: none;">
-          <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Hộ
-        </button>
+        <div id="proxyActions" style="display: none;">
+          <button type="button" id="confirmProxyOrderBtn" class="btn btn-success w-100">
+            <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Hộ
+          </button>
+          <button type="button" id="cancelProxyOrderBtn" class="btn btn-danger w-100 mt-3">
+            <i class="fa-solid fa-times"></i> Hủy
+          </button>
+        </div>
+        <div id="mealPriceActions" style="display: none;">
+          <button type="button" id="confirmMealPriceBtn" class="btn btn-success w-100">
+            <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Suất
+          </button>
+          <button type="button" id="cancelMealPriceBtn" class="btn btn-danger w-100 mt-3">
+            <i class="fa-solid fa-times"></i> Hủy
+          </button>
+        </div>
       </div>
     </div>
   </form>
+  Use code with caution.
 </main>
-
 <div th:replace="~{fragments/footer :: footer}"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script th:if="${orderTimeAllowed && countdownSeconds != null && countdownSeconds > 0}" th:inline="javascript">
@@ -152,11 +189,25 @@
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
+    const mainActions = document.getElementById('mainActions');
+
+// Đặt hộ
     const proxyOrderSection = document.getElementById('proxyOrderSection');
+    const proxyActions = document.getElementById('proxyActions');
     const recipientNameInput = document.getElementById('recipientNameInput');
-    const placeOrderForSelfBtn = document.getElementById('placeOrderForSelfBtn');
     const toggleProxyOrderBtn = document.getElementById('toggleProxyOrderBtn');
     const confirmProxyOrderBtn = document.getElementById('confirmProxyOrderBtn');
+    const cancelProxyOrderBtn = document.getElementById('cancelProxyOrderBtn');
+
+// Đặt suất
+    const mealPriceSection = document.getElementById('mealPriceSection');
+    const mealPriceActions = document.getElementById('mealPriceActions');
+    const toggleMealPriceBtn = document.getElementById('toggleMealPriceBtn');
+    const confirmMealPriceBtn = document.getElementById('confirmMealPriceBtn');
+    const cancelMealPriceBtn = document.getElementById('cancelMealPriceBtn');
+    const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
+    const customMealPriceInput = document.getElementById('customMealPrice');
+    const mealPriceRadios = document.querySelectorAll('input[name="mealPriceRadio"]');
 
     function submitOrderForm(isProxy) {
       if (!orderForm) return;
@@ -172,36 +223,95 @@
       orderForm.submit();
     }
 
+// --- LOGIC ĐẶT CHO MÌNH ---
+    const placeOrderForSelfBtn = document.getElementById('placeOrderForSelfBtn');
     if (placeOrderForSelfBtn) {
       placeOrderForSelfBtn.addEventListener('click', function() {
+        hiddenMealPriceInput.value = '';
         submitOrderForm(false);
       });
     }
 
+// --- LOGIC ĐẶT HỘ ---
     if (toggleProxyOrderBtn) {
       toggleProxyOrderBtn.addEventListener('click', function() {
-        if (!proxyOrderSection || !confirmProxyOrderBtn || !placeOrderForSelfBtn) return;
-        if (proxyOrderSection.style.display === 'none') {
-          proxyOrderSection.style.display = 'block';
-          confirmProxyOrderBtn.style.display = 'block';
-          placeOrderForSelfBtn.style.display = 'none';
-          toggleProxyOrderBtn.innerHTML = '<i class="fa-solid fa-times"></i> Hủy Đặt Hộ';
-          if (recipientNameInput) recipientNameInput.focus();
+        mainActions.style.display = 'none';
+        proxyActions.style.display = 'block';
+        proxyOrderSection.style.display = 'block';
+        if(recipientNameInput) recipientNameInput.focus();
+      });
+    }
+    if (cancelProxyOrderBtn) {
+      cancelProxyOrderBtn.addEventListener('click', function() {
+        mainActions.style.display = 'flex';
+        proxyActions.style.display = 'none';
+        proxyOrderSection.style.display = 'none';
+        if(recipientNameInput) recipientNameInput.value = '';
+      });
+    }
+    if (confirmProxyOrderBtn) {
+      confirmProxyOrderBtn.addEventListener('click', function() {
+        hiddenMealPriceInput.value = '';
+        submitOrderForm(true);
+      });
+    }
+
+// --- LOGIC ĐẶT SUẤT ---
+    if (toggleMealPriceBtn) {
+      toggleMealPriceBtn.addEventListener('click', function() {
+        mainActions.style.display = 'none';
+        mealPriceActions.style.display = 'block';
+        mealPriceSection.style.display = 'block';
+      });
+    }
+    if (cancelMealPriceBtn) {
+      cancelMealPriceBtn.addEventListener('click', function() {
+        mainActions.style.display = 'flex';
+        mealPriceActions.style.display = 'none';
+        mealPriceSection.style.display = 'none';
+        hiddenMealPriceInput.value = '';
+        customMealPriceInput.value = '';
+        mealPriceRadios.forEach(radio => radio.checked = false);
+      });
+    }
+    if (confirmMealPriceBtn) {
+      confirmMealPriceBtn.addEventListener('click', function() {
+        let selectedPrice = 0;
+        const checkedRadio = document.querySelector('input[name="mealPriceRadio"]:checked');
+
+        if (checkedRadio) {
+          selectedPrice = parseInt(checkedRadio.value, 10);
+        } else if (customMealPriceInput.value) {
+          selectedPrice = parseInt(customMealPriceInput.value, 10);
+        }
+
+        if (selectedPrice <= 0) {
+          alert('Vui lòng chọn hoặc nhập một giá suất hợp lệ.');
+          return;
+        }
+        if (selectedPrice % 5000 !== 0) {
+          alert('Giá suất tùy chỉnh phải là số chẵn 5,000 (ví dụ: 30000, 35000, 40000).');
+          customMealPriceInput.focus();
+          return;
+        }
+
+        hiddenMealPriceInput.value = selectedPrice;
+        if (proxyOrderSection.style.display === 'block' && recipientNameInput.value.trim() !== '') {
+          submitOrderForm(true);
         } else {
-          proxyOrderSection.style.display = 'none';
-          confirmProxyOrderBtn.style.display = 'none';
-          placeOrderForSelfBtn.style.display = 'block';
-          if (recipientNameInput) recipientNameInput.value = '';
-          toggleProxyOrderBtn.innerHTML = '<i class="fa-solid fa-user-friends"></i> Đặt Hộ Người Khác';
+          submitOrderForm(false);
         }
       });
     }
 
-    if (confirmProxyOrderBtn) {
-      confirmProxyOrderBtn.addEventListener('click', function() {
-        submitOrderForm(true);
+    customMealPriceInput.addEventListener('input', () => {
+      mealPriceRadios.forEach(radio => radio.checked = false);
+    });
+    mealPriceRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        customMealPriceInput.value = '';
       });
-    }
+    });
   });
 </script>
 </body>

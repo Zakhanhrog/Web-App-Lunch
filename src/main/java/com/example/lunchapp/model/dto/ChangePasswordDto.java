@@ -8,8 +8,6 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 public class ChangePasswordDto {
-    // Không cần mật khẩu cũ theo yêu cầu
-    // private String oldPassword;
 
     @NotBlank(message = "New password cannot be blank")
     @Size(min = 6, message = "New password must be at least 6 characters")
