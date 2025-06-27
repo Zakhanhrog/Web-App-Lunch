@@ -12,6 +12,7 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container my-4">
   <h1 class="mb-4">Thực Đơn Hôm Nay</h1>
+  Generated code
   <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
     <span th:text="${successMessage}"></span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -145,7 +146,7 @@
 
         <div id="mainActions" class="d-flex justify-content-center align-items-center gap-3">
           <button type="button" id="placeOrderForSelfBtn" class="btn btn-primary w-100">
-            <i class="fa-solid fa-cart-shopping"></i> Đặt
+            <i class="fa-solid fa-cart-shopping"></i> Đặt Cho Mình
           </button>
           <button type="button" id="toggleProxyOrderBtn" class="btn btn-info w-100">
             <i class="fa-solid fa-user-friends"></i> Đặt Hộ
@@ -173,6 +174,7 @@
       </div>
     </div>
   </form>
+  Use code with caution.
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -187,14 +189,12 @@
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
 
-// Khai báo các nhóm giao diện
     const mainActions = document.getElementById('mainActions');
     const proxyActions = document.getElementById('proxyActions');
     const mealPriceActions = document.getElementById('mealPriceActions');
     const proxyOrderSection = document.getElementById('proxyOrderSection');
     const mealPriceSection = document.getElementById('mealPriceSection');
 
-// Khai báo các input và nút bấm
     const recipientNameInput = document.getElementById('recipientNameInput');
     const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
     const customMealPriceInput = document.getElementById('customMealPrice');
@@ -207,9 +207,7 @@
     const confirmMealPriceBtn = document.getElementById('confirmMealPriceBtn');
     const cancelMealPriceBtn = document.getElementById('cancelMealPriceBtn');
 
-// Hàm chuyển đổi trạng thái giao diện
     function switchUiMode(mode) {
-// Ẩn tất cả các nhóm hành động và khu vực tùy chọn trước
       mainActions.classList.add('d-none');
       proxyActions.classList.add('d-none');
       mealPriceActions.classList.add('d-none');
@@ -223,9 +221,9 @@
       } else if (mode === 'meal') {
         mealPriceActions.classList.remove('d-none');
         mealPriceSection.classList.remove('d-none');
-      } else { // Mặc định là 'main'
+        if(customMealPriceInput) customMealPriceInput.focus();
+      } else {
         mainActions.classList.remove('d-none');
-// Reset các input khi quay về
         if(recipientNameInput) recipientNameInput.value = '';
         if(hiddenMealPriceInput) hiddenMealPriceInput.value = '';
         if(customMealPriceInput) customMealPriceInput.value = '';
@@ -233,17 +231,15 @@
       }
     }
 
-// Gán sự kiện cho các nút
     if(toggleProxyOrderBtn) toggleProxyOrderBtn.addEventListener('click', () => switchUiMode('proxy'));
     if(toggleMealPriceBtn) toggleMealPriceBtn.addEventListener('click', () => switchUiMode('meal'));
     if(cancelProxyOrderBtn) cancelProxyOrderBtn.addEventListener('click', () => switchUiMode('main'));
     if(cancelMealPriceBtn) cancelMealPriceBtn.addEventListener('click', () => switchUiMode('main'));
 
-// Gán sự kiện cho các nút xác nhận
     if(placeOrderForSelfBtn) {
       placeOrderForSelfBtn.addEventListener('click', () => {
-        hiddenMealPriceInput.value = ''; // Đảm bảo không gửi giá suất
-        if(recipientNameInput) recipientNameInput.value = ''; // Đảm bảo không gửi tên người nhận
+        hiddenMealPriceInput.value = '';
+        if(recipientNameInput) recipientNameInput.value = '';
         orderForm.submit();
       });
     }
@@ -255,7 +251,7 @@
           if(recipientNameInput) recipientNameInput.focus();
           return;
         }
-        hiddenMealPriceInput.value = ''; // Đảm bảo không gửi giá suất
+        hiddenMealPriceInput.value = '';
         orderForm.submit();
       });
     }
@@ -282,12 +278,11 @@
         }
 
         hiddenMealPriceInput.value = selectedPrice;
-        if(recipientNameInput) recipientNameInput.value = ''; // Đặt suất cho mình, không cho người khác
+        if(recipientNameInput) recipientNameInput.value = '';
         orderForm.submit();
       });
     }
 
-// Logic bổ trợ: Xóa giá trị của input/radio khác khi một cái được chọn
     if(customMealPriceInput) {
       customMealPriceInput.addEventListener('input', () => {
         mealPriceRadios.forEach(radio => radio.checked = false);
