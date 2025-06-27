@@ -45,9 +45,6 @@ public class AppConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-        // Ưu tiên đọc thông tin từ biến môi trường do Railway cung cấp
-        // Railway thường cung cấp các biến như DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD
-        // Chúng ta sẽ sử dụng chúng. Nếu không tìm thấy, nó sẽ dùng giá trị từ database.properties (dành cho môi trường local)
         String dbUrl = System.getenv("DATABASE_URL") != null
                 ? System.getenv("DATABASE_URL")
                 : env.getProperty("db.url");
