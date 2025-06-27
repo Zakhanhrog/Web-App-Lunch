@@ -91,9 +91,6 @@ public class AppConfig {
     private Properties additionalProperties() {
         Properties properties = new Properties();
 
-        // Ưu tiên đọc biến môi trường HIBERNATE_HBM2DDL_AUTO.
-        // Trên môi trường production (Railway), chúng ta nên để là "validate" hoặc "none"
-        // thay vì "update" để tránh mất dữ liệu không mong muốn.
         String hbm2ddl = System.getenv("HIBERNATE_HBM2DDL_AUTO") != null
                 ? System.getenv("HIBERNATE_HBM2DDL_AUTO")
                 : env.getProperty("hibernate.hbm2ddl.auto");

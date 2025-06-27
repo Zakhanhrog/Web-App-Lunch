@@ -40,14 +40,10 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
     }
 
     private String getFoodImageUploadDir() {
-        // Ưu tiên đọc từ biến môi trường của Railway.
-        // Biến này sẽ được đặt là /data/food trên Railway.
         String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
         if (uploadDir != null && !uploadDir.isEmpty()) {
             return uploadDir;
         }
-        // Nếu không có, quay lại dùng đường dẫn local cho việc phát triển
-        // Giả sử đường dẫn local của bạn là 'lunch-data/images/food'
         return "lunch-data/images/food";
     }
 

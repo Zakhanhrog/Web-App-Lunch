@@ -28,16 +28,16 @@ public class FoodItem {
     private String name;
 
     @NotNull(message = "Price cannot be null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be positive")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Price must be positive")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     @NotNull(message = "Quantity cannot be null")
     @Min(value = 0, message = "Quantity must be non-negative")
     @Column(nullable = false)
-    private Integer quantity; // Số lượng trong kho (cho quản lý admin)
+    private Integer quantity;
 
-    @Column(length = 500) // Đường dẫn tới ảnh, hoặc tên file ảnh
+    @Column(length = 500)
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY) // LAZY để không load category khi không cần

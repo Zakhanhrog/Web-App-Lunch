@@ -10,7 +10,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div class="container-fluid">
   <div class="row">
@@ -18,7 +17,6 @@
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Quản lý Đơn hàng Theo ngày</h1>
       </div>
-
       <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
         <span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -80,16 +78,16 @@
                 <tr th:each="order : ${ordersForDate}">
                   <td th:text="${order.id}"></td>
                   <td>
-                      <span th:if="${order.user != null and order.recipientName == null}"
-                            th:text="${order.user.username}"></span>
+                  <span th:if="${order.user != null and order.recipientName == null}"
+                        th:text="${order.user.username}"></span>
                     <span th:if="${order.recipientName != null}"
                           th:text="${order.recipientName + (order.user == null && order.orderedByAdmin == null ? ' (Khách do User đặt hộ)' : (order.user == null ? ' (Khách do Admin đặt hộ)' : ''))}"></span>
                   </td>
                   <td th:text="${order.user?.department}"></td>
                   <td th:text="${#temporals.format(order.orderDate, 'HH:mm')}"></td>
                   <td>
-                      <span th:if="${order.orderedByAdmin != null}"
-                            th:text="${'Admin: ' + order.orderedByAdmin.username}"></span>
+                  <span th:if="${order.orderedByAdmin != null}"
+                        th:text="${'Admin: ' + order.orderedByAdmin.username}"></span>
                     <span th:if="${order.orderedByAdmin == null and order.user != null}"
                           th:text="${order.user.username}"></span>
                     <span th:if="${order.orderedByAdmin == null and order.user == null}">Không xác định</span>
@@ -140,22 +138,22 @@
               <table class="table table-bordered table-striped">
                 <thead class="table-light">
                 <tr>
-                  <th>Mã Đơn Hàng</th>
+                  <th class="text-center" style="width: 1%; white-space: nowrap;">Mã ĐH</th>
+                  <th style="width: 1%; white-space: nowrap;">Ghi Chú</th>
                   <th>Thực Đơn Đặt</th>
-                  <th>Ghi Chú</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="order : ${ordersForDate}">
-                  <td th:text="${order.id}"></td>
-                  <td>
-                    <ul class="list-unstyled mb-0">
-                      <li th:each="item : ${order.orderItems}"
-                          th:text="${item.foodItem?.name + ' (x' + item.quantity + ')'}">
-                      </li>
-                    </ul>
+                  <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.id}"></td>
+                  <td class="py-2 align-top" th:text="${order.note}"></td>
+                  <td class="py-2 align-top">
+                    <th:block th:each="item, iterStat : ${order.orderItems}">
+                      <strong><span th:text="${item.foodItem?.name}"></span></strong>
+                      <span th:if="${item.quantity > 1}" th:text="${' (x' + item.quantity + ')'}"></span>
+                      <span th:if="${not iterStat.last}">&nbsp;/&nbsp;</span>
+                    </th:block>
                   </td>
-                  <td th:text="${order.note}"></td>
                 </tr>
                 </tbody>
               </table>
@@ -187,6 +185,5 @@
     </div>
   </div>
 </div>
-
 </body>
 </html>
