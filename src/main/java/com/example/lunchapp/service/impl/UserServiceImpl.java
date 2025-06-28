@@ -3,6 +3,7 @@ package com.example.lunchapp.service.impl;
 import com.example.lunchapp.model.dto.UserRegistrationDto;
 import com.example.lunchapp.model.entity.Role;
 import com.example.lunchapp.model.entity.User;
+import com.example.lunchapp.repository.OrderRepository;
 import com.example.lunchapp.repository.RoleRepository;
 import com.example.lunchapp.repository.UserRepository;
 import com.example.lunchapp.service.UserService;
@@ -25,12 +26,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderRepository orderRepository; // Thêm OrderRepository
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.orderRepository = orderRepository; // Khởi tạo
     }
 
     @Override
@@ -39,11 +42,9 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByUsername(registrationDto.getUsername())) {
             throw new RuntimeException("Lỗi: Tên đăng nhập đã tồn tại!");
         }
-
         if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
             throw new RuntimeException("Lỗi: Mật khẩu nhập lại không khớp!");
         }
-
         User user = new User();
         user.setUsername(registrationDto.getUsername());
         user.setDepartment(registrationDto.getDepartment());
@@ -51,19 +52,26 @@ public class UserServiceImpl implements UserService {
         user.setBalance(registrationDto.getInitialBalance() != null ? registrationDto.getInitialBalance() : BigDecimal.ZERO);
         user.setEnabled(true);
         user.setCreatedAt(LocalDateTime.now());
-
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> {
-                    Role newRole = new Role("ROLE_USER");
-                    return roleRepository.save(newRole);
-                });
-        Set<Role> roles = new HashSet<>();
-        roles.add(userRole);
-        user.setRoles(roles);
-
+        Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> roleRepository.save(new Role("ROLE_USER")));
+        user.setRoles(new HashSet<>(Set.of(userRole)));
         return userRepository.save(user);
     }
 
+    @Override
+    @Transactional
+    public void deleteUserById(Long userId) {
+        // Kiểm tra xem người dùng có tồn tại không
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("Không tìm thấy người dùng với ID: " + userId);
+        }
+        // KIỂM TRA QUAN TRỌNG: Người dùng đã có lịch sử đặt hàng chưa?
+        if (orderRepository.existsByUser_Id(userId)) {
+            throw new RuntimeException("Không thể xóa người dùng đã có lịch sử đặt hàng. Hãy xem xét việc vô hiệu hóa tài khoản.");
+        }
+        userRepository.deleteById(userId);
+    }
+
+    // Các phương thức còn lại giữ nguyên...
     @Override
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);

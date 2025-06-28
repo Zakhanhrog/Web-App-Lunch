@@ -639,4 +639,21 @@ public class AdminController {
         }
         return "redirect:/admin/orders/list?date=" + date.toString();
     }
+
+    @GetMapping("/users/delete/{id}")
+    public String deleteUser(@PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpSession session) {
+        logger.warn("Admin is attempting to DELETE user with ID: {}", id);
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            userService.deleteUserById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa thành công người dùng ID: " + id);
+        } catch (Exception e) {
+            logger.error("Error deleting user with ID {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa người dùng: " + e.getMessage());
+        }
+        return "redirect:/admin/users/list";
+    }
 }

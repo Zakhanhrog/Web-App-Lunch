@@ -17,5 +17,6 @@ public interface UserService {
     List<User> getAllUsers();
     User updateUserByAdmin(Long userId, User updatedUserPartialInfo, String newPassword, List<Long> roleIds);
     void toggleUserStatus(Long userId);
+    void deleteUserById(Long userId); // Phương thức mới
     List<User> getAllActiveUsers();
 }

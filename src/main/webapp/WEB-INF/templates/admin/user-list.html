@@ -15,53 +15,64 @@
 
 <div class="container-fluid">
   <main class="col-md-12 px-md-4">
-      <div class="pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Quản Lý Khách Hàng</h1>
-      </div>
+    <div class="pt-3 pb-2 mb-3 border-bottom">
+      <h1 class="h2">Quản Lý Khách Hàng</h1>
+    </div>
 
-      <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-      <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <span th:text="${successMessage}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <span th:text="${errorMessage}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <p th:if="${#lists.isEmpty(users)}" class="text-muted">Không có người dùng nào trong hệ thống.</p>
-          <div th:if="${not #lists.isEmpty(users)}" class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-              <thead class="table-light">
-              <tr>
-                <th>ID</th>
-                <th>Tên đăng nhập</th>
-                <th>Đơn vị</th>
-                <th class="text-end">Số dư (VND)</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th class="text-center">Hành động</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="user : ${users}">
-                <td th:text="${user.id}"></td>
-                <td th:text="${user.username}"></td>
-                <td th:text="${user.department}"></td>
-                <td class="text-end" th:text="${#numbers.formatDecimal(user.balance, 0, 'COMMA', 0, 'POINT')}"></td>
-                <td><span th:each="role, iterStat : ${user.roles}" th:text="${role.name.replace('ROLE_', '') + (iterStat.last ? '' : ', ')}"></span></td>
-                <td><span class="badge" th:classappend="${user.enabled ? 'bg-success' : 'bg-danger'}" th:text="${user.enabled ? 'Hoạt động' : 'Vô hiệu'}"></span></td>
-                <td class="text-center">
-                  <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
-                  <a th:href="@{/admin/users/toggle-status/{id}(id=${user.id})}" class="btn btn-sm"
-                     th:classappend="${user.enabled ? 'btn-secondary' : 'btn-success'}"
-                     th:title="${user.enabled ? 'Vô hiệu hóa' : 'Kích hoạt'}"
-                     onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của người dùng này?');">
-                    <i class="fa-solid" th:classappend="${user.enabled ? 'fa-toggle-off' : 'fa-toggle-on'}"></i>
-                  </a>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <p th:if="${#lists.isEmpty(users)}" class="text-muted">Không có người dùng nào trong hệ thống.</p>
+        <div th:if="${not #lists.isEmpty(users)}" class="table-responsive">
+          <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Tên đăng nhập</th>
+              <th>Đơn vị</th>
+              <th class="text-end">Số dư (VND)</th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
+              <th class="text-center">Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+              <td th:text="${user.id}"></td>
+              <td th:text="${user.username}"></td>
+              <td th:text="${user.department}"></td>
+              <td class="text-end" th:text="${#numbers.formatDecimal(user.balance, 0, 'COMMA', 0, 'POINT')}"></td>
+              <td><span th:each="role, iterStat : ${user.roles}" th:text="${role.name.replace('ROLE_', '') + (iterStat.last ? '' : ', ')}"></span></td>
+              <td><span class="badge" th:classappend="${user.enabled ? 'bg-success' : 'bg-danger'}" th:text="${user.enabled ? 'Hoạt động' : 'Vô hiệu'}"></span></td>
+              <td class="text-center">
+                <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a th:href="@{/admin/users/toggle-status/{id}(id=${user.id})}" class="btn btn-sm"
+                   th:classappend="${user.enabled ? 'btn-secondary' : 'btn-success'}"
+                   th:title="${user.enabled ? 'Vô hiệu hóa' : 'Kích hoạt'}"
+                   onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của người dùng này?');">
+                  <i class="fa-solid" th:classappend="${user.enabled ? 'fa-toggle-off' : 'fa-toggle-on'}"></i>
+                </a>
+                <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-danger" title="Xóa vĩnh viễn"
+                   th:onclick="'return confirm(\'Bạn có chắc chắn muốn XÓA VĨNH VIỄN người dùng \\'' + ${user.username} + '\\'? Hành động này không thể hoàn tác và chỉ nên thực hiện nếu người dùng chưa có bất kỳ hoạt động nào.\');'">
+                  <i class="fa-solid fa-trash-can"></i>
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </main>
+    </div>
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
