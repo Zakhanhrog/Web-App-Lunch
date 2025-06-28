@@ -8,6 +8,27 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
+  <style>
+    .password-match {
+      color: #198754;
+      border-color: #198754 !important;
+    }
+    .password-mismatch {
+      color: #dc3545;
+      border-color: #dc3545 !important;
+    }
+    #password-feedback {
+      transition: opacity 0.3s ease-in-out;
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+    }
+    #password-feedback.visible {
+      opacity: 1;
+      height: auto;
+      margin-top: 0.25rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -37,13 +58,18 @@
           <div class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
         </div>
         <div class="mb-3">
+          <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
+          <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}">
+          <div id="password-feedback"></div>
+        </div>
+        <div class="mb-3">
           <label for="initialBalance" class="form-label">Số tiền nạp ban đầu</label>
           <input type="number" step="1000" class="form-control" id="initialBalance" th:field="*{initialBalance}" th:errorclass="is-invalid">
           <div class="form-text">Đây là tính năng giả lập để kiểm tra.</div>
           <div class="error-message" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}"></div>
         </div>
         <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Đăng Ký</button>
+          <button type="submit" id="register-btn" class="btn btn-primary">Đăng Ký</button>
         </div>
       </form>
       <p class="mt-3 text-center">
@@ -57,5 +83,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const feedbackDiv = document.getElementById('password-feedback');
+    const registerBtn = document.getElementById('register-btn');
+
+    function checkPasswords() {
+      const pass = passwordInput.value;
+      const confirmPass = confirmPasswordInput.value;
+
+      // Xóa các class cũ
+      passwordInput.classList.remove('password-match', 'password-mismatch');
+      confirmPasswordInput.classList.remove('password-match', 'password-mismatch');
+
+      if (pass.length < 6 || confirmPass === '') {
+        feedbackDiv.classList.remove('visible');
+        registerBtn.disabled = false;
+        return;
+      }
+
+      if (pass === confirmPass) {
+        passwordInput.classList.add('password-match');
+        confirmPasswordInput.classList.add('password-match');
+        feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-check"></i> Mật khẩu khớp!';
+        feedbackDiv.className = 'password-match visible';
+        registerBtn.disabled = false;
+      } else {
+        passwordInput.classList.remove('password-match');
+        confirmPasswordInput.classList.add('password-mismatch');
+        feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Mật khẩu không khớp!';
+        feedbackDiv.className = 'password-mismatch visible';
+        registerBtn.disabled = true;
+      }
+    }
+
+    passwordInput.addEventListener('input', checkPasswords);
+    confirmPasswordInput.addEventListener('input', checkPasswords);
+  });
+</script>
 </body>
 </html>

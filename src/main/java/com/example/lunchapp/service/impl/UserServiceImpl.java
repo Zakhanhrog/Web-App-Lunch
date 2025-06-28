@@ -37,7 +37,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User registerUser(UserRegistrationDto registrationDto) {
         if (userRepository.existsByUsername(registrationDto.getUsername())) {
-            throw new RuntimeException("Error: Username is already taken!");
+            throw new RuntimeException("Lỗi: Tên đăng nhập đã tồn tại!");
+        }
+
+        if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
+            throw new RuntimeException("Lỗi: Mật khẩu nhập lại không khớp!");
         }
 
         User user = new User();

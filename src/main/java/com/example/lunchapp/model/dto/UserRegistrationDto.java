@@ -22,7 +22,8 @@ public class UserRegistrationDto {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    // Số tiền nạp ban đầu, có thể không bắt buộc
+    private String confirmPassword;
+
     @DecimalMin(value = "0.0", inclusive = true, message = "Initial balance must be non-negative")
-    private BigDecimal initialBalance; // Cho phép null, service sẽ xử lý
+    private BigDecimal initialBalance;
 }
