@@ -123,22 +123,16 @@
           <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Tên người nhận..." th:value="*{recipientName}"/>
         </div>
 
+        <!-- KHU VỰC CHỌN SUẤT ĐÃ ĐƯỢC NÂNG CẤP -->
         <div id="mealPriceSection" class="mb-3 p-3 border rounded bg-light d-none">
           <label class="form-label fw-bold">Chọn suất ăn:</label>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice25" value="25000">
-            <label class="form-check-label" for="mealPrice25">25,000 VND</label>
+          <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
+            <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
+            <button type="button" class="btn btn-outline-primary" data-price="30000">30,000</button>
+            <button type="button" class="btn btn-outline-primary" data-price="35000">35,000</button>
           </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice30" value="30000">
-            <label class="form-check-label" for="mealPrice30">30,000 VND</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="mealPriceRadio" id="mealPrice35" value="35000">
-            <label class="form-check-label" for="mealPrice35">35,000 VND</label>
-          </div>
-          <div class="mt-2">
-            <label for="customMealPrice" class="form-label">Hoặc nhập giá khác (chẵn 5,000):</label>
+          <div>
+            <label for="customMealPrice" class="form-label small">Hoặc nhập giá khác (chẵn 5,000):</label>
             <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
           </div>
         </div>
@@ -186,17 +180,18 @@
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
-
+// Các nhóm giao diện
     const mainActions = document.getElementById('mainActions');
     const proxyActions = document.getElementById('proxyActions');
     const mealPriceActions = document.getElementById('mealPriceActions');
     const proxyOrderSection = document.getElementById('proxyOrderSection');
     const mealPriceSection = document.getElementById('mealPriceSection');
 
+// Các input và nút
     const recipientNameInput = document.getElementById('recipientNameInput');
     const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
     const customMealPriceInput = document.getElementById('customMealPrice');
-    const mealPriceRadios = document.querySelectorAll('input[name="mealPriceRadio"]');
+    const mealPriceButtons = document.querySelectorAll('#mealPriceButtons .btn');
     const placeOrderForSelfBtn = document.getElementById('placeOrderForSelfBtn');
     const toggleProxyOrderBtn = document.getElementById('toggleProxyOrderBtn');
     const toggleMealPriceBtn = document.getElementById('toggleMealPriceBtn');
@@ -225,7 +220,7 @@
         if(recipientNameInput) recipientNameInput.value = '';
         if(hiddenMealPriceInput) hiddenMealPriceInput.value = '';
         if(customMealPriceInput) customMealPriceInput.value = '';
-        if(mealPriceRadios) mealPriceRadios.forEach(radio => radio.checked = false);
+        mealPriceButtons.forEach(btn => btn.classList.remove('active'));
       }
     }
 
@@ -256,41 +251,44 @@
 
     if(confirmMealPriceBtn) {
       confirmMealPriceBtn.addEventListener('click', () => {
-        let selectedPrice = 0;
-        const checkedRadio = document.querySelector('input[name="mealPriceRadio"]:checked');
+        let selectedPrice = hiddenMealPriceInput.value;
 
-        if (checkedRadio) {
-          selectedPrice = parseInt(checkedRadio.value, 10);
-        } else if (customMealPriceInput.value) {
-          selectedPrice = parseInt(customMealPriceInput.value, 10);
-        }
-
-        if (selectedPrice <= 0) {
+        if (!selectedPrice || parseInt(selectedPrice, 10) <= 0) {
           alert('Vui lòng chọn hoặc nhập một giá suất hợp lệ.');
           return;
         }
-        if (selectedPrice % 5000 !== 0) {
+        if (parseInt(selectedPrice, 10) % 5000 !== 0) {
           alert('Giá suất tùy chỉnh phải là số chẵn 5,000 (ví dụ: 30000, 35000, 40000).');
           customMealPriceInput.focus();
           return;
         }
 
-        hiddenMealPriceInput.value = selectedPrice;
         if(recipientNameInput) recipientNameInput.value = '';
         orderForm.submit();
       });
     }
 
-    if(customMealPriceInput) {
-      customMealPriceInput.addEventListener('input', () => {
-        mealPriceRadios.forEach(radio => radio.checked = false);
+// Logic cho nhóm nút chọn giá suất
+    mealPriceButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Bỏ active tất cả các nút
+        mealPriceButtons.forEach(btn => btn.classList.remove('active'));
+        // Active nút được click
+        this.classList.add('active');
+        // Cập nhật giá trị vào input ẩn
+        hiddenMealPriceInput.value = this.dataset.price;
+        // Xóa giá trị trong ô nhập tùy chỉnh
+        if(customMealPriceInput) customMealPriceInput.value = '';
       });
-    }
-    if(mealPriceRadios) {
-      mealPriceRadios.forEach(radio => {
-        radio.addEventListener('change', () => {
-          if(customMealPriceInput) customMealPriceInput.value = '';
-        });
+    });
+
+// Logic cho ô nhập giá tùy chỉnh
+    if(customMealPriceInput) {
+      customMealPriceInput.addEventListener('input', function() {
+        // Bỏ active tất cả các nút
+        mealPriceButtons.forEach(btn => btn.classList.remove('active'));
+        // Cập nhật giá trị vào input ẩn
+        hiddenMealPriceInput.value = this.value;
       });
     }
   });
