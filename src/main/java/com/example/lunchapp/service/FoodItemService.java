@@ -12,13 +12,13 @@ public interface FoodItemService {
     Map<Category, List<FoodItem>> getGroupedAvailableFoodItemsForToday();
     Optional<FoodItem> findById(Long id);
 
-    // Dùng cho Admin (sẽ bổ sung sau)
+    // Dùng cho Admin
     List<FoodItem> getAllFoodItems();
     FoodItem saveFoodItem(FoodItem foodItem);
     void deleteFoodItem(Long id);
     List<FoodItem> findByCategory(Category category);
     List<FoodItem> findByNameContaining(String name);
     void setFoodItemsForToday(List<Long> foodItemIds, Map<Long, Integer> dailyQuantities);
-    void resetDailyFoodItemStatus(); // Phương thức mới
-
+    void resetDailyFoodItemStatus();
+    void updateDailyMenuItemStatus(Long foodItemId, boolean isAvailable, int dailyQuantity); //auto save
 }

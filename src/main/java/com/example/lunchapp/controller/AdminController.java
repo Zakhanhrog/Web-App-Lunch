@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -60,6 +62,9 @@ public class AdminController {
     private final AppSettingService appSettingService;
     private final RoleRepository roleRepository;
     private final Validator validator;
+
+    // DTO nội bộ cho API tự động lưu
+    public record DailyMenuItemUpdateRequest(boolean available, int quantity) {}
 
     @Autowired
     public AdminController(UserService userService, FoodItemService foodItemService, OrderService orderService,
@@ -142,7 +147,7 @@ public class AdminController {
         }
 
         model.addAttribute("foodItems", foodItems);
-        model.addAttribute("keyword", keyword); // Pass keyword back to the view
+        model.addAttribute("keyword", keyword);
         return "admin/food-list-all";
     }
 
@@ -305,6 +310,25 @@ public class AdminController {
         }
         return "redirect:/admin/food/daily-menu";
     }
+
+    // === PHẦN THÊM MỚI CHO TÍNH NĂNG TỰ ĐỘNG LƯU ===
+    @PostMapping("/api/food/daily-menu/update/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateSingleDailyMenuItem(@PathVariable Long id,
+                                                       @RequestBody DailyMenuItemUpdateRequest request,
+                                                       HttpSession session) {
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            foodItemService.updateDailyMenuItemStatus(id, request.available(), request.quantity());
+            return ResponseEntity.ok(Map.of("message", "Đã lưu món ăn ID: " + id));
+        } catch (Exception e) {
+            logger.error("Lỗi khi tự động lưu món ăn ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+    // === KẾT THÚC PHẦN THÊM MỚI ===
 
     @GetMapping("/config/order-time")
     public String showOrderTimeConfigForm(Model model, HttpSession session) {

@@ -115,9 +115,8 @@ public class FoodItemServiceImpl implements FoodItemService {
         List<FoodItem> allItems = foodItemRepository.findAll();
         for (FoodItem item : allItems) {
             item.setAvailableToday(false);
-            item.setDailyQuantity(0); // Đảm bảo reset cả số lượng
+            item.setDailyQuantity(0);
         }
-        // Lưu thay đổi reset trước khi set các món được chọn
         foodItemRepository.saveAll(allItems);
 
         if (foodItemIds != null && !foodItemIds.isEmpty()) {
@@ -139,5 +138,15 @@ public class FoodItemServiceImpl implements FoodItemService {
             item.setDailyQuantity(0);
         }
         foodItemRepository.saveAll(allItems);
+    }
+
+    @Override
+    @Transactional
+    public void updateDailyMenuItemStatus(Long foodItemId, boolean isAvailable, int dailyQuantity) {
+        FoodItem foodItem = foodItemRepository.findById(foodItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid food item ID: " + foodItemId));
+        foodItem.setAvailableToday(isAvailable);
+        foodItem.setDailyQuantity(dailyQuantity);
+        foodItemRepository.save(foodItem);
     }
 }
