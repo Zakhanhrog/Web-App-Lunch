@@ -311,7 +311,6 @@ public class AdminController {
         return "redirect:/admin/food/daily-menu";
     }
 
-    // === PHẦN THÊM MỚI CHO TÍNH NĂNG TỰ ĐỘNG LƯU ===
     @PostMapping("/api/food/daily-menu/update/{id}")
     @ResponseBody
     public ResponseEntity<?> updateSingleDailyMenuItem(@PathVariable Long id,
@@ -328,7 +327,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
-    // === KẾT THÚC PHẦN THÊM MỚI ===
 
     @GetMapping("/config/order-time")
     public String showOrderTimeConfigForm(Model model, HttpSession session) {
