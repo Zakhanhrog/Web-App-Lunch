@@ -4,69 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đăng Ký - Lunch App</title>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
   <style>
-    .password-match {
-      color: #198754;
-      border-color: #198754 !important;
+    .password-feedback-container {
+      position: relative;
     }
-    .password-mismatch {
-      color: #dc3545;
-      border-color: #dc3545 !important;
+    .form-control.is-valid {
+      border-color: #198754;
+      padding-right: calc(1.5em + .75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8L3.4 5c.4.4 1 .4 1.4 0L7.4 1c.7-.6 1.5-.2 1.1.8L4.3 6.73c-.4 1.04-1.4 1.04-2 0z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(.375em + .1875rem) center;
+      background-size: calc(.75em + .375rem) calc(.75em + .375rem);
     }
-    #password-feedback {
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+    #password-feedback-message {
       transition: opacity 0.3s ease-in-out;
       opacity: 0;
       height: 0;
       overflow: hidden;
+      font-size: 0.875em;
     }
-    #password-feedback.visible {
+    #password-feedback-message.visible {
       opacity: 1;
       height: auto;
       margin-top: 0.25rem;
     }
+    .text-success { color: #198754 !important; }
+    .text-danger { color: #dc3545 !important; }
   </style>
 </head>
 <body>
-
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-
 <main class="container">
   <div class="card auth-card shadow-sm">
     <div class="card-body p-4">
       <h1 class="card-title text-center mb-4">Tạo Tài Khoản Mới</h1>
-
       <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
       <form th:action="@{/auth/register}" th:object="${userRegistrationDto}" method="post" novalidate>
         <div class="mb-3">
           <label for="username" class="form-label">Tên đăng nhập</label>
           <input type="text" class="form-control" id="username" th:field="*{username}" th:errorclass="is-invalid">
-          <div class="error-message" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
         </div>
         <div class="mb-3">
           <label for="department" class="form-label">Đơn vị / Phòng ban</label>
           <input type="text" class="form-control" id="department" th:field="*{department}" th:errorclass="is-invalid">
-          <div class="error-message" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></div>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></div>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 password-feedback-container">
           <label for="password" class="form-label">Mật khẩu</label>
           <input type="password" class="form-control" id="password" th:field="*{password}" th:errorclass="is-invalid">
-          <div class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 password-feedback-container">
           <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
           <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}">
-          <div id="password-feedback"></div>
+          <div id="password-feedback-message"></div>
         </div>
         <div class="mb-3">
           <label for="initialBalance" class="form-label">Số tiền nạp ban đầu</label>
           <input type="number" step="1000" class="form-control" id="initialBalance" th:field="*{initialBalance}" th:errorclass="is-invalid">
           <div class="form-text">Đây là tính năng giả lập để kiểm tra.</div>
-          <div class="error-message" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}"></div>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}"></div>
         </div>
         <div class="d-grid">
           <button type="submit" id="register-btn" class="btn btn-primary">Đăng Ký</button>
@@ -78,47 +83,64 @@
     </div>
   </div>
 </main>
-
 <div th:replace="~{fragments/footer :: footer}"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
-    const feedbackDiv = document.getElementById('password-feedback');
+    const feedbackDiv = document.getElementById('password-feedback-message');
     const registerBtn = document.getElementById('register-btn');
+
+    let hasFiredConfetti = false;
+
+    function fireConfetti() {
+      const rect = confirmPasswordInput.getBoundingClientRect();
+      const x = (rect.left + rect.right) / 2 / window.innerWidth;
+      const y = (rect.top + rect.bottom) / 2 / window.innerHeight;
+
+      confetti({
+        particleCount: 50,
+        spread: 70,
+        origin: { x: x, y: y },
+        colors: ['#28a745', '#198754', '#ffffff']
+      });
+    }
 
     function checkPasswords() {
       const pass = passwordInput.value;
       const confirmPass = confirmPasswordInput.value;
 
-      // Xóa các class cũ
-      passwordInput.classList.remove('password-match', 'password-mismatch');
-      confirmPasswordInput.classList.remove('password-match', 'password-mismatch');
+      passwordInput.classList.remove('is-valid', 'is-invalid');
+      confirmPasswordInput.classList.remove('is-valid', 'is-invalid');
+      feedbackDiv.classList.remove('visible', 'text-success', 'text-danger');
 
-      if (pass.length < 6 || confirmPass === '') {
-        feedbackDiv.classList.remove('visible');
+      if (confirmPass === '' || pass.length < 6) {
+        hasFiredConfetti = false;
         registerBtn.disabled = false;
         return;
       }
 
       if (pass === confirmPass) {
-        passwordInput.classList.add('password-match');
-        confirmPasswordInput.classList.add('password-match');
-        feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-check"></i> Mật khẩu khớp!';
-        feedbackDiv.className = 'password-match visible';
+        passwordInput.classList.add('is-valid');
+        confirmPasswordInput.classList.add('is-valid');
+        feedbackDiv.innerHTML = 'Khớp rồi yeee!';
+        feedbackDiv.classList.add('visible', 'text-success');
         registerBtn.disabled = false;
+        if (!hasFiredConfetti) {
+          fireConfetti();
+          hasFiredConfetti = true;
+        }
       } else {
-        passwordInput.classList.remove('password-match');
-        confirmPasswordInput.classList.add('password-mismatch');
-        feedbackDiv.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Mật khẩu không khớp!';
-        feedbackDiv.className = 'password-mismatch visible';
+        confirmPasswordInput.classList.add('is-invalid');
+        feedbackDiv.innerHTML = 'Ơ! Chưa khớp!';
+        feedbackDiv.classList.add('visible', 'text-danger');
         registerBtn.disabled = true;
+        hasFiredConfetti = false;
       }
     }
-
     passwordInput.addEventListener('input', checkPasswords);
     confirmPasswordInput.addEventListener('input', checkPasswords);
   });
