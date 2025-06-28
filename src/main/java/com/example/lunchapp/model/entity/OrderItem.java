@@ -26,7 +26,7 @@ public class OrderItem {
     @NotNull
     private Order order;
 
-    @ManyToOne(fetch = FetchType.EAGER) // Có thể EAGER để lấy thông tin món ăn khi xem chi tiết order
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "food_item_id", nullable = false)
     @NotNull
     private com.example.lunchapp.model.entity.FoodItem foodItem;
@@ -34,10 +34,10 @@ public class OrderItem {
     @NotNull
     @Min(value = 1, message = "Quantity must be at least 1")
     @Column(nullable = false)
-    private Integer quantity; // Số lượng món này trong đơn hàng
+    private Integer quantity;
 
     @NotNull
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price; // Giá tại thời điểm đặt hàng (có thể khác giá hiện tại của FoodItem)
+    private BigDecimal price;
 
 }

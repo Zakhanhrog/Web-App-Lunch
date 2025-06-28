@@ -54,8 +54,9 @@ dependencies {
     implementation "org.thymeleaf:thymeleaf-spring5:${thymeleafSpring5Version}"
     implementation "org.thymeleaf.extras:thymeleaf-extras-java8time:${thymeleafExtrasJava8timeVersion}"
 
-    // Servlet API (provided by Tomcat)
-    providedCompile "javax.servlet:javax.servlet-api:4.0.1"
+    // Servlet & JSP API
+    implementation "javax.servlet:javax.servlet-api:4.0.1"
+    implementation "javax.servlet.jsp:javax.servlet.jsp-api:2.3.3"
 
     // JSON Processing
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
@@ -97,6 +98,11 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     sourceCompatibility = '17'
     targetCompatibility = '17'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 test {

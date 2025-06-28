@@ -10,6 +10,5 @@ public interface CategoryService {
     Category saveCategory(Category category);
     void deleteCategory(Long id);
     Optional<Category> findByName(String name);
-    // Phương thức để tạo các category mặc định nếu chưa có
     void createDefaultCategoriesIfNotExist();
 }
