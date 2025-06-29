@@ -13,7 +13,7 @@
 <main class="container my-4">
   <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
     <div class="container-fluid py-5">
-      <h1 class="display-5 fw-bold">Chào mừng đến với Lunch App</h1>
+      <h1 class="display-5 fw-bold">Chào mừng đến với Lunch App tại CODEGYM</h1>
       <p class="col-md-8 fs-4" th:text="${message}">Thông điệp chào mừng mặc định.</p>
       <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary btn-lg" type="button">Đặt món ngay</a>
       <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
