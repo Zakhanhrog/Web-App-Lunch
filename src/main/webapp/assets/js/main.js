@@ -1,1 +1,1 @@
-console.log("Main.js loaded for Lunch App (Thymeleaf version)!");
+console.log("Main.js loaded for CG LUNCH (Thymeleaf version)!");

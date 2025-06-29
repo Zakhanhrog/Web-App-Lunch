@@ -26,7 +26,7 @@ public class HomeController {
                 model.addAttribute("isUser", true);
             }
         } else {
-            model.addAttribute("message", "Welcome to Lunch App! Please login or register.");
+            model.addAttribute("message", "Welcome to CG LUNCH! Please login or register.");
         }
         return "home";
     }

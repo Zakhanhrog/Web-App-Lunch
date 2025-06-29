@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang Chủ - Lunch App</title>
+  <title>Trang Chủ - CG LUNCH</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
@@ -13,7 +13,7 @@
 <main class="container my-4">
   <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
     <div class="container-fluid py-5">
-      <h1 class="display-5 fw-bold">Chào mừng đến với Lunch App tại CODEGYM</h1>
+      <h1 class="display-5 fw-bold">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
       <p class="col-md-8 fs-4" th:text="${message}">Thông điệp chào mừng mặc định.</p>
       <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary btn-lg" type="button">Đặt món ngay</a>
       <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
@@ -35,11 +35,11 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="guideModalLabel"><i class="fa-solid fa-book-open me-2"></i>Hướng dẫn sử dụng Lunch App</h5>
+        <h5 class="modal-title" id="guideModalLabel"><i class="fa-solid fa-book-open me-2"></i>Hướng dẫn sử dụng CG LUNCH</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="lead">Chào mừng đến với Lunch App! Dưới đây là 4 bước đơn giản để bạn bắt đầu:</p>
+        <p class="lead">Chào mừng đến với CG LUNCH! Dưới đây là 4 bước đơn giản để bạn bắt đầu:</p>
         <hr>
         <h5><i class="fa-solid fa-money-bill-wave text-success me-2"></i>1. Nạp Tiền vào Tài Khoản (Giả định)</h5>
         <p>Để đặt món, tài khoản của bạn cần có đủ số dư. Thao tác rất đơn giản:</p>
