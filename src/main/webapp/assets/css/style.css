@@ -1,25 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
 
 :root {
-    --primary-color: #14B8A6;
-    --primary-hover: #0D9488;
-    --secondary-color: #6B7280;
-    --heading-color: #1F2937;
-    --background-color: #F9FAFB;
-    --surface-color: #FFFFFF;
-    --border-color: #E5E7EB;
-    --success-color: #22C55E;
-    --danger-color: #EF4444;
+    --primary-color: #1e90ff;
+    --primary-hover: #0ea5e9;
+    --secondary-color: #64748b;
+    --heading-color: #0f172a;
+    --background-color: #f1f5f9;
+    --surface-color: #ffffff;
+    --border-color: #cbd5e1;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08),
-    0 2px 4px -2px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
-    0 4px 6px -4px rgba(0, 0, 0, 0.08);
+    --gradient-primary: linear-gradient(to right, #1e90ff, #0ea5e9);
+
+    --shadow-sm: 0 1px 2px 0 rgba(30, 144, 255, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(14, 165, 233, 0.1),
+    0 2px 4px -2px rgba(14, 165, 233, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(30, 144, 255, 0.1),
+    0 4px 6px -4px rgba(14, 165, 233, 0.1);
 
     --border-radius: 0.5rem;
     --transition: all 0.3s ease-in-out;
 }
+
+
 
 html {
     font-size: 15px; /* Base font size reduced */
