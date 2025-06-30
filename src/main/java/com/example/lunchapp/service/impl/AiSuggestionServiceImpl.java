@@ -34,7 +34,8 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
     @Value("${groq.api.model}")
     private String model;
 
-    private final String apiKey;
+    @Value("${groq.api.key:}") // Thêm giá trị mặc định là chuỗi rỗng
+    private String apiKey;
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -47,18 +48,13 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .build();
-
-        // Đọc API Key của Groq từ biến môi trường
-        this.apiKey = System.getenv("GROQ_API_KEY");
-        if (this.apiKey == null || this.apiKey.isEmpty()) {
-            logger.error("!!! CRITICAL: GROQ_API_KEY environment variable is not set. AI features will not work.");
-        }
     }
 
     @Override
     public AiSuggestionResponse getMealSuggestion(String userPrompt) throws IOException {
         if (apiKey == null || apiKey.isEmpty()) {
-            throw new IOException("AI service is not configured. Missing Groq API Key.");
+            logger.error("!!! CRITICAL: Groq API Key is not configured as an environment variable (GROQ_API_KEY). AI features will not work.");
+            throw new IOException("Dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.");
         }
 
         List<FoodItem> availableFoodItems = foodItemService.getAvailableFoodItemsForToday();
@@ -71,7 +67,7 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
 
         String menuJson = convertFoodItemsToJson(availableFoodItems);
         String systemMessage = buildSystemPrompt();
-        String userMessage = "Thực đơn hôm nay là: \n" + menuJson + "\n\nYêu cầu của tôi là: \"" + userPrompt + "\"";
+        String userMessage = "Thực đơn hôm nay là: \n" + menuJson + "\n\nYêu cầu của người dùng là: \"" + userPrompt + "\"";
 
         ObjectNode requestBodyJson = buildRequestBody(systemMessage, userMessage);
         RequestBody body = RequestBody.create(requestBodyJson.toString(), MediaType.get("application/json; charset=utf-8"));
@@ -97,11 +93,14 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
             String cleanJson = cleanupAiResponse(aiResponseText);
             logger.info("Received clean JSON from Groq AI: {}", cleanJson);
 
-            return objectMapper.readValue(cleanJson, AiSuggestionResponse.class);
+            // Cập nhật lại các ID món ăn từ tên được trả về
+            AiSuggestionResponse aiSuggestionResponse = objectMapper.readValue(cleanJson, AiSuggestionResponse.class);
+            updateItemIdsFromName(aiSuggestionResponse, availableFoodItems);
+            return aiSuggestionResponse;
 
         } catch (Exception e) {
-            logger.error("Error calling Groq API", e);
-            throw new IOException("Không thể nhận gợi ý từ AI. " + e.getMessage(), e);
+            logger.error("Error calling Groq API or parsing response", e);
+            throw new IOException("Không thể nhận gợi ý từ AI. Lỗi xử lý dữ liệu. " + e.getMessage(), e);
         }
     }
 
@@ -121,7 +120,6 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
         userMessageNode.put("content", userMessage);
         messages.add(userMessageNode);
 
-        // Thêm yêu cầu trả về JSON
         ObjectNode responseFormatNode = objectMapper.createObjectNode();
         responseFormatNode.put("type", "json_object");
         requestBody.set("response_format", responseFormatNode);
@@ -130,16 +128,27 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
     }
 
     private String buildSystemPrompt() {
-        return "Bạn là một chuyên gia dinh dưỡng, am hiểu ẩm thực văn phòng Việt Nam. Nhiệm vụ của bạn là tạo một thực đơn bữa trưa cân bằng, ngon miệng và hợp lý từ danh sách món ăn có sẵn."
-                + "\n\n**QUY TẮC BẮT BUỘC:**"
-                + "\n- Bạn chỉ được sử dụng các món ăn có trong thực đơn hôm nay. Không được thêm món mới hoặc món không có trong danh sách. Và chỉ được nói tiếng Việt."
-                + "\n1. **Bám sát yêu cầu:** Luôn tuân thủ yêu cầu của người dùng về ngân sách, sở thích (ví dụ: món chay, món mặn...), và số lượng món."
-                + "\n2. **Ưu tiên đa dạng:** Cố gắng kết hợp đủ các nhóm món như cơm, món mặn (đạm), và món rau/canh. Tránh chọn quá nhiều món trong cùng một nhóm nếu không được yêu cầu cụ thể."
-                + "\n3. **Tối ưu ngân sách:** Chọn các món sao cho tổng giá tiền gần với ngân sách yêu cầu nhất có thể nhưng **không được vượt quá**."
-                + "\n4. **Giải thích thông minh:** Trong phần 'explanation', hãy giải thích ngắn gọn, thân thiện tại sao bạn chọn thực đơn đó (ví dụ: 'Tôi đã chọn cho bạn một suất ăn 30k đủ chất gồm cơm, thịt kho và canh rau, đảm bảo năng lượng cho buổi chiều.')."
-                + "\n5. **Luôn trả về JSON:** Kết quả cuối cùng **chỉ được phép** là một chuỗi JSON hợp lệ theo đúng định dạng mẫu, không có bất kỳ ký tự hay lời dẫn nào bên ngoài cặp dấu `{}`."
-                + "\n\n**JSON MẪU ĐỂ TRẢ VỀ:**\n"
-                + "{\"suggestedItems\": [{\"id\": 1, \"name\": \"Tên món\"}], \"totalPrice\": 30000, \"explanation\": \"Gợi ý của bạn ở đây.\"}";
+        return "Bạn là một trợ lý ảo tư vấn dinh dưỡng tên là 'CG LUNCH AI', thân thiện, thông minh, và am hiểu sâu sắc về sức khỏe cũng như ẩm thực văn phòng tại Việt Nam. Bạn chỉ được giao tiếp bằng tiếng Việt."
+                + "\n\n**NHIỆM VỤ CHÍNH:**"
+                + "\nDựa trên yêu cầu của người dùng và danh sách các món ăn có sẵn được cung cấp, hãy tư vấn một bữa trưa hoàn hảo và trả về kết quả dưới dạng một đối tượng JSON duy nhất."
+                + "\n\n**QUY TẮC VÀNG (BẮT BUỘC TUÂN THỦ):**"
+                + "\n1.  **CHỈ DÙNG MÓN CÓ SẴN:** Tuyệt đối chỉ được chọn các món ăn từ danh sách được cung cấp. Không được bịa ra món mới."
+                + "\n2.  **HIỂU YÊU CẦU:** Phân tích kỹ yêu cầu của người dùng về: sở thích (chay, mặn, ít dầu mỡ, nhiều đạm...), vấn đề sức khỏe (mệt mỏi, cần tỉnh táo, ăn kiêng...), và ngân sách (ví dụ: 'suất 30k')."
+                + "\n3.  **TƯ VẤN THÔNG MINH:** Trong phần `explanation`, hãy giải thích một cách thuyết phục và thân thiện tại sao bạn lại chọn thực đơn đó. Ví dụ: 'Hôm nay bạn hơi mệt nên mình đã chọn một suất ăn giàu đạm với thịt bò xào và nhiều vitamin từ rau luộc. Thực đơn này sẽ giúp bạn phục hồi năng lượng cho buổi chiều làm việc hiệu quả nhé!'."
+                + "\n4.  **TỐI ƯU HÓA:** Luôn cố gắng kết hợp các món ăn một cách hài hòa (ví dụ: có món mặn, món rau/canh). Nếu có ngân sách, hãy chọn các món có tổng giá tiền gần nhất với ngân sách nhưng **KHÔNG ĐƯỢC VƯỢT QUÁ**."
+                + "\n5.  **XỬ LÝ TÌNH HUỐNG:** Nếu yêu cầu của người dùng không thể đáp ứng (ví dụ: ngân sách quá thấp, không có món chay), hãy trả về một `explanation` lịch sự giải thích lý do và có thể gợi ý một phương án khác nếu có thể."
+                + "\n6.  **LUÔN TRẢ VỀ JSON:** Đầu ra của bạn **CHỈ ĐƯỢC PHÉP** là một chuỗi JSON hợp lệ. Không được thêm bất kỳ văn bản, ghi chú, hay ký tự nào (như '```json') bên ngoài cặp dấu `{}` của đối tượng JSON."
+                + "\n\n**ĐỊNH DẠNG JSON BẮT BUỘC TRẢ VỀ:**"
+                + "\n```json\n"
+                + "{\n"
+                + "  \"suggestedItems\": [\n"
+                + "    {\"id\": 1, \"name\": \"Cơm trắng\"},\n"
+                + "    {\"id\": 5, \"name\": \"Thịt kho tàu\"}\n"
+                + "  ],\n"
+                + "  \"totalPrice\": 35000,\n"
+                + "  \"explanation\": \"Gợi ý và lời giải thích thông minh của bạn ở đây.\"\n"
+                + "}\n"
+                + "```";
     }
 
     private String convertFoodItemsToJson(List<FoodItem> items) throws JsonProcessingException {
@@ -147,6 +156,17 @@ public class AiSuggestionServiceImpl implements AiSuggestionService {
                 .map(item -> new SimpleFoodItem(item.getId(), item.getName(), item.getPrice().intValue(), item.getCategory() != null ? item.getCategory().getName() : "Khác"))
                 .collect(Collectors.toList());
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simpleItems);
+    }
+
+    private void updateItemIdsFromName(AiSuggestionResponse response, List<FoodItem> availableItems) {
+        if (response.getSuggestedItems() == null) return;
+
+        for (AiSuggestionResponse.SuggestedItem suggestedItem : response.getSuggestedItems()) {
+            availableItems.stream()
+                    .filter(foodItem -> foodItem.getName().equalsIgnoreCase(suggestedItem.getName()))
+                    .findFirst()
+                    .ifPresent(foodItem -> suggestedItem.setId(foodItem.getId()));
+        }
     }
 
     private String cleanupAiResponse(String text) {
