@@ -51,12 +51,12 @@
       <h1 class="display-5 fw-bold">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
       <p class="col-md-8 fs-4" th:text="${message}">Thông điệp chào mừng mặc định.</p>
       <div class="d-flex gap-2">
-        <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary btn-lg" type="button">Đặt món ngay</a>
-        <!-- Nút "Hỏi AI" mới -->
-        <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#aiChatModal">
+        <!-- Bỏ class 'btn-lg' để nút nhỏ lại -->
+        <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
+        <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aiChatModal">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
         </button>
-        <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
+        <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary" type="button">Đăng nhập để đặt món</a>
       </div>
     </div>
   </div>
@@ -104,8 +104,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script th:inline="javascript">
-  // Script cho guide modal
   document.addEventListener('DOMContentLoaded', function() {
+    // Script cho guide modal
     const guideModalElement = document.getElementById('guideModal');
     const dontShowAgainBtn = document.getElementById('dont-show-again-btn');
     const guideDismissedKey = 'lunchAppGuideDismissed';
@@ -133,14 +133,13 @@
 
       const bubble = document.createElement('div');
       bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user-bubble' : 'ai-bubble');
-      bubble.innerHTML = message; // Dùng innerHTML để render nút bấm
+      bubble.innerHTML = message;
 
       messageWrapper.appendChild(bubble);
       chatBody.appendChild(messageWrapper);
 
-      // Thêm nút "Áp dụng" nếu có gợi ý
       if (sender === 'ai' && suggestion && suggestion.suggestedItems && suggestion.suggestedItems.length > 0) {
-        latestSuggestion = suggestion.suggestedItems; // Lưu lại gợi ý mới nhất
+        latestSuggestion = suggestion.suggestedItems;
         const applyBtn = document.createElement('button');
         applyBtn.className = 'btn btn-sm btn-outline-success mt-2 align-self-start';
         applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
@@ -153,10 +152,8 @@
 
     function applySuggestion() {
       if (latestSuggestion) {
-        // Lưu danh sách ID vào sessionStorage để trang menu có thể đọc được
         const itemIds = latestSuggestion.map(item => item.id);
         sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
-        // Chuyển hướng đến trang menu
         window.location.href = '/order/menu';
       }
     }
@@ -191,7 +188,7 @@
       chatInput.disabled = true;
       sendBtn.disabled = true;
       showTypingIndicator(true);
-      latestSuggestion = null; // Reset gợi ý cũ
+      latestSuggestion = null;
 
       try {
         const response = await fetch('/api/ai/suggest-menu', {
