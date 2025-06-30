@@ -13,5 +13,5 @@ public class LoginRequestDto {
     @NotBlank(message = "Password cannot be blank")
     private String password;
 
-    private boolean rememberMe = false; // Mặc định là không ghi nhớ
+    private boolean rememberMe = false;
 }

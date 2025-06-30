@@ -29,6 +29,18 @@
       -webkit-text-fill-color: initial !important;
       vertical-align: -2px;
     }
+    /* CSS cho AI Chat */
+    .ai-chat-body { max-height: 60vh; overflow-y: auto; }
+    .chat-bubble { max-width: 80%; padding: 10px 15px; border-radius: 20px; margin-bottom: 10px; }
+    .user-bubble { background-color: #0d6efd; color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
+    .ai-bubble { background-color: #e9ecef; color: #212529; align-self: flex-start; border-bottom-left-radius: 5px; }
+    .typing-indicator span {
+      height: 8px; width: 8px; background-color: #6c757d; border-radius: 50%; display: inline-block;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .typing-indicator span:nth-of-type(2) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-of-type(3) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
   </style>
 </head>
 <body>
@@ -38,8 +50,14 @@
     <div class="container-fluid py-5">
       <h1 class="display-5 fw-bold">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
       <p class="col-md-8 fs-4" th:text="${message}">Thông điệp chào mừng mặc định.</p>
-      <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary btn-lg" type="button">Đặt món ngay</a>
-      <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
+      <div class="d-flex gap-2">
+        <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary btn-lg" type="button">Đặt món ngay</a>
+        <!-- Nút "Hỏi AI" mới -->
+        <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#aiChatModal">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
+        </button>
+        <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
+      </div>
     </div>
   </div>
   <div th:if="${session.loggedInUser != null}" class="card shadow-sm">
@@ -52,56 +70,47 @@
   </div>
 </main>
 <!-- Guide Modal -->
-<div class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideModalLabel" aria-hidden="true">
+<div th:replace="~{fragments/guide_modal :: guide_modal}"></div>
+
+<!-- AI Chat Modal -->
+<div class="modal fade" id="aiChatModal" tabindex="-1" aria-labelledby="aiChatModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="guideModalLabel"><i class="fa-solid fa-book-open me-2"></i>Hướng dẫn sử dụng CG LUNCH</h5>
+        <h5 class="modal-title" id="aiChatModalLabel"><i class="fa-solid fa-robot me-2"></i>Trợ Lý Gợi Ý Bữa Ăn</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <p class="lead">Chào mừng đến với CG LUNCH! Dưới đây là 4 bước đơn giản để bạn bắt đầu:</p>
-        <hr>
-        <h5><i class="fa-solid fa-money-bill-wave text-success me-2"></i>1. Nạp Tiền vào Tài Khoản (Giả định)</h5>
-        <p>Để đặt món, tài khoản của bạn cần có đủ số dư. Thao tác rất đơn giản:</p>
-        <ol class="ps-3">
-          <li>Bấm vào <strong>tên của bạn</strong> ở góc trên bên phải để vào trang cá nhân.</li>
-          <li>Chọn mục <strong>Nạp tiền</strong> và làm theo hướng dẫn (quét mã QR hoặc chuyển khoản).</li>
-        </ol>
-        <h5><i class="fa-solid fa-utensils text-primary me-2"></i>2. Chọn Món và Đặt Hàng</h5>
-        <p>Mỗi ngày, hãy vào mục <strong>Thực Đơn Hôm Nay</strong>, chọn các món bạn thích và sử dụng các nút chức năng ở cuối trang:</p>
-        <ul class="list-unstyled ps-3">
-          <li><i class="fa-solid fa-cart-shopping fa-fw me-1"></i><strong>Đặt:</strong> Đặt món cho chính bạn, giá được tính theo từng món.</li>
-          <li><i class="fa-solid fa-user-friends fa-fw me-1"></i><strong>Đặt Hộ:</strong> Đặt các món đã chọn cho người khác (không cần tài khoản).</li>
-          <li><i class="fa-solid fa-tag fa-fw me-1"></i><strong>Suất:</strong> Đặt các món đã chọn theo một suất ăn giá cố định (cho bạn hoặc người khác).</li>
-        </ul>
-        <p class="mb-0"><small class="text-danger"><strong>Lưu ý:</strong> Bạn cần đặt món trước thời gian chốt đơn của hệ thống.</small></p>
-        <h5><i class="fa-solid fa-history text-info me-2"></i>3. Quản Lý Đơn Hàng</h5>
-        <p>Bạn có thể xem lại toàn bộ các đơn đã đặt hoặc hủy đơn (nếu còn thời gian) tại trang <strong>Lịch sử đặt hàng</strong> trong mục thông tin cá nhân của bạn.</p>
-        <h5><i class="fa-solid fa-headset text-warning me-2"></i>4. Cần Trợ Giúp?</h5>
-        <p>Nếu có bất kỳ vấn đề gì về tài khoản, đơn hàng hoặc cần hỗ trợ khác, vui lòng liên hệ trực tiếp với quản trị viên để được giải quyết nhanh chóng.</p>
+      <div class="modal-body ai-chat-body" id="aiChatBody">
+        <div class="d-flex flex-column">
+          <div class="chat-bubble ai-bubble">
+            Xin chào! Bạn muốn ăn gì hôm nay? Hãy cho tôi biết yêu cầu của bạn (ví dụ: "suất 30k đủ món" hoặc "thực đơn chay ít dầu mỡ").
+          </div>
+        </div>
       </div>
-      <div class="modal-footer justify-content-between">
-        <button type="button" class="btn btn-secondary" id="dont-show-again-btn" data-bs-dismiss="modal">
-          <i class="fa-solid fa-eye-slash"></i> Không bao giờ hiện lại
-        </button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-          <i class="fa-solid fa-check"></i> Đã hiểu
-        </button>
+      <div class="modal-footer">
+        <div class="input-group">
+          <input type="text" id="aiChatInput" class="form-control" placeholder="Nhập yêu cầu của bạn...">
+          <button class="btn btn-primary" type="button" id="aiSendBtn">
+            Gửi <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script th:inline="javascript">
+  // Script cho guide modal
   document.addEventListener('DOMContentLoaded', function() {
     const guideModalElement = document.getElementById('guideModal');
     const dontShowAgainBtn = document.getElementById('dont-show-again-btn');
     const guideDismissedKey = 'lunchAppGuideDismissed';
 
-    if (localStorage.getItem(guideDismissedKey) !== 'true') {
+    if (guideModalElement && localStorage.getItem(guideDismissedKey) !== 'true') {
       const guideModal = new bootstrap.Modal(guideModalElement);
       guideModal.show();
     }
@@ -111,6 +120,112 @@
         localStorage.setItem(guideDismissedKey, 'true');
       });
     }
+
+    // Script cho AI Chat
+    const chatBody = document.getElementById('aiChatBody');
+    const chatInput = document.getElementById('aiChatInput');
+    const sendBtn = document.getElementById('aiSendBtn');
+    let latestSuggestion = null;
+
+    function addMessage(message, sender, suggestion = null) {
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = 'd-flex flex-column';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user-bubble' : 'ai-bubble');
+      bubble.innerHTML = message; // Dùng innerHTML để render nút bấm
+
+      messageWrapper.appendChild(bubble);
+      chatBody.appendChild(messageWrapper);
+
+      // Thêm nút "Áp dụng" nếu có gợi ý
+      if (sender === 'ai' && suggestion && suggestion.suggestedItems && suggestion.suggestedItems.length > 0) {
+        latestSuggestion = suggestion.suggestedItems; // Lưu lại gợi ý mới nhất
+        const applyBtn = document.createElement('button');
+        applyBtn.className = 'btn btn-sm btn-outline-success mt-2 align-self-start';
+        applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
+        applyBtn.onclick = applySuggestion;
+        messageWrapper.appendChild(applyBtn);
+      }
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function applySuggestion() {
+      if (latestSuggestion) {
+        // Lưu danh sách ID vào sessionStorage để trang menu có thể đọc được
+        const itemIds = latestSuggestion.map(item => item.id);
+        sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
+        // Chuyển hướng đến trang menu
+        window.location.href = '/order/menu';
+      }
+    }
+
+    function showTypingIndicator(show) {
+      let indicator = document.getElementById('typing-indicator');
+      if (show) {
+        if (!indicator) {
+          indicator = document.createElement('div');
+          indicator.id = 'typing-indicator';
+          indicator.className = 'd-flex flex-column';
+          indicator.innerHTML = `
+                        <div class="chat-bubble ai-bubble typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>`;
+          chatBody.appendChild(indicator);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
+      } else {
+        if (indicator) {
+          indicator.remove();
+        }
+      }
+    }
+
+    async function handleSend() {
+      const userPrompt = chatInput.value.trim();
+      if (userPrompt === '') return;
+
+      addMessage(userPrompt, 'user');
+      chatInput.value = '';
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      showTypingIndicator(true);
+      latestSuggestion = null; // Reset gợi ý cũ
+
+      try {
+        const response = await fetch('/api/ai/suggest-menu', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userPrompt: userPrompt })
+        });
+
+        showTypingIndicator(false);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Có lỗi xảy ra, vui lòng thử lại.');
+        }
+
+        const suggestion = await response.json();
+        addMessage(suggestion.explanation, 'ai', suggestion);
+
+      } catch (error) {
+        showTypingIndicator(false);
+        addMessage('Rất tiếc, đã có lỗi xảy ra: ' + error.message, 'ai');
+      } finally {
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    chatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        handleSend();
+      }
+    });
   });
 </script>
 </body>

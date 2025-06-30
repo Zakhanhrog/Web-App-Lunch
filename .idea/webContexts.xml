@@ -4,6 +4,7 @@
     <option name="state">
       <map>
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin/order-list-by-date.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments/footer.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments" />
       </map>
     </option>
   </component>

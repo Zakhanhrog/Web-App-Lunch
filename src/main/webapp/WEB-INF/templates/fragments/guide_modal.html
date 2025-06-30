@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="guide_modal" class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="guideModalLabel"><i class="fa-solid fa-book-open me-2"></i>Hướng dẫn sử dụng CG LUNCH</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="lead">Chào mừng đến với CG LUNCH! Dưới đây là 4 bước đơn giản để bạn bắt đầu:</p>
+                <hr>
+                <h5><i class="fa-solid fa-money-bill-wave text-success me-2"></i>1. Nạp Tiền vào Tài Khoản (Giả định)</h5>
+                <p>Để đặt món, tài khoản của bạn cần có đủ số dư. Thao tác rất đơn giản:</p>
+                <ol class="ps-3">
+                    <li>Bấm vào <strong>tên của bạn</strong> ở góc trên bên phải để vào trang cá nhân.</li>
+                    <li>Chọn mục <strong>Nạp tiền</strong> và làm theo hướng dẫn (quét mã QR hoặc chuyển khoản).</li>
+                </ol>
+                <h5><i class="fa-solid fa-utensils text-primary me-2"></i>2. Chọn Món và Đặt Hàng</h5>
+                <p>Mỗi ngày, hãy vào mục <strong>Thực Đơn Hôm Nay</strong>, chọn các món bạn thích và sử dụng các nút chức năng ở cuối trang:</p>
+                <ul class="list-unstyled ps-3">
+                    <li><i class="fa-solid fa-cart-shopping fa-fw me-1"></i><strong>Đặt:</strong> Đặt món cho chính bạn, giá được tính theo từng món.</li>
+                    <li><i class="fa-solid fa-user-friends fa-fw me-1"></i><strong>Đặt Hộ:</strong> Đặt các món đã chọn cho người khác (không cần tài khoản).</li>
+                    <li><i class="fa-solid fa-tag fa-fw me-1"></i><strong>Suất:</strong> Đặt các món đã chọn theo một suất ăn giá cố định (cho bạn hoặc người khác).</li>
+                </ul>
+                <p class="mb-0"><small class="text-danger"><strong>Lưu ý:</strong> Bạn cần đặt món trước thời gian chốt đơn của hệ thống.</small></p>
+                <h5><i class="fa-solid fa-history text-info me-2"></i>3. Quản Lý Đơn Hàng</h5>
+                <p>Bạn có thể xem lại toàn bộ các đơn đã đặt hoặc hủy đơn (nếu còn thời gian) tại trang <strong>Lịch sử đặt hàng</strong> trong mục thông tin cá nhân của bạn.</p>
+                <h5><i class="fa-solid fa-headset text-warning me-2"></i>4. Cần Trợ Giúp?</h5>
+                <p>Nếu có bất kỳ vấn đề gì về tài khoản, đơn hàng hoặc cần hỗ trợ khác, vui lòng liên hệ trực tiếp với quản trị viên để được giải quyết nhanh chóng.</p>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-secondary" id="dont-show-again-btn" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-eye-slash"></i> Không bao giờ hiện lại
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-check"></i> Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

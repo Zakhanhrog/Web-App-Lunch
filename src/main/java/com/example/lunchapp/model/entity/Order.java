@@ -49,10 +49,6 @@ public class Order {
     public void addOrderItem(OrderItem item) {
         orderItems.add(item);
         item.setOrder(this);
-        // Tính toán totalAmount nên được thực hiện cẩn thận hơn,
-        // ví dụ: duyệt qua toàn bộ orderItems mỗi khi có thay đổi
-        // Hoặc chỉ cộng/trừ phần thay đổi. Hiện tại đang cộng dồn có thể sai nếu gọi nhiều lần.
-        // Để đơn giản, tạm thời giữ nguyên, nhưng đây là điểm cần xem xét.
         BigDecimal currentTotal = BigDecimal.ZERO;
         for(OrderItem oi : this.orderItems){
             currentTotal = currentTotal.add(oi.getPrice().multiply(new BigDecimal(oi.getQuantity())));

@@ -2,6 +2,7 @@ package com.example.lunchapp.config;
 
 import com.example.lunchapp.repository.RoleRepository;
 import com.example.lunchapp.service.CategoryService;
+import com.fasterxml.jackson.databind.ObjectMapper; // THÊM DÒNG IMPORT NÀY
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,11 @@ public class AppConfig {
 
     @Autowired
     private Environment env;
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 
     @Bean
     public DataSource dataSource() {
@@ -100,7 +106,6 @@ public class AppConfig {
         properties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
         properties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
 
-        // Thêm cấu hình timezone cho kết nối JDBC trên Railway
         if (System.getenv("DATABASE_URL") != null) {
             properties.setProperty("hibernate.connection.url", System.getenv("DATABASE_URL") + "?serverTimezone=UTC&useSSL=false");
         }
