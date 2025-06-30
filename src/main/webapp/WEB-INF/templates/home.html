@@ -7,7 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
-  <!-- CSS cho logo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
@@ -29,37 +28,26 @@
       -webkit-text-fill-color: initial !important;
       vertical-align: -2px;
     }
-    /* CSS cho AI Chat */
-    .ai-chat-body { max-height: 60vh; overflow-y: auto; }
-    .chat-bubble { max-width: 80%; padding: 10px 15px; border-radius: 20px; margin-bottom: 10px; }
-    .user-bubble { background-color: #0d6efd; color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
-    .ai-bubble { background-color: #e9ecef; color: #212529; align-self: flex-start; border-bottom-left-radius: 5px; }
-    .typing-indicator span {
-      height: 8px; width: 8px; background-color: #6c757d; border-radius: 50%; display: inline-block;
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-    .typing-indicator span:nth-of-type(2) { animation-delay: -0.32s; }
-    .typing-indicator span:nth-of-type(3) { animation-delay: -0.16s; }
-    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
   </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
+
 <main class="container my-4">
   <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
     <div class="container-fluid py-5">
       <h1 class="display-5 fw-bold">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
       <p class="col-md-8 fs-4" th:text="${message}">Thông điệp chào mừng mặc định.</p>
       <div class="d-flex gap-2">
-        <!-- Bỏ class 'btn-lg' để nút nhỏ lại -->
         <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
-        <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aiChatModal">
+        <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success" id="aiChatToggleButton">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
         </button>
         <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary" type="button">Đăng nhập để đặt món</a>
       </div>
     </div>
   </div>
+
   <div th:if="${session.loggedInUser != null}" class="card shadow-sm">
     <div class="card-header">Thông tin tài khoản</div>
     <div class="card-body">
@@ -69,85 +57,122 @@
     </div>
   </div>
 </main>
-<!-- Guide Modal -->
+
 <div th:replace="~{fragments/guide_modal :: guide_modal}"></div>
 
-<!-- AI Chat Modal -->
-<div class="modal fade" id="aiChatModal" tabindex="-1" aria-labelledby="aiChatModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="aiChatModalLabel"><i class="fa-solid fa-robot me-2"></i>Trợ Lý Gợi Ý Bữa Ăn</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body ai-chat-body" id="aiChatBody">
-        <div class="d-flex flex-column">
-          <div class="chat-bubble ai-bubble">
-            Xin chào! Bạn muốn ăn gì hôm nay? Hãy cho tôi biết yêu cầu của bạn (ví dụ: "suất 30k đủ món" hoặc "thực đơn chay ít dầu mỡ").
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div class="input-group">
-          <input type="text" id="aiChatInput" class="form-control" placeholder="Nhập yêu cầu của bạn...">
-          <button class="btn btn-primary" type="button" id="aiSendBtn">
-            Gửi <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
+<!-- AI Chat Widget -->
+<div class="ai-chat-container" id="aiChatContainer">
+  <div class="ai-chat-header">
+    <h5 class="ai-chat-title"><i class="fa-solid fa-robot me-2"></i>Trợ Lý Gợi Ý Bữa Ăn</h5>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="newChatBtn" title="Cuộc trò chuyện mới">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button type="button" class="btn-close" id="aiChatCloseBtn" aria-label="Close"></button>
+    </div>
+  </div>
+  <div class="ai-chat-body" id="aiChatBody">
+  </div>
+  <div class="ai-chat-footer">
+    <div class="input-group">
+      <input type="text" id="aiChatInput" class="form-control" placeholder="Nhập yêu cầu của bạn...">
+      <button class="btn btn-primary" type="button" id="aiSendBtn">
+        Gửi <i class="fa-solid fa-paper-plane"></i>
+      </button>
     </div>
   </div>
 </div>
 
-
 <div th:replace="~{fragments/footer :: footer}"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
-    // Script cho guide modal
     const guideModalElement = document.getElementById('guideModal');
-    const dontShowAgainBtn = document.getElementById('dont-show-again-btn');
-    const guideDismissedKey = 'lunchAppGuideDismissed';
-
-    if (guideModalElement && localStorage.getItem(guideDismissedKey) !== 'true') {
-      const guideModal = new bootstrap.Modal(guideModalElement);
-      guideModal.show();
+    if (guideModalElement) {
+      const dontShowAgainBtn = guideModalElement.querySelector('#dont-show-again-btn');
+      const guideDismissedKey = 'lunchAppGuideDismissed';
+      if (localStorage.getItem(guideDismissedKey) !== 'true') {
+        const guideModal = new bootstrap.Modal(guideModalElement);
+        guideModal.show();
+      }
+      if (dontShowAgainBtn) {
+        dontShowAgainBtn.addEventListener('click', () => localStorage.setItem(guideDismissedKey, 'true'));
+      }
     }
 
-    if (dontShowAgainBtn) {
-      dontShowAgainBtn.addEventListener('click', function() {
-        localStorage.setItem(guideDismissedKey, 'true');
-      });
-    }
-
-    // Script cho AI Chat
+    const chatContainer = document.getElementById('aiChatContainer');
+    const chatToggleButton = document.getElementById('aiChatToggleButton');
+    const chatCloseBtn = document.getElementById('aiChatCloseBtn');
     const chatBody = document.getElementById('aiChatBody');
     const chatInput = document.getElementById('aiChatInput');
     const sendBtn = document.getElementById('aiSendBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
+
+    const chatHistoryKey = 'aiChatHistory';
+    let chatHistory = [];
     let latestSuggestion = null;
 
-    function addMessage(message, sender, suggestion = null) {
+    function toggleChat(show) {
+      if (show) {
+        if (!chatContainer.classList.contains('show')) {
+          loadHistory();
+          chatContainer.classList.add('show');
+          setTimeout(() => chatInput.focus(), 100);
+        }
+      } else {
+        chatContainer.classList.remove('show');
+      }
+    }
+
+    function renderMessage(message, sender, suggestion = null) {
       const messageWrapper = document.createElement('div');
-      messageWrapper.className = 'd-flex flex-column';
+      messageWrapper.className = 'chat-message-wrapper';
 
       const bubble = document.createElement('div');
       bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user-bubble' : 'ai-bubble');
       bubble.innerHTML = message;
 
       messageWrapper.appendChild(bubble);
-      chatBody.appendChild(messageWrapper);
 
       if (sender === 'ai' && suggestion && suggestion.suggestedItems && suggestion.suggestedItems.length > 0) {
         latestSuggestion = suggestion.suggestedItems;
         const applyBtn = document.createElement('button');
-        applyBtn.className = 'btn btn-sm btn-outline-success mt-2 align-self-start';
+        applyBtn.className = 'btn btn-sm btn-outline-success mt-2 chat-action-button';
         applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
         applyBtn.onclick = applySuggestion;
         messageWrapper.appendChild(applyBtn);
       }
 
+      chatBody.appendChild(messageWrapper);
       chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function saveHistory() {
+      localStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
+    }
+
+    function loadHistory() {
+      const storedHistory = localStorage.getItem(chatHistoryKey);
+      chatHistory = storedHistory ? JSON.parse(storedHistory) : [];
+      chatBody.innerHTML = '';
+      if (chatHistory.length === 0) {
+        renderInitialMessage();
+      } else {
+        chatHistory.forEach(msg => renderMessage(msg.message, msg.sender, msg.suggestion));
+        const lastAiMessage = chatHistory.slice().reverse().find(m => m.sender === 'ai' && m.suggestion);
+        if (lastAiMessage) {
+          latestSuggestion = lastAiMessage.suggestion.suggestedItems;
+        }
+      }
+    }
+
+    function renderInitialMessage() {
+      const initialMessage = 'Xin chào! Bạn muốn ăn gì hôm nay? Hãy cho tôi biết yêu cầu của bạn (ví dụ: "suất 30k đủ món" hoặc "thực đơn chay ít dầu mỡ").';
+      chatHistory = [{ message: initialMessage, sender: 'ai', suggestion: null }];
+      renderMessage(initialMessage, 'ai');
+      saveHistory();
     }
 
     function applySuggestion() {
@@ -160,22 +185,15 @@
 
     function showTypingIndicator(show) {
       let indicator = document.getElementById('typing-indicator');
-      if (show) {
-        if (!indicator) {
-          indicator = document.createElement('div');
-          indicator.id = 'typing-indicator';
-          indicator.className = 'd-flex flex-column';
-          indicator.innerHTML = `
-                        <div class="chat-bubble ai-bubble typing-indicator">
-                            <span></span><span></span><span></span>
-                        </div>`;
-          chatBody.appendChild(indicator);
-          chatBody.scrollTop = chatBody.scrollHeight;
-        }
-      } else {
-        if (indicator) {
-          indicator.remove();
-        }
+      if (show && !indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'typing-indicator';
+        indicator.className = 'chat-message-wrapper';
+        indicator.innerHTML = `<div class="chat-bubble ai-bubble typing-indicator"><span></span><span></span><span></span></div>`;
+        chatBody.appendChild(indicator);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      } else if (!show && indicator) {
+        indicator.remove();
       }
     }
 
@@ -183,7 +201,10 @@
       const userPrompt = chatInput.value.trim();
       if (userPrompt === '') return;
 
-      addMessage(userPrompt, 'user');
+      chatHistory.push({ message: userPrompt, sender: 'user' });
+      renderMessage(userPrompt, 'user');
+      saveHistory();
+
       chatInput.value = '';
       chatInput.disabled = true;
       sendBtn.disabled = true;
@@ -196,20 +217,20 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userPrompt: userPrompt })
         });
-
         showTypingIndicator(false);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.error || 'Có lỗi xảy ra.');
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Có lỗi xảy ra, vui lòng thử lại.');
-        }
-
-        const suggestion = await response.json();
-        addMessage(suggestion.explanation, 'ai', suggestion);
+        chatHistory.push({ message: data.explanation, sender: 'ai', suggestion: data });
+        renderMessage(data.explanation, 'ai', data);
+        saveHistory();
 
       } catch (error) {
         showTypingIndicator(false);
-        addMessage('Rất tiếc, đã có lỗi xảy ra: ' + error.message, 'ai');
+        const errorMessage = 'Rất tiếc, đã có lỗi xảy ra: ' + error.message;
+        chatHistory.push({ message: errorMessage, sender: 'ai' });
+        renderMessage(errorMessage, 'ai');
+        saveHistory();
       } finally {
         chatInput.disabled = false;
         sendBtn.disabled = false;
@@ -218,11 +239,21 @@
     }
 
     sendBtn.addEventListener('click', handleSend);
-    chatInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        handleSend();
+    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
+
+    newChatBtn.addEventListener('click', () => {
+      if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử sẽ bị xóa.')) {
+        localStorage.removeItem(chatHistoryKey);
+        loadHistory();
       }
     });
+
+    if (chatToggleButton) {
+      chatToggleButton.addEventListener('click', () => toggleChat(true));
+    }
+    if (chatCloseBtn) {
+      chatCloseBtn.addEventListener('click', () => toggleChat(false));
+    }
   });
 </script>
 </body>
