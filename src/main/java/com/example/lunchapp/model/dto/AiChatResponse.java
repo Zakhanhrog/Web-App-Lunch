@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class AiSuggestionResponse {
+public class AiChatResponse {
+    private String explanation;
     private List<SuggestedItem> suggestedItems;
     private BigDecimal totalPrice;
-    private String explanation;
 
     @Getter
     @Setter

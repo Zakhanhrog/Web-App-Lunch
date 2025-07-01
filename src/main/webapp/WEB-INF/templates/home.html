@@ -41,7 +41,7 @@
       <div class="d-flex gap-2">
         <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
         <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success" id="aiChatToggleButton">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi Chuyên Gia AI
         </button>
         <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary" type="button">Đăng nhập để đặt món</a>
       </div>
@@ -63,7 +63,7 @@
 <!-- AI Chat Widget -->
 <div class="ai-chat-container" id="aiChatContainer">
   <div class="ai-chat-header">
-    <h5 class="ai-chat-title"><i class="fa-solid fa-robot me-2"></i>Trợ Lý Gợi Ý Bữa Ăn</h5>
+    <h5 class="ai-chat-title"><i class="fa-solid fa-robot me-2"></i>Chuyên Gia Ẩm Thực AI</h5>
     <div>
       <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="newChatBtn" title="Cuộc trò chuyện mới">
         <i class="fa-solid fa-plus"></i>
@@ -75,7 +75,7 @@
   </div>
   <div class="ai-chat-footer">
     <div class="input-group">
-      <input type="text" id="aiChatInput" class="form-control" placeholder="Nhập yêu cầu của bạn...">
+      <input type="text" id="aiChatInput" class="form-control" placeholder="Hỏi chuyên gia về bữa trưa...">
       <button class="btn btn-primary" type="button" id="aiSendBtn">
         Gửi <i class="fa-solid fa-paper-plane"></i>
       </button>
@@ -110,9 +110,9 @@
     const sendBtn = document.getElementById('aiSendBtn');
     const newChatBtn = document.getElementById('newChatBtn');
 
-    const chatHistoryKey = 'aiChatHistory';
+    const chatHistoryKey = 'aiChatHistoryV4';
     let chatHistory = [];
-    let latestSuggestion = null;
+    let latestSuggestedItems = null;
 
     function toggleChat(show) {
       if (show) {
@@ -126,18 +126,17 @@
       }
     }
 
-    function renderMessage(message, sender, suggestion = null) {
+    function renderMessage(role, content, suggestion = null) {
       const messageWrapper = document.createElement('div');
       messageWrapper.className = 'chat-message-wrapper';
 
       const bubble = document.createElement('div');
-      bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user-bubble' : 'ai-bubble');
-      bubble.innerHTML = message;
-
+      bubble.className = 'chat-bubble ' + (role === 'user' ? 'user-bubble' : 'ai-bubble');
+      bubble.innerText = content;
       messageWrapper.appendChild(bubble);
 
-      if (sender === 'ai' && suggestion && suggestion.suggestedItems && suggestion.suggestedItems.length > 0) {
-        latestSuggestion = suggestion.suggestedItems;
+      if (role === 'assistant' && suggestion && suggestion.length > 0) {
+        latestSuggestedItems = suggestion;
         const applyBtn = document.createElement('button');
         applyBtn.className = 'btn btn-sm btn-outline-success mt-2 chat-action-button';
         applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
@@ -149,38 +148,35 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
+    function applySuggestion() {
+      if (latestSuggestedItems) {
+        const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
+        if (itemIds.length > 0) {
+          sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
+          window.location.href = '/order/menu';
+        }
+      }
+    }
+
     function saveHistory() {
-      localStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
+      sessionStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
     }
 
     function loadHistory() {
-      const storedHistory = localStorage.getItem(chatHistoryKey);
+      const storedHistory = sessionStorage.getItem(chatHistoryKey);
       chatHistory = storedHistory ? JSON.parse(storedHistory) : [];
       chatBody.innerHTML = '';
       if (chatHistory.length === 0) {
         renderInitialMessage();
       } else {
-        chatHistory.forEach(msg => renderMessage(msg.message, msg.sender, msg.suggestion));
-        const lastAiMessage = chatHistory.slice().reverse().find(m => m.sender === 'ai' && m.suggestion);
-        if (lastAiMessage) {
-          latestSuggestion = lastAiMessage.suggestion.suggestedItems;
-        }
+        chatHistory.forEach(msg => renderMessage(msg.role, msg.content, msg.suggestion));
       }
     }
 
     function renderInitialMessage() {
-      const initialMessage = 'Xin chào! Bạn muốn ăn gì hôm nay? Hãy cho tôi biết yêu cầu của bạn (ví dụ: "suất 30k đủ món" hoặc "thực đơn chay ít dầu mỡ").';
-      chatHistory = [{ message: initialMessage, sender: 'ai', suggestion: null }];
-      renderMessage(initialMessage, 'ai');
-      saveHistory();
-    }
-
-    function applySuggestion() {
-      if (latestSuggestion) {
-        const itemIds = latestSuggestion.map(item => item.id);
-        sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
-        window.location.href = '/order/menu';
-      }
+      const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
+      chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
+      renderMessage('assistant', initialMessage, null);
     }
 
     function showTypingIndicator(show) {
@@ -198,39 +194,41 @@
     }
 
     async function handleSend() {
-      const userPrompt = chatInput.value.trim();
-      if (userPrompt === '') return;
+      const userMessage = chatInput.value.trim();
+      if (userMessage === '') return;
 
-      chatHistory.push({ message: userPrompt, sender: 'user' });
-      renderMessage(userPrompt, 'user');
-      saveHistory();
+      renderMessage('user', userMessage);
+      const currentHistoryForAPI = chatHistory.slice();
+      chatHistory.push({ role: 'user', content: userMessage });
+      latestSuggestedItems = null;
 
       chatInput.value = '';
       chatInput.disabled = true;
       sendBtn.disabled = true;
       showTypingIndicator(true);
-      latestSuggestion = null;
 
       try {
-        const response = await fetch('/api/ai/suggest-menu', {
+        const response = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userPrompt: userPrompt })
+          body: JSON.stringify({ newMessage: userMessage, history: currentHistoryForAPI })
         });
+
         showTypingIndicator(false);
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || data.error || 'Có lỗi xảy ra.');
 
-        chatHistory.push({ message: data.explanation, sender: 'ai', suggestion: data });
-        renderMessage(data.explanation, 'ai', data);
+        if (!response.ok) {
+          throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
+        }
+
+        renderMessage('assistant', data.explanation, data.suggestedItems);
+        chatHistory.push({ role: 'assistant', content: data.explanation, suggestion: data.suggestedItems });
         saveHistory();
 
       } catch (error) {
         showTypingIndicator(false);
         const errorMessage = 'Rất tiếc, đã có lỗi xảy ra: ' + error.message;
-        chatHistory.push({ message: errorMessage, sender: 'ai' });
-        renderMessage(errorMessage, 'ai');
-        saveHistory();
+        renderMessage('assistant', errorMessage);
       } finally {
         chatInput.disabled = false;
         sendBtn.disabled = false;
@@ -239,11 +237,11 @@
     }
 
     sendBtn.addEventListener('click', handleSend);
-    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
+    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
     newChatBtn.addEventListener('click', () => {
-      if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử sẽ bị xóa.')) {
-        localStorage.removeItem(chatHistoryKey);
+      if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử hiện tại sẽ bị xóa.')) {
+        sessionStorage.removeItem(chatHistoryKey);
         loadHistory();
       }
     });

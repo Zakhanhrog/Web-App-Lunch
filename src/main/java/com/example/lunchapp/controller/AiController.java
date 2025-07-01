@@ -1,8 +1,8 @@
 package com.example.lunchapp.controller;
 
-import com.example.lunchapp.model.dto.AiSuggestionRequest;
-import com.example.lunchapp.model.dto.AiSuggestionResponse;
-import com.example.lunchapp.service.AiSuggestionService;
+import com.example.lunchapp.model.dto.AiChatRequest;
+import com.example.lunchapp.model.dto.AiChatResponse;
+import com.example.lunchapp.service.AiChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,25 +17,27 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/api/ai")
 public class AiController {
 
-    private final AiSuggestionService aiSuggestionService;
+    private final AiChatService aiChatService;
 
     @Autowired
-    public AiController(AiSuggestionService aiSuggestionService) {
-        this.aiSuggestionService = aiSuggestionService;
+    public AiController(AiChatService aiChatService) {
+        this.aiChatService = aiChatService;
     }
 
-    @PostMapping("/suggest-menu")
+    @PostMapping("/chat")
     @ResponseBody
-    public ResponseEntity<?> getSuggestion(@RequestBody AiSuggestionRequest request, HttpSession session) {
+    public ResponseEntity<?> getChatResponse(@RequestBody AiChatRequest request, HttpSession session) {
         if (session.getAttribute("loggedInUser") == null) {
             return ResponseEntity.status(401).body("Vui lòng đăng nhập để sử dụng tính năng này.");
         }
 
         try {
-            AiSuggestionResponse suggestion = aiSuggestionService.getMealSuggestion(request.getUserPrompt());
-            return ResponseEntity.ok(suggestion);
+            AiChatResponse response = aiChatService.getChatResponse(request);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Lỗi khi kết nối đến AI: " + e.getMessage());
+            AiChatResponse errorResponse = new AiChatResponse();
+            errorResponse.setExplanation("Lỗi khi kết nối đến AI: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }
