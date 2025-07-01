@@ -47,18 +47,18 @@
       <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
       <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-      <!-- Search Form -->
+      <!-- Search Input (Live Search) -->
       <div class="mb-3">
-        <form th:action="@{/admin/food/all}" method="get" class="d-flex">
-          <input type="text" name="keyword" class="form-control me-2" placeholder="Nhập tên món ăn để tìm..." th:value="${keyword}">
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
-        </form>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên món ăn để tìm...">
+        </div>
       </div>
 
       <div class="card shadow-sm">
         <div class="card-body">
-          <p th:if="${#lists.isEmpty(foodItems) and keyword != null}" class="text-muted" th:text="'Không tìm thấy món ăn nào với từ khóa: ' + ${keyword}"></p>
-          <p th:if="${#lists.isEmpty(foodItems) and keyword == null}" class="text-muted">Chưa có món ăn nào trong kho. Vui lòng thêm mới!</p>
+          <p th:if="${#lists.isEmpty(foodItems)}" class="text-muted">Chưa có món ăn nào trong kho. Vui lòng thêm mới!</p>
+          <p id="noResultsMessage" class="text-muted" style="display: none;">Không tìm thấy món ăn nào phù hợp.</p>
 
           <div th:if="${not #lists.isEmpty(foodItems)}" class="table-responsive">
             <table class="table table-striped table-hover align-middle">
@@ -73,11 +73,11 @@
                 <th class="text-center">Hành Động</th>
               </tr>
               </thead>
-              <tbody>
+              <tbody id="foodTableBody">
               <tr th:each="item : ${foodItems}">
                 <td th:text="${item.id}"></td>
                 <td><img th:if="${item.imageUrl}" th:src="@{${item.imageUrl}}" th:alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"/></td>
-                <td th:text="${item.name}"></td>
+                <td class="food-name-cell" th:text="${item.name}"></td>
                 <td th:text="${item.category?.name ?: 'N/A'}"></td>
                 <td class="text-end" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + ' VND'}"></td>
                 <td class="text-end" th:text="${item.quantity}"></td>
@@ -99,5 +99,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const foodTableBody = document.getElementById('foodTableBody');
+    const foodRows = foodTableBody.querySelectorAll('tr');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        let visibleRows = 0;
+
+        foodRows.forEach(row => {
+          const foodNameCell = row.querySelector('.food-name-cell');
+          if (foodNameCell) {
+            const foodName = foodNameCell.textContent.toLowerCase();
+            if (foodName.includes(searchTerm)) {
+              row.style.display = ''; // Show row
+              visibleRows++;
+            } else {
+              row.style.display = 'none'; // Hide row
+            }
+          }
+        });
+
+        // Show or hide the "no results" message
+        if (visibleRows === 0) {
+          noResultsMessage.style.display = 'block';
+        } else {
+          noResultsMessage.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>

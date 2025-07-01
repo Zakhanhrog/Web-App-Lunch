@@ -61,6 +61,14 @@
                     <p th:if="${#lists.isEmpty(allFoodItems)}" class="text-muted">Không có món nào trong kho. Vui lòng thêm món mới trước khi tạo thực đơn!</p>
 
                     <div th:if="${not #lists.isEmpty(allFoodItems)}">
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm món ăn theo tên...">
+                            </div>
+                        </div>
+
                         <!-- Nút Bật/Tắt tất cả -->
                         <div class="d-flex justify-content-end mb-2">
                             <button type="button" id="toggle-all-on" class="btn btn-sm btn-outline-primary me-2">
@@ -89,7 +97,7 @@
                                             <input class="form-check-input daily-menu-toggle" type="checkbox" role="switch" th:checked="${item.availableToday}">
                                         </div>
                                     </td>
-                                    <td th:text="${item.name}"></td>
+                                    <td class="food-name-cell" th:text="${item.name}"></td>
                                     <td th:text="${item.category?.name ?: 'N/A'}"></td>
                                     <td class="text-end" th:text="${item.quantity}"></td>
                                     <td>
@@ -182,28 +190,55 @@
 
         if (btnToggleAllOn) {
             btnToggleAllOn.addEventListener('click', () => {
-                document.querySelectorAll('tr[data-id]').forEach(row => {
-                    const foodId = row.dataset.id;
-                    const toggle = row.querySelector('.daily-menu-toggle');
-                    const quantityInput = row.querySelector('.daily-menu-quantity');
-                    toggle.checked = true;
-                    if(quantityInput.value === '0') {
-                        quantityInput.value = 1000;
+                document.querySelectorAll('tbody tr[data-id]').forEach(row => {
+                    // Chỉ bật những hàng đang hiển thị (sau khi lọc)
+                    if (row.style.display !== 'none') {
+                        const foodId = row.dataset.id;
+                        const toggle = row.querySelector('.daily-menu-toggle');
+                        const quantityInput = row.querySelector('.daily-menu-quantity');
+                        toggle.checked = true;
+                        if(quantityInput.value === '0') {
+                            quantityInput.value = 1000;
+                        }
+                        saveChange(foodId, true, parseInt(quantityInput.value, 10));
                     }
-                    saveChange(foodId, true, parseInt(quantityInput.value, 10));
                 });
             });
         }
 
         if (btnToggleAllOff) {
             btnToggleAllOff.addEventListener('click', () => {
-                document.querySelectorAll('tr[data-id]').forEach(row => {
-                    const foodId = row.dataset.id;
-                    const toggle = row.querySelector('.daily-menu-toggle');
-                    const quantityInput = row.querySelector('.daily-menu-quantity');
-                    toggle.checked = false;
-                    quantityInput.value = 0;
-                    saveChange(foodId, false, 0);
+                document.querySelectorAll('tbody tr[data-id]').forEach(row => {
+                    // Chỉ tắt những hàng đang hiển thị (sau khi lọc)
+                    if (row.style.display !== 'none') {
+                        const foodId = row.dataset.id;
+                        const toggle = row.querySelector('.daily-menu-toggle');
+                        const quantityInput = row.querySelector('.daily-menu-quantity');
+                        toggle.checked = false;
+                        quantityInput.value = 0;
+                        saveChange(foodId, false, 0);
+                    }
+                });
+            });
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const foodRows = document.querySelectorAll('tbody tr[data-id]');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+
+                foodRows.forEach(row => {
+                    const foodNameCell = row.querySelector('.food-name-cell');
+                    if (foodNameCell) {
+                        const foodName = foodNameCell.textContent.toLowerCase();
+                        if (foodName.includes(searchTerm)) {
+                            row.style.display = ''; // Show row
+                        } else {
+                            row.style.display = 'none'; // Hide row
+                        }
+                    }
                 });
             });
         }
