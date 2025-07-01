@@ -1,5 +1,6 @@
 package com.example.lunchapp.service;
 
+import com.example.lunchapp.controller.AdminController;
 import com.example.lunchapp.model.entity.Category;
 import com.example.lunchapp.model.entity.FoodItem;
 import java.util.List;
@@ -21,4 +22,5 @@ public interface FoodItemService {
     void setFoodItemsForToday(List<Long> foodItemIds, Map<Long, Integer> dailyQuantities);
     void resetDailyFoodItemStatus();
     void updateDailyMenuItemStatus(Long foodItemId, boolean isAvailable, int dailyQuantity); //auto save
+    void updateDailyMenuItemsInBatch(List<AdminController.DailyMenuItemBatchUpdateRequest> updates);
 }

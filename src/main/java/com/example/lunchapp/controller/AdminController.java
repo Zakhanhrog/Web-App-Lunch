@@ -63,8 +63,8 @@ public class AdminController {
     private final RoleRepository roleRepository;
     private final Validator validator;
 
-    // DTO nội bộ cho API tự động lưu
     public record DailyMenuItemUpdateRequest(boolean available, int quantity) {}
+    public record DailyMenuItemBatchUpdateRequest(Long id, boolean available, int quantity) {}
 
     @Autowired
     public AdminController(UserService userService, FoodItemService foodItemService, OrderService orderService,
@@ -324,6 +324,22 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("message", "Đã lưu món ăn ID: " + id));
         } catch (Exception e) {
             logger.error("Lỗi khi tự động lưu món ăn ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/food/daily-menu/update-batch")
+    @ResponseBody
+    public ResponseEntity<?> updateBatchDailyMenuItems(@RequestBody List<DailyMenuItemBatchUpdateRequest> updates,
+                                                       HttpSession session) {
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            foodItemService.updateDailyMenuItemsInBatch(updates);
+            return ResponseEntity.ok(Map.of("message", "Đã lưu hàng loạt " + updates.size() + " món ăn."));
+        } catch (Exception e) {
+            logger.error("Lỗi khi cập nhật hàng loạt: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }

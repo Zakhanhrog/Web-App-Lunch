@@ -1,10 +1,13 @@
 package com.example.lunchapp.service.impl;
 
+import com.example.lunchapp.controller.AdminController;
 import com.example.lunchapp.model.entity.Category;
 import com.example.lunchapp.model.entity.FoodItem;
 import com.example.lunchapp.repository.FoodItemRepository;
 import com.example.lunchapp.service.FoodItemService;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,11 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class FoodItemServiceImpl implements FoodItemService {
 
+    private static final Logger logger = LoggerFactory.getLogger(FoodItemServiceImpl.class);
     private final FoodItemRepository foodItemRepository;
 
     @Autowired
@@ -97,6 +102,8 @@ public class FoodItemServiceImpl implements FoodItemService {
         return foodItems;
     }
 
+
+
     @Override
     @Transactional(readOnly = true)
     public List<FoodItem> findByNameContaining(String name) {
@@ -148,5 +155,26 @@ public class FoodItemServiceImpl implements FoodItemService {
         foodItem.setAvailableToday(isAvailable);
         foodItem.setDailyQuantity(dailyQuantity);
         foodItemRepository.save(foodItem);
+    }
+
+    @Override
+    @Transactional
+    public void updateDailyMenuItemsInBatch(List<AdminController.DailyMenuItemBatchUpdateRequest> updates) {
+        if (updates == null || updates.isEmpty()) {
+            return;
+        }
+        List<Long> foodItemIds = updates.stream().map(AdminController.DailyMenuItemBatchUpdateRequest::id).collect(Collectors.toList());
+        Map<Long, FoodItem> foodItemsMap = foodItemRepository.findAllById(foodItemIds).stream()
+                .collect(Collectors.toMap(FoodItem::getId, Function.identity()));
+
+        for (AdminController.DailyMenuItemBatchUpdateRequest update : updates) {
+            FoodItem foodItem = foodItemsMap.get(update.id());
+            if (foodItem != null) {
+                foodItem.setAvailableToday(update.available());
+                foodItem.setDailyQuantity(update.quantity());
+            } else {
+                logger.warn("Không tìm thấy FoodItem với ID {} trong khi cập nhật hàng loạt.", update.id());
+            }
+        }
     }
 }
