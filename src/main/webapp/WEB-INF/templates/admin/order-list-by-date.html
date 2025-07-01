@@ -98,7 +98,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="order : ${ordersForDate}">
-                  <td th:text="${order.id}"></td>
+                  <td th:text="${order.dailyOrderNumber}"></td>
                   <td>
                   <span th:if="${order.user != null and order.recipientName == null}"
                         th:text="${order.user.username}"></span>
@@ -126,7 +126,7 @@
                   <td>
                     <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
                        class="btn btn-sm btn-outline-danger"
-                       th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.id} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
+                       th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
                       <i class="fa-solid fa-trash"></i>
                     </a>
                   </td>
@@ -167,13 +167,13 @@
                 </thead>
                 <tbody>
                 <tr th:each="order : ${ordersForDate}">
-                  <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.id}"></td>
+                  <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.dailyOrderNumber}"></td>
                   <td class="py-2 align-top" th:text="${order.note}"></td>
                   <td class="py-2 align-top">
                     <th:block th:each="item, iterStat : ${order.orderItems}">
                       <strong><span th:text="${item.foodItem?.name}"></span></strong>
                       <span th:if="${item.quantity > 1}" th:text="${' (x' + item.quantity + ')'}"></span>
-                      <span th:if="${not iterStat.last}">&nbsp;/&nbsp;</span>
+                      <span th:if="${not iterStat.last}"> / </span>
                     </th:block>
                   </td>
                 </tr>

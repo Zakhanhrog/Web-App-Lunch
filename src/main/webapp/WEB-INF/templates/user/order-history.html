@@ -35,7 +35,7 @@
           </thead>
           <tbody>
           <tr th:each="order : ${orders}">
-            <td th:text="${order.id}"></td>
+            <td class="fw-bold" th:text="${'#' + order.dailyOrderNumber}"></td>
             <td th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"></td>
             <td>
               <ul class="list-unstyled mb-0">

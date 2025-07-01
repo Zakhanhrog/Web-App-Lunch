@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderedByAdmin oba LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE o.user = :userParam AND o.orderedByAdmin IS NULL ORDER BY o.orderDate DESC")
     List<Order> findByUserAndOrderedByAdminIsNullOrderByOrderDateDesc(@Param("userParam") User user);
 
-    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderedByAdmin oba LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE o.orderDate >= :startDate AND o.orderDate < :endDate ORDER BY o.orderDate DESC")
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderedByAdmin oba LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE o.orderDate >= :startDate AND o.orderDate < :endDate ORDER BY o.dailyOrderNumber DESC")
     List<Order> findByOrderDateBetweenFetchingAll(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 
@@ -33,8 +33,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT DISTINCT o FROM Order o JOIN FETCH o.user u LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE u.id = :placingUserId AND o.orderedByAdmin IS NULL AND o.orderDate >= :startOfDay AND o.orderDate < :endOfDay ORDER BY o.orderDate DESC")
     List<Order> findAllByUser_IdAndOrderDateBetweenAndOrderedByAdminIsNullOrderByOrderDateDesc(@Param("placingUserId") Long placingUserId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 
-    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderedByAdmin oba LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE (o.user = :userParam AND o.orderedByAdmin IS NULL) ORDER BY o.orderDate DESC")
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderedByAdmin oba LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem fi WHERE (o.user = :userParam OR (o.recipientName IS NOT NULL AND o.user = :userParam)) ORDER BY o.orderDate DESC")
     List<Order> findAllOrdersPlacedByUser(@Param("userParam") User user);
 
     boolean existsByUser_Id(Long userId);
+
+    long countByOrderDateBetween(LocalDateTime start, LocalDateTime end);
 }

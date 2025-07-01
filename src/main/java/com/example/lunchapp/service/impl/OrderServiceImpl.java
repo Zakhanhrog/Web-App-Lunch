@@ -52,6 +52,15 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    private void assignDailyOrderNumber(Order order) {
+        LocalDate today = order.getOrderDate().toLocalDate();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        long count = orderRepository.countByOrderDateBetween(startOfDay, endOfDay);
+        order.setDailyOrderNumber(count + 1);
+        logger.info("Gán mã đơn hàng trong ngày là: {}", order.getDailyOrderNumber());
+    }
+
     @Override
     @Transactional
     public Order placeOrderForUser(Long userId, OrderRequestDto orderRequestDto) {
@@ -68,6 +77,8 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
         chargeUser(user, amountToCharge);
+
+        assignDailyOrderNumber(order);
 
         logger.info("Đặt món thành công cho người dùng {}. Tổng tiền: {}. Ghi chú: {}", userId, amountToCharge, order.getNote());
         return orderRepository.save(order);
@@ -104,6 +115,8 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
         chargeUser(adminUser, amountToCharge);
 
+        assignDailyOrderNumber(order);
+
         logger.info("Admin {} đặt món thành công. Người nhận: {}. Tổng tiền: {}. Ghi chú: {}",
                 adminUserId,
                 targetUserForOrder != null ? targetUserForOrder.getUsername() : order.getRecipientName(),
@@ -135,6 +148,8 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
         chargeUser(placingUser, amountToCharge);
+
+        assignDailyOrderNumber(order);
 
         logger.info("Người dùng {} (ID: {}) đặt hộ thành công cho '{}'. Tổng tiền: {}. Ghi chú: {}",
                 placingUser.getUsername(), placingUserId,
@@ -189,7 +204,6 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Đơn hàng không có món ăn nào hợp lệ được chọn (số lượng > 0).");
         }
 
-        // LOGIC MỚI: KIỂM TRA ĐẶT SUẤT
         if (orderRequestDto.getMealPrice() != null && orderRequestDto.getMealPrice().compareTo(BigDecimal.ZERO) > 0) {
             logger.info("Đây là đơn hàng 'Đặt Suất'. Ghi đè tổng tiền thành {}", orderRequestDto.getMealPrice());
             order.setTotalAmount(orderRequestDto.getMealPrice());

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects; // Thêm import này
+import java.util.Objects;
 
 @Entity
 @Table(name = "orders")
@@ -42,6 +42,9 @@ public class Order {
 
     @Column(name = "note", length = 500)
     private String note;
+
+    @Column(name = "daily_order_number")
+    private Long dailyOrderNumber;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();

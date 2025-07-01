@@ -49,7 +49,7 @@
       <div>
                 <span>
                     <strong th:text="${iterStat.count + '. '}"></strong>
-                    Đơn hàng <strong th:text="${'#'+placedOrder.id}"></strong>
+                    Đơn hàng <strong th:text="${'#'+placedOrder.dailyOrderNumber}"></strong>
                     <th:block th:if="${placedOrder.recipientName != null and !placedOrder.recipientName.isEmpty()}">
                         cho <strong th:text="${placedOrder.recipientName}"></strong>
                     </th:block>
