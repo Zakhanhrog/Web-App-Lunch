@@ -59,7 +59,7 @@
                     - <span th:text="${#numbers.formatDecimal(placedOrder.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}"></span>
                 </span>
         <ul class="list-unstyled list-inline mb-0 ms-3 small text-muted">
-          <li th:each="item : ${placedOrder.orderItems}" class="list-inline-item" th:text="${item.foodItem.name + ' (x' + item.quantity + ')'}"></li>
+          <li th:each="item : ${placedOrder.orderItems}" class="list-inline-item" th:text="${item.foodItem?.name + ' (x' + item.quantity + ')'}"></li>
         </ul>
       </div>
       <form th:action="@{/order/cancel/{orderId}(orderId=${placedOrder.id})}" method="post" class="ms-3">
@@ -146,14 +146,14 @@
           </div>
         </div>
         <div id="mainActions" class="d-flex justify-content-center align-items-center gap-3">
-          <button type="button" id="placeOrderForSelfBtn" class="btn btn-primary w-100">
+          <!--<button type="button" id="placeOrderForSelfBtn" class="btn btn-primary w-100">
             <i class="fa-solid fa-cart-shopping"></i> Đặt
           </button>
           <button type="button" id="toggleProxyOrderBtn" class="btn btn-info w-100">
             <i class="fa-solid fa-user-friends"></i> Đặt Hộ
-          </button>
-          <button type="button" id="toggleMealPriceBtn" class="btn btn-secondary w-100">
-            <i class="fa-solid fa-tag"></i> Suất
+          </button>-->
+          <button type="button" id="toggleMealPriceBtn" class="btn btn-primary w-100">
+            <i class="fa-solid fa-tag"></i> Đặt suất
           </button>
         </div>
         <div id="proxyActions" class="d-grid gap-2 d-none">
@@ -180,10 +180,33 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 <script th:if="${orderTimeAllowed && countdownSeconds != null && countdownSeconds > 0}" th:inline="javascript">
-  var countdownElement=document.getElementById('countdown');var seconds=parseInt([[${countdownSeconds}]]);var timerInterval;function updateCountdown(){if(seconds<=0){clearInterval(timerInterval);location.reload();return}
-    var h=Math.floor(seconds/3600);var m=Math.floor((seconds%3600)/60);var s=seconds%60;if(countdownElement){countdownElement.innerHTML=(h>0?h+" giờ ":"")+(m>0||h>0?String(m).padStart(2,'0')+" phút ":"")+String(s).padStart(2,'0')+" giây"}
-    seconds--}
-  if(seconds>0&&countdownElement){updateCountdown();timerInterval=setInterval(updateCountdown,1000)}else if(countdownElement){updateCountdown()}
+  var countdownElement = document.getElementById('countdown');
+  var seconds = parseInt([[${countdownSeconds}]]);
+  var timerInterval;
+
+  function updateCountdown() {
+    if (seconds <= 0) {
+      clearInterval(timerInterval);
+      location.reload();
+      return;
+    }
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    if (countdownElement) {
+      countdownElement.innerHTML = (h > 0 ? h + " giờ " : "") +
+              (m > 0 || h > 0 ? String(m).padStart(2, '0') + " phút " : "") +
+              String(s).padStart(2, '0') + " giây";
+    }
+    seconds--;
+  }
+
+  if (seconds > 0 && countdownElement) {
+    updateCountdown();
+    timerInterval = setInterval(updateCountdown, 1000);
+  } else if (countdownElement) {
+    updateCountdown();
+  }
 </script>
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
