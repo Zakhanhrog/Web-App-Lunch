@@ -41,7 +41,7 @@
       <div class="d-flex gap-2">
         <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
         <button th:if="${session.loggedInUser != null}" type="button" class="btn btn-success" id="aiChatToggleButton">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi Chuyên Gia AI
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
         </button>
         <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary" type="button">Đăng nhập để đặt món</a>
       </div>
