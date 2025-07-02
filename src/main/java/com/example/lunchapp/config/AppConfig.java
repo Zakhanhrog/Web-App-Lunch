@@ -2,7 +2,7 @@ package com.example.lunchapp.config;
 
 import com.example.lunchapp.repository.RoleRepository;
 import com.example.lunchapp.service.CategoryService;
-import com.fasterxml.jackson.databind.ObjectMapper; // THÊM DÒNG IMPORT NÀY
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +26,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@ComponentScan(basePackages = {
-        "com.example.lunchapp.service",
-        "com.example.lunchapp.repository",
-})
+@ComponentScan("com.example.lunchapp")
 @EnableJpaRepositories(basePackages = "com.example.lunchapp.repository")
 @EnableTransactionManagement
 @EnableAspectJAutoProxy

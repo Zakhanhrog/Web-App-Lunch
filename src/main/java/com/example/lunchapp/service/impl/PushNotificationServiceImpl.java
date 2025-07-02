@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,9 +35,13 @@ public class PushNotificationServiceImpl implements PushNotificationService {
 
         fcmTokenRepository.findByToken(token).ifPresentOrElse(
                 existingToken -> {
-                    existingToken.setUser(user);
-                    fcmTokenRepository.save(existingToken);
-                    logger.info("Updated existing FCM token for user: {}", user.getUsername());
+                    if (!existingToken.getUser().getId().equals(userId)) {
+                        existingToken.setUser(user);
+                        fcmTokenRepository.save(existingToken);
+                        logger.info("Updated existing FCM token for user: {}", user.getUsername());
+                    } else {
+                        logger.info("Token already subscribed for user: {}", user.getUsername());
+                    }
                 },
                 () -> {
                     FcmToken newToken = new FcmToken();
@@ -66,18 +71,46 @@ public class PushNotificationServiceImpl implements PushNotificationService {
                         .build())
                 .setWebpushConfig(WebpushConfig.builder()
                         .setNotification(new WebpushNotification(title, body, "/assets/images/codegym_logo.png"))
+                        .setFcmOptions(WebpushFcmOptions.builder().setLink("/order/menu").build())
                         .build())
                 .addAllTokens(tokens)
                 .build();
 
         try {
             BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(message);
-            logger.info("{} messages were sent successfully", response.getSuccessCount());
+            logger.info("{} messages were sent successfully.", response.getSuccessCount());
             if (response.getFailureCount() > 0) {
-                logger.warn("{} messages failed to send.", response.getFailureCount());
+                handleFailedTokens(response.getResponses(), tokens);
             }
         } catch (FirebaseMessagingException e) {
             logger.error("Error sending multicast notification", e);
+        }
+    }
+
+    @Transactional
+    public void handleFailedTokens(List<SendResponse> responses, List<String> tokens) {
+        List<String> tokensToDelete = new ArrayList<>();
+        for (int i = 0; i < responses.size(); i++) {
+            if (!responses.get(i).isSuccessful()) {
+                String failedToken = tokens.get(i);
+                FirebaseMessagingException exception = responses.get(i).getException();
+                MessagingErrorCode errorCode = exception.getMessagingErrorCode();
+
+                // Các lỗi này cho thấy token không còn hợp lệ hoặc đã bị thu hồi
+                if (errorCode == MessagingErrorCode.UNREGISTERED ||
+                        errorCode == MessagingErrorCode.INVALID_ARGUMENT ||
+                        errorCode == MessagingErrorCode.SENDER_ID_MISMATCH) {
+                    tokensToDelete.add(failedToken);
+                    logger.warn("Token {} is invalid (Reason: {}) and will be deleted.", failedToken, errorCode);
+                } else {
+                    logger.error("Failed to send to token {}: {}", failedToken, exception.getMessage());
+                }
+            }
+        }
+
+        if (!tokensToDelete.isEmpty()) {
+            fcmTokenRepository.deleteAllByTokenIn(tokensToDelete);
+            logger.info("Deleted {} invalid/stale tokens from the database.", tokensToDelete.size());
         }
     }
 }
