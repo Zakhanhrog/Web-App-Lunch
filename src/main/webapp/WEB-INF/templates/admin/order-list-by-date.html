@@ -93,7 +93,7 @@
                   <th>Ghi Chú</th>
                   <th class="text-end">Tổng Tiền</th>
                   <th class="text-center">Thanh Toán</th>
-                  <th>Hành Động</th>
+                  <th class="text-center">Hành Động</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -127,17 +127,19 @@
                     <span th:if="${order.paid}" class="badge bg-success">Đã Thanh Toán</span>
                     <span th:unless="${order.paid}" class="badge bg-warning text-dark">Chưa Thanh Toán</span>
                   </td>
-                  <td class="d-flex gap-1">
-                    <form th:if="${!order.paid}" th:action="@{/admin/orders/mark-as-paid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
-                      <button type="submit" class="btn btn-sm btn-outline-success" title="Xác nhận đã thanh toán">
-                        <i class="fa-solid fa-check"></i>
-                      </button>
-                    </form>
-                    <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
-                       class="btn btn-sm btn-outline-danger"
-                       th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
-                      <i class="fa-solid fa-trash"></i>
-                    </a>
+                  <td>
+                    <div class="d-flex justify-content-center gap-1">
+                      <form th:if="${!order.paid}" th:action="@{/admin/orders/mark-as-paid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-success" title="Xác nhận đã thanh toán">
+                          <i class="fa-solid fa-check"></i>
+                        </button>
+                      </form>
+                      <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
+                         class="btn btn-sm btn-outline-danger"
+                         th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
+                        <i class="fa-solid fa-trash"></i>
+                      </a>
+                    </div>
                   </td>
                 </tr>
                 </tbody>
