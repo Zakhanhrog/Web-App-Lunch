@@ -29,6 +29,13 @@
       -webkit-text-fill-color: initial !important;
       vertical-align: -2px;
     }
+    .table-row-highlight {
+      animation: highlight-fade 2s ease-out;
+    }
+    @keyframes highlight-fade {
+      from { background-color: #ffc107; }
+      to { background-color: transparent; }
+    }
   </style>
 </head>
 <body>
@@ -97,7 +104,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="order : ${ordersForDate}">
+                <tr th:each="order : ${ordersForDate}" th:id="${'order-' + order.id}">
                   <td th:text="${order.dailyOrderNumber}"></td>
                   <td>
                   <span th:if="${order.user != null and order.recipientName == null}"
@@ -134,8 +141,13 @@
                           <i class="fa-solid fa-check"></i>
                         </button>
                       </form>
+                      <form th:if="${order.paid}" th:action="@{/admin/orders/mark-as-unpaid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy xác nhận thanh toán">
+                          <i class="fa-solid fa-times"></i>
+                        </button>
+                      </form>
                       <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
-                         class="btn btn-sm btn-outline-danger"
+                         class="btn btn-sm btn-danger"
                          th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
                         <i class="fa-solid fa-trash"></i>
                       </a>
@@ -176,7 +188,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="order : ${ordersForDate}">
+                <tr th:each="order : ${ordersForDate}" th:id="${'detail-order-' + order.id}">
                   <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.dailyOrderNumber}"></td>
                   <td class="py-2 align-top" th:text="${order.note}"></td>
                   <td class="py-2 align-top">
@@ -213,6 +225,17 @@
             alert("Không tìm thấy bảng dữ liệu để xuất ảnh với ID: " + tableContainerId);
           }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          if (window.location.hash) {
+            const targetId = window.location.hash.substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+              targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              targetElement.classList.add('table-row-highlight');
+            }
+          }
+        });
       </script>
     </div>
   </div>

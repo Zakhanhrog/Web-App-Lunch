@@ -608,24 +608,18 @@ public class AdminController {
                                   @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                   RedirectAttributes redirectAttributes, HttpSession session) {
         logger.info("AdminController: Marking order {} as paid", orderId);
-        User adminUser = getCurrentlyLoggedInAdmin(session);
-        if (adminUser == null) {
+        if (getCurrentlyLoggedInAdmin(session) == null) {
             return "redirect:/auth/login";
         }
-
         try {
             orderService.markOrderAsPaid(orderId);
             redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận thanh toán cho đơn hàng #" + orderId);
         } catch (Exception e) {
             logger.error("Error marking order {} as paid: {}", orderId, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xác nhận thanh toán: " + e.getMessage());
+            return buildErrorRedirectUrl(date);
         }
-
-        String redirectUrl = "/admin/orders/list";
-        if (date != null) {
-            redirectUrl += "?date=" + date.toString();
-        }
-        return "redirect:" + redirectUrl;
+        return buildRedirectUrl(date, orderId);
     }
 
 
@@ -634,27 +628,17 @@ public class AdminController {
                                     @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                     RedirectAttributes redirectAttributes, HttpSession session) {
         logger.info("AdminController: Accessing /admin/orders/delete/{} for date: {}", orderId, date);
-        User adminUser = getCurrentlyLoggedInAdmin(session);
-        if (adminUser == null) {
-            logger.warn("AdminController: Admin user is null for /admin/orders/delete. Redirecting to /auth/login.");
+        if (getCurrentlyLoggedInAdmin(session) == null) {
             return "redirect:/auth/login";
         }
-
         try {
             orderService.deleteOrderById(orderId);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa thành công đơn hàng (Mã ĐH: " + orderId + ").");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa thành công đơn hàng (Mã ĐH gốc: " + orderId + ").");
         } catch (Exception e) {
             logger.error("AdminController: Error deleting order ID {}: {}", orderId, e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa đơn hàng (Mã ĐH: " + orderId + "): " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa đơn hàng (Mã ĐH gốc: " + orderId + "): " + e.getMessage());
         }
-
-        String redirectUrl = "/admin/orders/list";
-        if (date != null) {
-            redirectUrl += "?date=" + date.toString();
-        } else {
-            redirectUrl += "?date=" + LocalDate.now().toString();
-        }
-        return "redirect:" + redirectUrl;
+        return buildRedirectUrl(date);
     }
 
     @GetMapping("/orders/delete-by-date")
@@ -704,5 +688,43 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa người dùng: " + e.getMessage());
         }
         return "redirect:/admin/users/list";
+    }
+
+    @PostMapping("/orders/mark-as-unpaid/{id}")
+    public String markOrderAsUnpaid(@PathVariable("id") Long orderId,
+                                    @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                    RedirectAttributes redirectAttributes, HttpSession session) {
+        logger.info("AdminController: Marking order {} as UNPAID", orderId);
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return "redirect:/auth/login";
+        }
+        try {
+            orderService.markOrderAsUnpaid(orderId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy xác nhận thanh toán cho đơn hàng #" + orderId);
+        } catch (Exception e) {
+            logger.error("Error marking order {} as unpaid: {}", orderId, e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hủy xác nhận thanh toán: " + e.getMessage());
+            return buildErrorRedirectUrl(date);
+        }
+        return buildRedirectUrl(date, orderId);
+    }
+
+    private String buildRedirectUrl(LocalDate date) {
+        return buildRedirectUrl(date, null);
+    }
+
+    private String buildRedirectUrl(LocalDate date, Long orderId) {
+        String baseUrl = "/admin/orders/list?date=";
+        String dateString = (date != null) ? date.toString() : LocalDate.now().toString();
+        String fragment = (orderId != null) ? "#order-" + orderId : "";
+        return "redirect:" + baseUrl + dateString + fragment;
+    }
+
+    private String buildErrorRedirectUrl(LocalDate date) {
+        String baseUrl = "/admin/orders/list";
+        if (date != null) {
+            baseUrl += "?date=" + date.toString();
+        }
+        return "redirect:" + baseUrl;
     }
 }

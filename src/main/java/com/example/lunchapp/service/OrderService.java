@@ -20,4 +20,5 @@ public interface OrderService {
     void deleteOrderById(Long orderId);
     void cancelOrderByIdAndRefund(Long orderId, Long currentUserId);
     void markOrderAsPaid(Long orderId);
+    void markOrderAsUnpaid(Long orderId);
 }

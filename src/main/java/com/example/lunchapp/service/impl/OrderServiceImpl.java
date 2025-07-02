@@ -316,4 +316,14 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         logger.info("Admin đã xác nhận thanh toán cho đơn hàng ID: {}", orderId);
     }
+
+    @Override
+    @Transactional
+    public void markOrderAsUnpaid(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
+        order.setPaid(false);
+        orderRepository.save(order);
+        logger.info("Admin đã hủy xác nhận thanh toán cho đơn hàng ID: {}", orderId);
+    }
 }
