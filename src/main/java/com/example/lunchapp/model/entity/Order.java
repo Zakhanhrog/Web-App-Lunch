@@ -46,6 +46,9 @@ public class Order {
     @Column(name = "daily_order_number")
     private Long dailyOrderNumber;
 
+    @Column(name = "paid", nullable = false)
+    private boolean paid = false;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();
 

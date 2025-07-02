@@ -13,10 +13,11 @@ public interface OrderService {
     Order placeOrderForUser(Long userId, OrderRequestDto orderRequestDto);
     Order placeOrderAsAdmin(Long adminUserId, OrderRequestDto orderRequestDto);
     Order placeOrderForOtherByRegularUser(Long placingUserId, OrderRequestDto orderRequestDto);
-    List<Order> getOrderHistory(Long userId); // Lấy toàn bộ lịch sử
-    List<Order> getTodaysOrdersByPlacingUser(Long placingUserId, LocalDate date); // Lấy đơn trong ngày của user thực hiện
-    List<Order> getOrdersByDate(LocalDate date); // Lấy tất cả đơn theo ngày (cho admin)
+    List<Order> getOrderHistory(Long userId);
+    List<Order> getTodaysOrdersByPlacingUser(Long placingUserId, LocalDate date);
+    List<Order> getOrdersByDate(LocalDate date);
     List<Order> getAllOrders();
-    void deleteOrderById(Long orderId); // Dùng chung cho admin xóa hoặc khi user hủy
-    void cancelOrderByIdAndRefund(Long orderId, Long currentUserId); // User hủy đơn cụ thể của mình
+    void deleteOrderById(Long orderId);
+    void cancelOrderByIdAndRefund(Long orderId, Long currentUserId);
+    void markOrderAsPaid(Long orderId);
 }

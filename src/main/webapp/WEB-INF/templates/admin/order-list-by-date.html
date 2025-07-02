@@ -70,7 +70,6 @@
       </div>
 
       <div th:if="${selectedDate}">
-        <!-- Bảng 1: Danh sách đơn hàng tổng quan -->
         <div class="card shadow-sm mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tổng Quan Đơn Hàng Ngày <span
@@ -93,6 +92,7 @@
                   <th>Chi Tiết Món</th>
                   <th>Ghi Chú</th>
                   <th class="text-end">Tổng Tiền</th>
+                  <th class="text-center">Thanh Toán</th>
                   <th>Hành Động</th>
                 </tr>
                 </thead>
@@ -123,7 +123,16 @@
                   <td th:text="${order.note}"></td>
                   <td class="text-end fw-bold"
                       th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></td>
-                  <td>
+                  <td class="text-center">
+                    <span th:if="${order.paid}" class="badge bg-success">Đã Thanh Toán</span>
+                    <span th:unless="${order.paid}" class="badge bg-warning text-dark">Chưa Thanh Toán</span>
+                  </td>
+                  <td class="d-flex gap-1">
+                    <form th:if="${!order.paid}" th:action="@{/admin/orders/mark-as-paid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-success" title="Xác nhận đã thanh toán">
+                        <i class="fa-solid fa-check"></i>
+                      </button>
+                    </form>
                     <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
                        class="btn btn-sm btn-outline-danger"
                        th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
@@ -137,7 +146,6 @@
           </div>
         </div>
 
-        <!-- Bảng 2: Chi tiết các đơn hàng (theo yêu cầu mới) -->
         <div class="card shadow-sm" id="detailedOrdersTableContainer">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Chi Tiết Các Đơn Hàng Ngày <span

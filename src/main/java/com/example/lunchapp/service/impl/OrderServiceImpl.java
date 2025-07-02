@@ -94,7 +94,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Order placeOrderAsAdmin(Long adminUserId, OrderRequestDto orderRequestDto) {
-        // Bỏ qua check thời gian cho Admin
         User adminUser = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Admin với ID: " + adminUserId));
 
@@ -306,5 +305,15 @@ public class OrderServiceImpl implements OrderService {
 
         deleteOrderById(orderId);
         logger.info("Người dùng {} đã hủy thành công đơn hàng ID {} và đã được hoàn tiền/số lượng.", currentUser.getUsername(), orderId);
+    }
+
+    @Override
+    @Transactional
+    public void markOrderAsPaid(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
+        order.setPaid(true);
+        orderRepository.save(order);
+        logger.info("Admin đã xác nhận thanh toán cho đơn hàng ID: {}", orderId);
     }
 }

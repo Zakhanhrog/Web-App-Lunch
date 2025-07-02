@@ -603,6 +603,32 @@ public class AdminController {
         return "admin/order-list-by-date";
     }
 
+    @PostMapping("/orders/mark-as-paid/{id}")
+    public String markOrderAsPaid(@PathVariable("id") Long orderId,
+                                  @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                  RedirectAttributes redirectAttributes, HttpSession session) {
+        logger.info("AdminController: Marking order {} as paid", orderId);
+        User adminUser = getCurrentlyLoggedInAdmin(session);
+        if (adminUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            orderService.markOrderAsPaid(orderId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận thanh toán cho đơn hàng #" + orderId);
+        } catch (Exception e) {
+            logger.error("Error marking order {} as paid: {}", orderId, e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xác nhận thanh toán: " + e.getMessage());
+        }
+
+        String redirectUrl = "/admin/orders/list";
+        if (date != null) {
+            redirectUrl += "?date=" + date.toString();
+        }
+        return "redirect:" + redirectUrl;
+    }
+
+
     @GetMapping("/orders/delete/{orderId}")
     public String deleteSingleOrder(@PathVariable("orderId") Long orderId,
                                     @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
