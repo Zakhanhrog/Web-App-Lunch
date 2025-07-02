@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -42,19 +41,16 @@ public class OrderController {
     private final OrderService orderService;
     private final AppSettingService appSettingService;
     private final UserRepository userRepository;
-    private final Validator validator;
 
     @Autowired
     public OrderController(FoodItemService foodItemService,
                            OrderService orderService,
                            AppSettingService appSettingService,
-                           UserRepository userRepository,
-                           Validator validator) {
+                           UserRepository userRepository) {
         this.foodItemService = foodItemService;
         this.orderService = orderService;
         this.appSettingService = appSettingService;
         this.userRepository = userRepository;
-        this.validator = validator;
     }
 
     private String getOrderStatus() {
@@ -153,17 +149,6 @@ public class OrderController {
 
         if (recipientNameFromParam != null && !recipientNameFromParam.trim().isEmpty()) {
             constructedOrderRequestDto.setRecipientName(recipientNameFromParam.trim());
-        }
-
-        BindingResult bindingResult = new org.springframework.validation.BeanPropertyBindingResult(constructedOrderRequestDto, "orderRequestDto");
-        validator.validate(constructedOrderRequestDto, bindingResult);
-
-        if (bindingResult.hasErrors()) {
-            logger.warn("Validation errors for user {} placing order: {}", currentUser.getUsername(), bindingResult.getAllErrors());
-            redirectAttributes.addFlashAttribute("orderRequestDto", constructedOrderRequestDto);
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.orderRequestDto", bindingResult);
-            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu đơn hàng không hợp lệ. Vui lòng thử lại.");
-            return "redirect:/order/menu";
         }
 
         try {

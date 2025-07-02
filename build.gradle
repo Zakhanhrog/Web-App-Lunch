@@ -8,8 +8,6 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    google()
-    maven { url 'https://repo1.maven.org/maven2' }
 }
 
 ext {
@@ -33,13 +31,6 @@ ext {
 }
 
 dependencies {
-    // Jakarta Annotations (for @PostConstruct, etc. on Java 9+)
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-
-    // NEW: Firebase Admin SDK for Push Notifications
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
-
-
     // HTTP Client for calling AI API
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
@@ -66,8 +57,8 @@ dependencies {
     implementation "org.thymeleaf.extras:thymeleaf-extras-java8time:${thymeleafExtrasJava8timeVersion}"
 
     // Servlet & JSP API
-    providedCompile "javax.servlet:javax.servlet-api:4.0.1"
-    providedCompile "javax.servlet.jsp:javax.servlet.jsp-api:2.3.3"
+    implementation "javax.servlet:javax.servlet-api:4.0.1"
+    implementation "javax.servlet.jsp:javax.servlet.jsp-api:2.3.3"
 
     // JSON Processing
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
@@ -86,12 +77,12 @@ dependencies {
     implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
 
     // Validation API
-    implementation "javax.validation:validation-api:2.0.1.Final"
+    implementation "javax.validation:validation-api:${validationApiVersion}"
     implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
 
     // Logging
-    implementation "org.slf4j:slf4j-api:2.0.9"
-    implementation "ch.qos.logback:logback-classic:1.4.14"
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
     implementation "ch.qos.logback:logback-core:${logbackVersion}"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"

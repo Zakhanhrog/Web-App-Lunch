@@ -26,7 +26,11 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@ComponentScan("com.example.lunchapp")
+@ComponentScan(basePackages = {
+        "com.example.lunchapp.service",
+        "com.example.lunchapp.repository",
+        "com.example.lunchapp.controller"
+})
 @EnableJpaRepositories(basePackages = "com.example.lunchapp.repository")
 @EnableTransactionManagement
 @EnableAspectJAutoProxy

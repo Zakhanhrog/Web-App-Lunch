@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -61,7 +60,6 @@ public class AdminController {
     private final ServletContext servletContext;
     private final AppSettingService appSettingService;
     private final RoleRepository roleRepository;
-    private final Validator validator;
 
     public record DailyMenuItemUpdateRequest(boolean available, int quantity) {}
     public record DailyMenuItemBatchUpdateRequest(Long id, boolean available, int quantity) {}
@@ -69,8 +67,7 @@ public class AdminController {
     @Autowired
     public AdminController(UserService userService, FoodItemService foodItemService, OrderService orderService,
                            CategoryService categoryService, ServletContext servletContext,
-                           AppSettingService appSettingService, RoleRepository roleRepository,
-                           Validator validator) {
+                           AppSettingService appSettingService, RoleRepository roleRepository) {
         this.userService = userService;
         this.foodItemService = foodItemService;
         this.orderService = orderService;
@@ -78,7 +75,6 @@ public class AdminController {
         this.servletContext = servletContext;
         this.appSettingService = appSettingService;
         this.roleRepository = roleRepository;
-        this.validator = validator;
     }
 
     private String getFoodImageUploadDir() {

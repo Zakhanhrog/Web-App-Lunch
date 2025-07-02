@@ -87,14 +87,12 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
+        // Cấu hình cho ảnh upload
         String physicalPath = getFoodImageUploadDir();
         String physicalPathWithPrefix = "file:" + physicalPath + (physicalPath.endsWith(File.separator) ? "" : File.separator);
 
         registry.addResourceHandler("/uploaded-images/food/**")
                 .addResourceLocations(physicalPathWithPrefix);
-
-        registry.addResourceHandler("/*.js")
-                .addResourceLocations("/");
     }
 
     @Bean(name = "multipartResolver")
