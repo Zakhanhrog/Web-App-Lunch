@@ -202,15 +202,8 @@
                 <div th:if="${#fields.hasErrors('selectedItems')}" class="alert alert-danger">
                   <ul><li th:each="err : ${#fields.errors('selectedItems')}" th:text="${err}"></li></ul>
                 </div>
-                <div class="mb-3">
-                  <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
-                  <textarea id="orderNote" class="form-control" rows="2" name="note" th:field="*{note}"></textarea>
-                </div>
-                <div class="mb-3">
-                  <label for="recipientNameInput" class="form-label">Đặt hộ cho (nhập tên người nhận):</label>
-                  <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Để trống nếu đặt cho bản thân" th:field="*{recipientName}"/>
-                </div>
-                <div class="p-3 border rounded bg-light">
+
+                <div class="p-3 border rounded bg-light mb-3">
                   <label class="form-label fw-bold">Chọn suất ăn:</label>
                   <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
                     <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
@@ -222,9 +215,20 @@
                     <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
                   </div>
                 </div>
+
+                <div class="mb-3">
+                  <label for="recipientNameInput" class="form-label">Đặt hộ cho (nhập tên người nhận):</label>
+                  <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Để trống nếu đặt cho bản thân" th:field="*{recipientName}"/>
+                </div>
+
+                <div class="mb-3">
+                  <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
+                  <textarea id="orderNote" class="form-control" rows="2" name="note" th:field="*{note}"></textarea>
+                </div>
+
               </div>
               <div class="modal-footer flex-column align-items-stretch gap-2">
-                <div class="alert alert-secondary p-2 small text-start mb-0" role="alert">
+                <div class="alert alert-secondary p-2 small text-start mb-0 border-0" role="alert">
                   <strong class="d-block mb-1"><i class="fa-solid fa-circle-info me-1"></i>Phân biệt 2 cách đặt:</strong>
                   <ul class="list-unstyled mb-0 ps-3">
                     <li><strong>Đặt Ngay:</strong> Tính tổng tiền chính xác theo các món bạn đã chọn.</li>
