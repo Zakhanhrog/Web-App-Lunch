@@ -60,7 +60,6 @@
 
 <div th:replace="~{fragments/guide_modal :: guide_modal}"></div>
 
-<!-- AI Chat Widget -->
 <div class="ai-chat-container" id="aiChatContainer">
   <div class="ai-chat-header">
     <h5 class="ai-chat-title"><i class="fa-solid fa-robot me-2"></i>Chuyên Gia Ẩm Thực AI</h5>
@@ -85,25 +84,11 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<!-- === KHỐI SCRIPT ĐÃ SỬA LỖI === -->
-
-<!-- Thư viện chung -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js"></script>
-
-<!-- Khởi tạo Push Notifications nếu người dùng đã đăng nhập -->
-<th:block th:if="${session.loggedInUser != null}">
-  <script th:src="@{/assets/js/push-init.js}"></script>
-</th:block>
-
-<!-- Mã script cho trang home.html -->
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
-    // Logic cho Guide Modal
     const guideModalElement = document.getElementById('guideModal');
     if (guideModalElement) {
       const dontShowAgainBtn = guideModalElement.querySelector('#dont-show-again-btn');
@@ -117,7 +102,9 @@
       }
     }
 
-    // Logic cho AI Chat
+    const loggedIn = [[${session.loggedInUser != null}]];
+    if (!loggedIn) return;
+
     const chatContainer = document.getElementById('aiChatContainer');
     const chatToggleButton = document.getElementById('aiChatToggleButton');
     const chatCloseBtn = document.getElementById('aiChatCloseBtn');
@@ -126,7 +113,6 @@
     const sendBtn = document.getElementById('aiSendBtn');
     const newChatBtn = document.getElementById('newChatBtn');
 
-    // Kiểm tra xem các element có tồn tại không trước khi thêm event listener
     if (chatToggleButton) {
       const chatHistoryKey = 'aiChatHistoryV4';
       let chatHistory = [];
