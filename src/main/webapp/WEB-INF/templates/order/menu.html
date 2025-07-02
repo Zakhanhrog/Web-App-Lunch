@@ -191,7 +191,7 @@
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="orderModalLabel">Xác Nhận Đặt Hàng</h5>
+                <h5 class="modal-title w-100 text-center" id="orderModalLabel">Xác Nhận Đặt Hàng</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
@@ -223,13 +223,22 @@
                   </div>
                 </div>
               </div>
-              <div class="modal-footer justify-content-between">
-                <button type="button" id="placeDirectOrderBtn" class="btn btn-primary">
-                  <i class="fa-solid fa-calculator"></i> Đặt Ngay (Theo món đã chọn)
-                </button>
-                <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
-                  <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Suất
-                </button>
+              <div class="modal-footer flex-column align-items-stretch gap-2">
+                <div class="alert alert-secondary p-2 small text-start mb-0" role="alert">
+                  <strong class="d-block mb-1"><i class="fa-solid fa-circle-info me-1"></i>Phân biệt 2 cách đặt:</strong>
+                  <ul class="list-unstyled mb-0 ps-3">
+                    <li><strong>Đặt Ngay:</strong> Tính tổng tiền chính xác theo các món bạn đã chọn.</li>
+                    <li><strong>Đặt Suất:</strong> Tính tiền theo mức giá suất cố định mà bạn chọn.</li>
+                  </ul>
+                </div>
+                <div class="d-flex justify-content-center gap-3">
+                  <button type="button" id="placeDirectOrderBtn" class="btn btn-primary">
+                    <i class="fa-solid fa-calculator"></i> Đặt Ngay
+                  </button>
+                  <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
+                    <i class="fa-solid fa-check-circle"></i> Đặt Suất
+                  </button>
+                </div>
               </div>
             </div>
           </div>
