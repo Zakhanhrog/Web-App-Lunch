@@ -22,7 +22,6 @@ function requestPermissionAndGetToken() {
     Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
             console.log('Notification permission granted.');
-            // VAPID key bạn lấy từ Firebase Project Settings -> Cloud Messaging -> Web push certificates
             const vapidKey = 'BNjdo4iwQ46YE550eCvfvt9C3_wgP1SVjVAA2pe-eXe-67OFZIV_-EZ9bsIt30GCmKvPryDeap2082vZnaGvL6Q';
 
             getToken(messaging, { vapidKey: vapidKey }).then((currentToken) => {
@@ -64,13 +63,12 @@ function sendTokenToServer(token) {
         });
 }
 
-// Lắng nghe tin nhắn khi người dùng đang ở trên trang
 onMessage(messaging, (payload) => {
     console.log('Foreground message received. ', payload);
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/assets/images/codegym_logo.png' // Đảm bảo đường dẫn này đúng
+        icon: '/assets/images/codegym_logo.png'
     };
     new Notification(notificationTitle, notificationOptions);
 });
@@ -79,7 +77,6 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/firebase-messaging-sw.js')
         .then((registration) => {
             console.log('Service Worker registered successfully with scope:', registration.scope);
-            // Sau khi đăng ký thành công, bắt đầu xin quyền và lấy token.
             requestPermissionAndGetToken();
         }).catch((err) => {
         console.error('Service Worker registration failed: ', err);
