@@ -57,9 +57,19 @@ public class OrderController {
         this.validator = validator;
     }
 
-    private boolean isOrderTimeAllowed() {
-        return LocalDateTime.now().toLocalTime().isBefore(appSettingService.getOrderCutoffTime());
+    private String getOrderStatus() {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = appSettingService.getOrderStartTime();
+        LocalTime cutoffTime = appSettingService.getOrderCutoffTime();
+        if (now.isBefore(startTime)) {
+            return "TOO_EARLY";
+        }
+        if (now.isAfter(cutoffTime)) {
+            return "CLOSED";
+        }
+        return "OPEN";
     }
+
 
     @GetMapping("/menu")
     public String showMenu(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
@@ -75,20 +85,26 @@ public class OrderController {
             model.addAttribute("orderRequestDto", new OrderRequestDto());
         }
 
-
+        LocalTime startTime = appSettingService.getOrderStartTime();
         LocalTime cutoffTime = appSettingService.getOrderCutoffTime();
-        boolean orderTimeAllowed = isOrderTimeAllowed();
-        model.addAttribute("orderTimeAllowed", orderTimeAllowed);
+        String orderStatus = getOrderStatus();
+
+        model.addAttribute("orderStatus", orderStatus);
+        model.addAttribute("startTime", startTime);
         model.addAttribute("cutoffTime", cutoffTime);
 
         List<Order> todaysPlacedOrders = orderService.getTodaysOrdersByPlacingUser(currentUser.getId(), LocalDate.now());
         model.addAttribute("todaysPlacedOrders", todaysPlacedOrders == null ? Collections.emptyList() : todaysPlacedOrders);
 
-
-        if (orderTimeAllowed) {
-            long secondsRemaining = java.time.Duration.between(LocalDateTime.now(), cutoffTime.atDate(LocalDate.now())).getSeconds();
+        if (orderStatus.equals("OPEN")) {
+            long secondsRemaining = java.time.Duration.between(LocalTime.now(), cutoffTime).getSeconds();
             model.addAttribute("countdownSeconds", Math.max(0, secondsRemaining));
-        } else {
+            model.addAttribute("countdownTarget", "cutoff");
+        } else if (orderStatus.equals("TOO_EARLY")) {
+            long secondsRemaining = java.time.Duration.between(LocalTime.now(), startTime).getSeconds();
+            model.addAttribute("countdownSeconds", Math.max(0, secondsRemaining));
+            model.addAttribute("countdownTarget", "start");
+        } else { // CLOSED
             model.addAttribute("countdownSeconds", 0L);
             if (todaysPlacedOrders.isEmpty()){
                 model.addAttribute("noOrderTodayMessage", "Bạn chưa đặt món nào hôm nay và đã hết giờ đặt.");
@@ -102,7 +118,7 @@ public class OrderController {
             @RequestParam(name = "selectedItemCheck", required = false) List<Long> selectedFoodItemIds,
             @RequestParam(name = "note", required = false) String noteFromForm,
             @RequestParam(name = "recipientName", required = false) String recipientNameFromParam,
-            @RequestParam(name = "mealPrice", required = false) BigDecimal mealPrice, // THAM SỐ MỚI
+            @RequestParam(name = "mealPrice", required = false) BigDecimal mealPrice,
             HttpSession session,
             RedirectAttributes redirectAttributes, Model model) {
 
@@ -110,7 +126,7 @@ public class OrderController {
         logger.info("Received selectedFoodItemIds: {}", selectedFoodItemIds);
         logger.info("Received noteFromForm: {}", noteFromForm);
         logger.info("Received recipientNameFromParam: {}", recipientNameFromParam);
-        logger.info("Received mealPrice: {}", mealPrice); // Log giá trị mới
+        logger.info("Received mealPrice: {}", mealPrice);
 
         UserDto currentUser = (UserDto) session.getAttribute(LOGGED_IN_USER_SESSION_KEY);
         if (currentUser == null) {
@@ -133,7 +149,7 @@ public class OrderController {
         }
         constructedOrderRequestDto.setSelectedItems(selectedItemsList);
         constructedOrderRequestDto.setNote(noteFromForm);
-        constructedOrderRequestDto.setMealPrice(mealPrice); // Đưa giá suất vào DTO
+        constructedOrderRequestDto.setMealPrice(mealPrice);
 
         if (recipientNameFromParam != null && !recipientNameFromParam.trim().isEmpty()) {
             constructedOrderRequestDto.setRecipientName(recipientNameFromParam.trim());
@@ -168,9 +184,9 @@ public class OrderController {
             session.setAttribute(LOGGED_IN_USER_SESSION_KEY, userAfterOrder);
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("Đặt món thành công %s! Mã đơn hàng: %d. Tổng tiền: %.0f VND.",
+                    String.format("Đặt món thành công %s! Mã đơn hàng: #%d. Tổng tiền: %.0f VND.",
                             successMessageRecipientPart,
-                            placedOrder.getId(),
+                            placedOrder.getDailyOrderNumber(),
                             placedOrder.getTotalAmount()
                     ));
             return "redirect:/order/menu";
@@ -194,7 +210,7 @@ public class OrderController {
             orderService.cancelOrderByIdAndRefund(orderId, currentUser.getId());
             UserDto userAfterCancel = new UserDto(userRepository.findById(currentUser.getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng sau khi hủy đơn")));
             session.setAttribute(LOGGED_IN_USER_SESSION_KEY, userAfterCancel);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy đơn hàng (Mã ĐH: " + orderId + ") thành công.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy đơn hàng thành công.");
         } catch (Exception e) {
             logger.error("Lỗi khi người dùng {} hủy đơn hàng ID {}: {}", currentUser.getUsername(), orderId, e.getMessage(), e);
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hủy đơn hàng: " + e.getMessage());

@@ -84,11 +84,9 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Giữ nguyên cấu hình cho /assets/
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
-        // Cấu hình cho ảnh upload
         String physicalPath = getFoodImageUploadDir();
         String physicalPathWithPrefix = "file:" + physicalPath + (physicalPath.endsWith(File.separator) ? "" : File.separator);
 

@@ -352,31 +352,42 @@ public class AdminController {
             logger.warn("AdminController: Admin user is null for /admin/config/order-time. Redirecting to /auth/login.");
             return "redirect:/auth/login";
         }
+        model.addAttribute("currentStartTime", appSettingService.getOrderStartTime());
         model.addAttribute("currentCutoffTime", appSettingService.getOrderCutoffTime());
         return "admin/order-time-config";
     }
 
     @PostMapping("/config/order-time/save")
-    public String saveOrderTimeConfig(@RequestParam("cutoffTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime cutoffTime,
+    public String saveOrderTimeConfig(@RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+                                      @RequestParam("cutoffTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime cutoffTime,
                                       RedirectAttributes redirectAttributes, HttpSession session) {
-        logger.info("AdminController: Processing POST /admin/config/order-time/save with cutoffTime: {}", cutoffTime);
+        logger.info("AdminController: Processing POST /admin/config/order-time/save with startTime: {}, cutoffTime: {}", startTime, cutoffTime);
         User adminUser = getCurrentlyLoggedInAdmin(session);
         if (adminUser == null) {
             logger.warn("AdminController: Admin user is null for POST /admin/config/order-time/save. Redirecting to /auth/login.");
             return "redirect:/auth/login";
         }
-        if (cutoffTime == null) {
+        if (startTime == null || cutoffTime == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Định dạng thời gian không hợp lệ.");
             return "redirect:/admin/config/order-time";
         }
+        if (startTime.isAfter(cutoffTime) || startTime.equals(cutoffTime)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Thời gian bắt đầu phải trước thời gian kết thúc.");
+            return "redirect:/admin/config/order-time";
+        }
+
         try {
+            appSettingService.setOrderStartTime(startTime);
             appSettingService.setOrderCutoffTime(cutoffTime);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thời gian chốt đơn thành công: " + cutoffTime.toString() + ".");
+            String successMsg = String.format("Cập nhật thành công! Giờ mở cửa: %s, Giờ chốt đơn: %s.",
+                    startTime.toString(), cutoffTime.toString());
+            redirectAttributes.addFlashAttribute("successMessage", successMsg);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi cập nhật thời gian chốt đơn: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi cập nhật thời gian: " + e.getMessage());
         }
         return "redirect:/admin/config/order-time";
     }
+
 
     @GetMapping("/users/list")
     public String showUserList(Model model, HttpSession session) {

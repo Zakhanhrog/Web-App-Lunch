@@ -46,18 +46,27 @@
         <div class="col-lg-6">
           <div class="card shadow-sm">
             <div class="card-body">
-              <p class="card-text text-muted">Đặt giờ giới hạn (cutoff) để người dùng không thể đặt hàng trong ngày sau thời điểm này.</p>
+              <p class="card-text text-muted">Thiết lập khoảng thời gian người dùng được phép đặt hàng trong ngày.</p>
               <hr>
               <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
               <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
               <form th:action="@{/admin/config/order-time/save}" method="post">
                 <div class="mb-3">
-                  <label for="cutoffTime" class="form-label">Giờ giới hạn mới (HH:mm)</label>
+                  <label for="startTime" class="form-label">Giờ bắt đầu đặt hàng (HH:mm)</label>
+                  <input type="time" id="startTime" name="startTime" class="form-control" th:value="${#temporals.format(currentStartTime, 'HH:mm')}" required />
+                </div>
+                <div class="mb-3">
+                  <label for="cutoffTime" class="form-label">Giờ chốt đơn hàng (HH:mm)</label>
                   <input type="time" id="cutoffTime" name="cutoffTime" class="form-control" th:value="${#temporals.format(currentCutoffTime, 'HH:mm')}" required />
                 </div>
                 <button type="submit" class="btn btn-primary">Lưu Cấu Hình</button>
               </form>
-              <p class="mt-3">Giờ giới hạn hiện tại: <strong th:text="${#temporals.format(currentCutoffTime, 'HH:mm:ss')}"></strong></p>
+              <p class="mt-3">
+                Khung giờ hiện tại:
+                <strong><span th:text="${#temporals.format(currentStartTime, 'HH:mm')}"></span></strong>
+                -
+                <strong><span th:text="${#temporals.format(currentCutoffTime, 'HH:mm')}"></span></strong>
+              </p>
             </div>
           </div>
         </div>

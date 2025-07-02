@@ -45,12 +45,19 @@ public class OrderServiceImpl implements OrderService {
         this.appSettingService = appSettingService;
     }
 
-    private void checkCutoffTime() {
+    private void checkOrderingWindow() {
+        LocalTime startTime = appSettingService.getOrderStartTime();
         LocalTime cutoffTime = appSettingService.getOrderCutoffTime();
-        if (LocalDateTime.now().toLocalTime().isAfter(cutoffTime)) {
+        LocalTime now = LocalTime.now();
+
+        if (now.isBefore(startTime)) {
+            throw new RuntimeException("Chưa đến giờ đặt món. Hệ thống mở lúc " + startTime.toString());
+        }
+        if (now.isAfter(cutoffTime)) {
             throw new RuntimeException("Đã hết giờ đặt món cho hôm nay. Vui lòng đặt trước " + cutoffTime.toString());
         }
     }
+
 
     private void assignDailyOrderNumber(Order order) {
         LocalDate today = order.getOrderDate().toLocalDate();
@@ -64,7 +71,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Order placeOrderForUser(Long userId, OrderRequestDto orderRequestDto) {
-        checkCutoffTime();
+        checkOrderingWindow();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
 
@@ -87,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Order placeOrderAsAdmin(Long adminUserId, OrderRequestDto orderRequestDto) {
-        checkCutoffTime();
+        // Bỏ qua check thời gian cho Admin
         User adminUser = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Admin với ID: " + adminUserId));
 
@@ -128,7 +135,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Order placeOrderForOtherByRegularUser(Long placingUserId, OrderRequestDto orderRequestDto) {
-        checkCutoffTime();
+        checkOrderingWindow();
         User placingUser = userRepository.findById(placingUserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng đặt hộ với ID: " + placingUserId));
 
@@ -288,8 +295,13 @@ public class OrderServiceImpl implements OrderService {
         if (orderToCancel.getOrderDate().toLocalDate().isBefore(LocalDate.now())) {
             throw new RuntimeException("Không thể hủy đơn hàng của ngày cũ.");
         }
-        if (LocalDateTime.now().toLocalTime().isAfter(appSettingService.getOrderCutoffTime()) && orderToCancel.getOrderDate().toLocalDate().isEqual(LocalDate.now())) {
-            throw new RuntimeException("Đã quá thời gian cho phép hủy đơn hàng hôm nay.");
+
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = appSettingService.getOrderStartTime();
+        LocalTime cutoffTime = appSettingService.getOrderCutoffTime();
+
+        if ((now.isAfter(cutoffTime) || now.isBefore(startTime)) && orderToCancel.getOrderDate().toLocalDate().isEqual(LocalDate.now())) {
+            throw new RuntimeException("Đã ngoài thời gian cho phép hủy đơn hàng hôm nay.");
         }
 
         deleteOrderById(orderId);

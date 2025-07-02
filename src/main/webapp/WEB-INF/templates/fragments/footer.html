@@ -4,13 +4,10 @@
 
 <footer th:fragment="footer" class="bg-light text-muted mt-auto py-3 border-top">
   <div class="container d-flex justify-content-between align-items-center flex-column flex-md-row">
-    <!-- Phần thông tin bên trái -->
     <div class="text-center text-md-start mb-2 mb-md-0">
       <p class="mb-1">© <span th:text="${#dates.year(#dates.createNow())}">2024</span> CG LUNCH. Dev by Zakhanh - Collab.ThaiHung - Support.TuanAnh</p>
       <p class="mb-0 small"><i>Version: 1.0.1</i></p>
     </div>
-
-    <!-- Phần logo CodeGym bên phải -->
     <div class="text-center text-md-end">
       <a href="https://codegym.vn/" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center text-decoration-none text-muted">
         <span class="me-2 small">Sản phẩm của học viên tại <b>CODEGYM</b></span>
@@ -18,6 +15,19 @@
     </div>
   </div>
 </footer>
+
+<!-- Tải các thư viện chung -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/main.js}"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js"></script>
+
+<!-- Khởi tạo Push Notifications nếu người dùng đã đăng nhập -->
+<th:block th:if="${session.loggedInUser != null}">
+  <script th:src="@{/assets/js/push-init.js}"></script>
+</th:block>
 
 </body>
 </html>
