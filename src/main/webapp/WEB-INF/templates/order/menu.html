@@ -28,6 +28,53 @@
       -webkit-text-fill-color: initial !important;
       vertical-align: -2px;
     }
+
+    .btn-animated {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-animated .content-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+    .btn-animated .background-shapes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      padding: 0;
+      margin: 0;
+    }
+    .btn-animated .background-shapes li {
+      position: absolute;
+      display: block;
+      list-style: none;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      animation: animate-button-shapes 25s linear infinite;
+      bottom: -60px;
+      border-radius: 10px;
+    }
+    .btn-animated .background-shapes li:nth-child(1) { left: 15%; width: 45px; height: 45px; animation-delay: 0s; }
+    .btn-animated .background-shapes li:nth-child(2) { left: 70%; width: 15px; height: 15px; animation-delay: 4s; }
+    .btn-animated .background-shapes li:nth-child(3) { left: 40%; width: 30px; height: 30px; animation-delay: 2s; animation-duration: 18s; }
+    .btn-animated .background-shapes li:nth-child(4) { left: 85%; width: 25px; height: 25px; animation-delay: 6s; }
+    .btn-animated .background-shapes li:nth-child(5) { left: 5%; width: 15px; height: 15px; animation-delay: 8s; animation-duration: 20s; }
+
+
+    @keyframes animate-button-shapes {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-250px) rotate(360deg);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -91,7 +138,6 @@
         Thời gian còn lại để đặt món: <strong id="countdown-open"></strong>
       </div>
       <form id="orderForm" th:action="@{/order/place}" method="post" th:object="${orderRequestDto}" novalidate>
-        <input type="hidden" name="mealPrice" id="hiddenMealPrice">
         <div th:if="${#lists.isEmpty(groupedFoodItems)}">
           <p class="alert alert-secondary">Hiện không có món nào trong thực đơn hôm nay. Vui lòng quay lại sau!</p>
         </div>
@@ -127,60 +173,64 @@
             </div>
           </div>
         </div>
-        <div th:if="${not #lists.isEmpty(groupedFoodItems)}" class="card shadow-sm mt-5 sticky-bottom">
-          <div class="card-body">
-            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
-              <ul><li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li></ul>
-            </div>
-            <div th:if="${#fields.hasErrors('selectedItems')}" class="alert alert-danger">
-              <ul><li th:each="err : ${#fields.errors('selectedItems')}" th:text="${err}"></li></ul>
-            </div>
-            <div class="mb-3">
-              <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
-              <textarea id="orderNote" class="form-control" rows="2" name="note" th:value="*{note}"></textarea>
-            </div>
-            <div id="proxyOrderSection" class="mb-3 d-none">
-              <label for="recipientNameInput" class="form-label fw-bold">Đặt hộ cho (nhập tên người nhận):</label>
-              <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Tên người nhận..." th:value="*{recipientName}"/>
-            </div>
-            <div id="mealPriceSection" class="mb-3 p-3 border rounded bg-light d-none">
-              <label class="form-label fw-bold">Chọn suất ăn:</label>
-              <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
-                <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
-                <button type="button" class="btn btn-outline-primary" data-price="30000">30,000</button>
-                <button type="button" class="btn btn-outline-primary" data-price="35000">35,000</button>
+
+        <div th:if="${not #lists.isEmpty(groupedFoodItems)}" class="mt-5 sticky-bottom">
+          <div class="text-center py-3">
+            <button type="button" class="btn btn-primary w-50 py-2 btn-animated shadow" data-bs-toggle="modal" data-bs-target="#orderModal">
+              <ul class="background-shapes">
+                <li></li><li></li><li></li><li></li><li></li>
+              </ul>
+              <span class="content-wrapper">
+                  <i class="fa-solid fa-cart-shopping"></i> Đặt Món
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="orderModalLabel">Xác Nhận Đặt Hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div>
-                <label for="customMealPrice" class="form-label small">Hoặc nhập giá khác (chẵn 5,000):</label>
-                <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
+              <div class="modal-body">
+                <input type="hidden" name="mealPrice" id="hiddenMealPrice">
+                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                  <ul><li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li></ul>
+                </div>
+                <div th:if="${#fields.hasErrors('selectedItems')}" class="alert alert-danger">
+                  <ul><li th:each="err : ${#fields.errors('selectedItems')}" th:text="${err}"></li></ul>
+                </div>
+                <div class="mb-3">
+                  <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
+                  <textarea id="orderNote" class="form-control" rows="2" name="note" th:field="*{note}"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="recipientNameInput" class="form-label">Đặt hộ cho (nhập tên người nhận):</label>
+                  <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Để trống nếu đặt cho bản thân" th:field="*{recipientName}"/>
+                </div>
+                <div class="p-3 border rounded bg-light">
+                  <label class="form-label fw-bold">Chọn suất ăn:</label>
+                  <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
+                    <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
+                    <button type="button" class="btn btn-outline-primary" data-price="30000">30,000</button>
+                    <button type="button" class="btn btn-outline-primary" data-price="35000">35,000</button>
+                  </div>
+                  <div>
+                    <label for="customMealPrice" class="form-label small">Hoặc nhập giá khác (chẵn 5,000):</label>
+                    <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
+                  </div>
+                </div>
               </div>
-            </div>
-            <div id="mainActions" class="d-flex justify-content-center align-items-center gap-3">
-              <button type="button" id="placeOrderForSelfBtn" class="btn btn-primary w-100">
-                <i class="fa-solid fa-cart-shopping"></i> Đặt
-              </button>
-              <button type="button" id="toggleProxyOrderBtn" class="btn btn-info w-100">
-                <i class="fa-solid fa-user-friends"></i> Đặt Hộ
-              </button>
-              <button type="button" id="toggleMealPriceBtn" class="btn btn-secondary w-100">
-                <i class="fa-solid fa-tag"></i> Đặt suất
-              </button>
-            </div>
-            <div id="proxyActions" class="d-grid gap-2 d-none">
-              <button type="button" id="confirmProxyOrderBtn" class="btn btn-success">
-                <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Hộ
-              </button>
-              <button type="button" id="cancelProxyOrderBtn" class="btn btn-danger">
-                <i class="fa-solid fa-times"></i> Hủy
-              </button>
-            </div>
-            <div id="mealPriceActions" class="d-grid gap-2 d-none">
-              <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
-                <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Suất
-              </button>
-              <button type="button" id="cancelMealPriceBtn" class="btn btn-danger">
-                <i class="fa-solid fa-times"></i> Hủy
-              </button>
+              <div class="modal-footer justify-content-between">
+                <button type="button" id="placeDirectOrderBtn" class="btn btn-primary">
+                  <i class="fa-solid fa-calculator"></i> Đặt Ngay (Theo món đã chọn)
+                </button>
+                <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
+                  <i class="fa-solid fa-check-circle"></i> Xác Nhận Đặt Suất
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -190,7 +240,7 @@
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/assets/js/main.js}"></script>
+
 <script th:if="${countdownSeconds != null && countdownSeconds > 0}" th:inline="javascript">
   var countdownTarget = [[${orderStatus}]];
   var countdownElement = document.getElementById(countdownTarget === 'OPEN' ? 'countdown-open' : 'countdown-early');
@@ -226,68 +276,15 @@
     const orderForm = document.getElementById('orderForm');
     if (!orderForm) return;
 
-    const mainActions = document.getElementById('mainActions');
-    const proxyActions = document.getElementById('proxyActions');
-    const mealPriceActions = document.getElementById('mealPriceActions');
-    const proxyOrderSection = document.getElementById('proxyOrderSection');
-    const mealPriceSection = document.getElementById('mealPriceSection');
-    const recipientNameInput = document.getElementById('recipientNameInput');
     const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
     const customMealPriceInput = document.getElementById('customMealPrice');
     const mealPriceButtons = document.querySelectorAll('#mealPriceButtons .btn');
-    const placeOrderForSelfBtn = document.getElementById('placeOrderForSelfBtn');
-    const toggleProxyOrderBtn = document.getElementById('toggleProxyOrderBtn');
-    const toggleMealPriceBtn = document.getElementById('toggleMealPriceBtn');
-    const confirmProxyOrderBtn = document.getElementById('confirmProxyOrderBtn');
-    const cancelProxyOrderBtn = document.getElementById('cancelProxyOrderBtn');
+
+    const placeDirectOrderBtn = document.getElementById('placeDirectOrderBtn');
     const confirmMealPriceBtn = document.getElementById('confirmMealPriceBtn');
-    const cancelMealPriceBtn = document.getElementById('cancelMealPriceBtn');
 
-    function switchUiMode(mode) {
-      mainActions.classList.add('d-none');
-      proxyActions.classList.add('d-none');
-      mealPriceActions.classList.add('d-none');
-      mealPriceSection.classList.add('d-none');
-
-      if (mode === 'proxy') {
-        proxyActions.classList.remove('d-none');
-        proxyOrderSection.classList.remove('d-none');
-        if (recipientNameInput) recipientNameInput.focus();
-      } else if (mode === 'meal') {
-        mealPriceActions.classList.remove('d-none');
-        mealPriceSection.classList.remove('d-none');
-        proxyOrderSection.classList.remove('d-none'); // Hiển thị cả mục đặt hộ
-        if (customMealPriceInput) customMealPriceInput.focus();
-      } else { // 'main' mode
-        mainActions.classList.remove('d-none');
-        proxyOrderSection.classList.add('d-none');
-        if (recipientNameInput) recipientNameInput.value = '';
-        if (hiddenMealPriceInput) hiddenMealPriceInput.value = '';
-        if (customMealPriceInput) customMealPriceInput.value = '';
-        mealPriceButtons.forEach(btn => btn.classList.remove('active'));
-      }
-    }
-
-    if (toggleProxyOrderBtn) toggleProxyOrderBtn.addEventListener('click', () => switchUiMode('proxy'));
-    if (toggleMealPriceBtn) toggleMealPriceBtn.addEventListener('click', () => switchUiMode('meal'));
-    if (cancelProxyOrderBtn) cancelProxyOrderBtn.addEventListener('click', () => switchUiMode('main'));
-    if (cancelMealPriceBtn) cancelMealPriceBtn.addEventListener('click', () => switchUiMode('main'));
-
-    if (placeOrderForSelfBtn) {
-      placeOrderForSelfBtn.addEventListener('click', () => {
-        hiddenMealPriceInput.value = '';
-        if (recipientNameInput) recipientNameInput.value = '';
-        orderForm.submit();
-      });
-    }
-
-    if (confirmProxyOrderBtn) {
-      confirmProxyOrderBtn.addEventListener('click', () => {
-        if (!recipientNameInput || recipientNameInput.value.trim() === '') {
-          alert('Vui lòng nhập tên người nhận khi đặt hộ.');
-          if (recipientNameInput) recipientNameInput.focus();
-          return;
-        }
+    if (placeDirectOrderBtn) {
+      placeDirectOrderBtn.addEventListener('click', () => {
         hiddenMealPriceInput.value = '';
         orderForm.submit();
       });
@@ -341,7 +338,8 @@
                 checkbox.checked = true;
               }
             });
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+            orderModal.show();
           }
         } catch (e) {
           console.error("Lỗi khi phân tích gợi ý từ AI:", e);

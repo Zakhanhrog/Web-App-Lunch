@@ -18,7 +18,6 @@
         <li class="nav-item" th:if="${session.loggedInUser != null}">
           <a class="nav-link" th:href="@{/order/menu}">Đặt Món</a>
         </li>
-        <!-- Admin Dropdown Menu -->
         <li class="nav-item dropdown" th:if="${session.loggedInUser != null and session.loggedInUser.roles.contains('ROLE_ADMIN')}">
           <a class="nav-link dropdown-toggle" href="#" id="adminMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Quản trị

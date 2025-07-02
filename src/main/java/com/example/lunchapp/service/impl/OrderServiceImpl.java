@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -58,36 +57,42 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-
     private void assignDailyOrderNumber(Order order) {
         LocalDate today = order.getOrderDate().toLocalDate();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
         long count = orderRepository.countByOrderDateBetween(startOfDay, endOfDay);
         order.setDailyOrderNumber(count + 1);
-        logger.info("Gán mã đơn hàng trong ngày là: {}", order.getDailyOrderNumber());
     }
 
     @Override
     @Transactional
-    public Order placeOrderForUser(Long userId, OrderRequestDto orderRequestDto) {
+    public Order placeOrder(Long userId, OrderRequestDto orderRequestDto) {
         checkOrderingWindow();
-        User user = userRepository.findById(userId)
+        User placingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
 
         Order order = new Order();
-        order.setUser(user);
+        order.setUser(placingUser);
         order.setOrderDate(LocalDateTime.now());
+        order.setOrderedByAdmin(null);
+
         if (orderRequestDto.getNote() != null && !orderRequestDto.getNote().trim().isEmpty()) {
             order.setNote(orderRequestDto.getNote().trim());
         }
+        if (orderRequestDto.getRecipientName() != null && !orderRequestDto.getRecipientName().trim().isEmpty()) {
+            order.setRecipientName(orderRequestDto.getRecipientName().trim());
+        }
 
-        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
-        chargeUser(user, amountToCharge);
+        BigDecimal amountToCharge = processOrderItemsAndCalculateTotal(order, orderRequestDto);
+        chargeUser(placingUser, amountToCharge);
 
         assignDailyOrderNumber(order);
 
-        logger.info("Đặt món thành công cho người dùng {}. Tổng tiền: {}. Ghi chú: {}", userId, amountToCharge, order.getNote());
+        logger.info("Người dùng {} (ID: {}) đặt món thành công. Người nhận: '{}'. Tổng tiền: {}.",
+                placingUser.getUsername(), userId,
+                order.getRecipientName() != null ? order.getRecipientName() : "Bản thân",
+                amountToCharge);
         return orderRepository.save(order);
     }
 
@@ -118,75 +123,34 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Phải cung cấp tên người nhận hoặc ID người dùng mục tiêu khi Admin đặt hộ.");
         }
 
-        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
+        BigDecimal amountToCharge = processOrderItemsAndCalculateTotal(order, orderRequestDto);
         chargeUser(adminUser, amountToCharge);
 
         assignDailyOrderNumber(order);
 
-        logger.info("Admin {} đặt món thành công. Người nhận: {}. Tổng tiền: {}. Ghi chú: {}",
+        logger.info("Admin {} đặt món thành công. Người nhận: {}. Tổng tiền: {}.",
                 adminUserId,
                 targetUserForOrder != null ? targetUserForOrder.getUsername() : order.getRecipientName(),
-                amountToCharge,
-                order.getNote());
-        return orderRepository.save(order);
-    }
-
-    @Override
-    @Transactional
-    public Order placeOrderForOtherByRegularUser(Long placingUserId, OrderRequestDto orderRequestDto) {
-        checkOrderingWindow();
-        User placingUser = userRepository.findById(placingUserId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng đặt hộ với ID: " + placingUserId));
-
-        if (orderRequestDto.getRecipientName() == null || orderRequestDto.getRecipientName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên người nhận không được để trống khi đặt hộ.");
-        }
-
-        Order order = new Order();
-        order.setUser(placingUser);
-        order.setRecipientName(orderRequestDto.getRecipientName().trim());
-        order.setOrderedByAdmin(null);
-        order.setOrderDate(LocalDateTime.now());
-
-        if (orderRequestDto.getNote() != null && !orderRequestDto.getNote().trim().isEmpty()) {
-            order.setNote(orderRequestDto.getNote().trim());
-        }
-
-        BigDecimal amountToCharge = processOrderItems(order, orderRequestDto);
-        chargeUser(placingUser, amountToCharge);
-
-        assignDailyOrderNumber(order);
-
-        logger.info("Người dùng {} (ID: {}) đặt hộ thành công cho '{}'. Tổng tiền: {}. Ghi chú: {}",
-                placingUser.getUsername(), placingUserId,
-                order.getRecipientName(),
-                amountToCharge,
-                order.getNote());
+                amountToCharge);
         return orderRepository.save(order);
     }
 
     private void chargeUser(User user, BigDecimal amount) {
         if (user.getBalance().compareTo(amount) < 0) {
-            logger.warn("Người dùng {} (ID: {}) không đủ số dư. Cần: {}, Hiện có: {}", user.getUsername(), user.getId(), amount, user.getBalance());
-            throw new RuntimeException("Không đủ số dư ("+user.getUsername()+"). Vui lòng nạp thêm tiền.");
+            throw new RuntimeException("Không đủ số dư (" + user.getUsername() + "). Vui lòng nạp thêm tiền.");
         }
         user.setBalance(user.getBalance().subtract(amount));
         userRepository.save(user);
     }
 
-    private BigDecimal processOrderItems(Order order, OrderRequestDto orderRequestDto) {
+    private BigDecimal processOrderItemsAndCalculateTotal(Order order, OrderRequestDto orderRequestDto) {
         List<SelectedFoodItemDto> selectedItems = orderRequestDto.getSelectedItems();
-
         if (selectedItems == null || selectedItems.isEmpty()) {
-            throw new IllegalArgumentException("Không thể đặt đơn hàng trống. Vui lòng chọn món.");
+            throw new IllegalArgumentException("Vui lòng chọn món.");
         }
-        boolean hasValidItem = false;
+
+        BigDecimal calculatedTotal = BigDecimal.ZERO;
         for (SelectedFoodItemDto selectedItemDto : selectedItems) {
-            if (selectedItemDto.getQuantity() == null || selectedItemDto.getQuantity() <= 0) {
-                logger.debug("Skipping item with ID {} due to zero or null quantity.", selectedItemDto.getFoodItemId());
-                continue;
-            }
-            hasValidItem = true;
             FoodItem foodItem = foodItemRepository.findById(selectedItemDto.getFoodItemId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy món ăn với ID: " + selectedItemDto.getFoodItemId()));
 
@@ -203,20 +167,22 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setPrice(foodItem.getPrice());
             order.addOrderItem(orderItem);
 
+            calculatedTotal = calculatedTotal.add(foodItem.getPrice().multiply(BigDecimal.valueOf(selectedItemDto.getQuantity())));
+
             foodItem.setDailyQuantity(foodItem.getDailyQuantity() - selectedItemDto.getQuantity());
             foodItemRepository.save(foodItem);
         }
-        if (!hasValidItem) {
-            throw new IllegalArgumentException("Đơn hàng không có món ăn nào hợp lệ được chọn (số lượng > 0).");
-        }
 
         if (orderRequestDto.getMealPrice() != null && orderRequestDto.getMealPrice().compareTo(BigDecimal.ZERO) > 0) {
-            logger.info("Đây là đơn hàng 'Đặt Suất'. Ghi đè tổng tiền thành {}", orderRequestDto.getMealPrice());
+            logger.info("Đây là đơn hàng 'Đặt Suất'. Ghi đè tổng tiền từ {} thành {}.", calculatedTotal, orderRequestDto.getMealPrice());
             order.setTotalAmount(orderRequestDto.getMealPrice());
 
             String mealNote = "(suất " + orderRequestDto.getMealPrice().toBigInteger() + ")";
             String currentNote = order.getNote() != null ? order.getNote() : "";
             order.setNote(currentNote.isEmpty() ? mealNote : currentNote + " " + mealNote);
+        } else {
+            logger.info("Đây là đơn hàng 'Đặt Ngay'. Tổng tiền được tính từ các món đã chọn: {}.", calculatedTotal);
+            order.setTotalAmount(calculatedTotal);
         }
 
         return order.getTotalAmount();
@@ -263,9 +229,6 @@ public class OrderServiceImpl implements OrderService {
         if (userToRefund != null) {
             userToRefund.setBalance(userToRefund.getBalance().add(order.getTotalAmount()));
             userRepository.save(userToRefund);
-            logger.info("Hoàn tiền {} cho user {} (ID: {}) khi xóa/hủy đơn hàng ID {}.", order.getTotalAmount(), userToRefund.getUsername(), userToRefund.getId(), orderId);
-        } else {
-            logger.warn("Không thể hoàn tiền cho đơn hàng ID {} vì không xác định được người đặt hoặc admin đặt hộ.", orderId);
         }
 
         for (OrderItem item : order.getOrderItems()) {
@@ -277,7 +240,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         orderRepository.delete(order);
-        logger.info("Đơn hàng ID {} đã được xóa và số lượng món ăn đã hoàn lại.", orderId);
     }
 
     @Override
@@ -304,7 +266,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         deleteOrderById(orderId);
-        logger.info("Người dùng {} đã hủy thành công đơn hàng ID {} và đã được hoàn tiền/số lượng.", currentUser.getUsername(), orderId);
     }
 
     @Override
@@ -314,7 +275,6 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
         order.setPaid(true);
         orderRepository.save(order);
-        logger.info("Admin đã xác nhận thanh toán cho đơn hàng ID: {}", orderId);
     }
 
     @Override
@@ -324,6 +284,5 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
         order.setPaid(false);
         orderRepository.save(order);
-        logger.info("Admin đã hủy xác nhận thanh toán cho đơn hàng ID: {}", orderId);
     }
 }
