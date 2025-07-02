@@ -11,8 +11,8 @@ import java.time.LocalTime;
 public class AppSettingServiceImpl implements AppSettingService {
     private static final Logger logger = LoggerFactory.getLogger(AppSettingServiceImpl.class);
 
-    private LocalTime orderStartTime = LocalTime.of(8, 0);
-    private LocalTime orderCutoffTime = LocalTime.of(10, 30);
+    private LocalTime orderStartTime = LocalTime.of(10, 0);
+    private LocalTime orderCutoffTime = LocalTime.of(11, 15);
 
     @Override
     public LocalTime getOrderStartTime() {
