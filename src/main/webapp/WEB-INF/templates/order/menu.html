@@ -247,7 +247,6 @@
       mainActions.classList.add('d-none');
       proxyActions.classList.add('d-none');
       mealPriceActions.classList.add('d-none');
-      proxyOrderSection.classList.add('d-none');
       mealPriceSection.classList.add('d-none');
 
       if (mode === 'proxy') {
@@ -257,10 +256,11 @@
       } else if (mode === 'meal') {
         mealPriceActions.classList.remove('d-none');
         mealPriceSection.classList.remove('d-none');
-        if (recipientNameInput) recipientNameInput.value = '';
+        proxyOrderSection.classList.remove('d-none'); // Hiển thị cả mục đặt hộ
         if (customMealPriceInput) customMealPriceInput.focus();
-      } else {
+      } else { // 'main' mode
         mainActions.classList.remove('d-none');
+        proxyOrderSection.classList.add('d-none');
         if (recipientNameInput) recipientNameInput.value = '';
         if (hiddenMealPriceInput) hiddenMealPriceInput.value = '';
         if (customMealPriceInput) customMealPriceInput.value = '';
