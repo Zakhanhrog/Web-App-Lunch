@@ -92,6 +92,9 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
         registry.addResourceHandler("/uploaded-images/food/**")
                 .addResourceLocations(physicalPathWithPrefix);
+
+        registry.addResourceHandler("/*.js")
+                .addResourceLocations("/");
     }
 
     @Bean(name = "multipartResolver")

@@ -85,10 +85,25 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<!-- === KHỐI SCRIPT ĐÃ SỬA LỖI === -->
+
+<!-- Thư viện chung -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/assets/js/main.js}"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js"></script>
+
+<!-- Khởi tạo Push Notifications nếu người dùng đã đăng nhập -->
+<th:block th:if="${session.loggedInUser != null}">
+  <script th:src="@{/assets/js/push-init.js}"></script>
+</th:block>
+
+<!-- Mã script cho trang home.html -->
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
+    // Logic cho Guide Modal
     const guideModalElement = document.getElementById('guideModal');
     if (guideModalElement) {
       const dontShowAgainBtn = guideModalElement.querySelector('#dont-show-again-btn');
@@ -102,6 +117,7 @@
       }
     }
 
+    // Logic cho AI Chat
     const chatContainer = document.getElementById('aiChatContainer');
     const chatToggleButton = document.getElementById('aiChatToggleButton');
     const chatCloseBtn = document.getElementById('aiChatCloseBtn');
@@ -110,149 +126,149 @@
     const sendBtn = document.getElementById('aiSendBtn');
     const newChatBtn = document.getElementById('newChatBtn');
 
-    const chatHistoryKey = 'aiChatHistoryV4';
-    let chatHistory = [];
-    let latestSuggestedItems = null;
-
-    function toggleChat(show) {
-      if (show) {
-        if (!chatContainer.classList.contains('show')) {
-          loadHistory();
-          chatContainer.classList.add('show');
-          setTimeout(() => chatInput.focus(), 100);
-        }
-      } else {
-        chatContainer.classList.remove('show');
-      }
-    }
-
-    function renderMessage(role, content, suggestion = null) {
-      const messageWrapper = document.createElement('div');
-      messageWrapper.className = 'chat-message-wrapper';
-
-      const bubble = document.createElement('div');
-      bubble.className = 'chat-bubble ' + (role === 'user' ? 'user-bubble' : 'ai-bubble');
-      bubble.innerText = content;
-      messageWrapper.appendChild(bubble);
-
-      if (role === 'assistant' && suggestion && suggestion.length > 0) {
-        latestSuggestedItems = suggestion;
-        const applyBtn = document.createElement('button');
-        applyBtn.className = 'btn btn-sm btn-outline-success mt-2 chat-action-button';
-        applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
-        applyBtn.onclick = applySuggestion;
-        messageWrapper.appendChild(applyBtn);
-      }
-
-      chatBody.appendChild(messageWrapper);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    function applySuggestion() {
-      if (latestSuggestedItems) {
-        const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
-        if (itemIds.length > 0) {
-          sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
-          window.location.href = '/order/menu';
-        }
-      }
-    }
-
-    function saveHistory() {
-      sessionStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
-    }
-
-    function loadHistory() {
-      const storedHistory = sessionStorage.getItem(chatHistoryKey);
-      chatHistory = storedHistory ? JSON.parse(storedHistory) : [];
-      chatBody.innerHTML = '';
-      if (chatHistory.length === 0) {
-        renderInitialMessage();
-      } else {
-        chatHistory.forEach(msg => renderMessage(msg.role, msg.content, msg.suggestion));
-      }
-    }
-
-    function renderInitialMessage() {
-      const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
-      chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
-      renderMessage('assistant', initialMessage, null);
-    }
-
-    function showTypingIndicator(show) {
-      let indicator = document.getElementById('typing-indicator');
-      if (show && !indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'typing-indicator';
-        indicator.className = 'chat-message-wrapper';
-        indicator.innerHTML = `<div class="chat-bubble ai-bubble typing-indicator"><span></span><span></span><span></span></div>`;
-        chatBody.appendChild(indicator);
-        chatBody.scrollTop = chatBody.scrollHeight;
-      } else if (!show && indicator) {
-        indicator.remove();
-      }
-    }
-
-    async function handleSend() {
-      const userMessage = chatInput.value.trim();
-      if (userMessage === '') return;
-
-      renderMessage('user', userMessage);
-      const currentHistoryForAPI = chatHistory.slice();
-      chatHistory.push({ role: 'user', content: userMessage });
-      latestSuggestedItems = null;
-
-      chatInput.value = '';
-      chatInput.disabled = true;
-      sendBtn.disabled = true;
-      showTypingIndicator(true);
-
-      try {
-        const response = await fetch('/api/ai/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newMessage: userMessage, history: currentHistoryForAPI })
-        });
-
-        showTypingIndicator(false);
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
-        }
-
-        renderMessage('assistant', data.explanation, data.suggestedItems);
-        chatHistory.push({ role: 'assistant', content: data.explanation, suggestion: data.suggestedItems });
-        saveHistory();
-
-      } catch (error) {
-        showTypingIndicator(false);
-        const errorMessage = 'Rất tiếc, đã có lỗi xảy ra: ' + error.message;
-        renderMessage('assistant', errorMessage);
-      } finally {
-        chatInput.disabled = false;
-        sendBtn.disabled = false;
-        chatInput.focus();
-      }
-    }
-
-    sendBtn.addEventListener('click', handleSend);
-    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-
-    newChatBtn.addEventListener('click', () => {
-      if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử hiện tại sẽ bị xóa.')) {
-        sessionStorage.removeItem(chatHistoryKey);
-        loadHistory();
-      }
-    });
-
+    // Kiểm tra xem các element có tồn tại không trước khi thêm event listener
     if (chatToggleButton) {
+      const chatHistoryKey = 'aiChatHistoryV4';
+      let chatHistory = [];
+      let latestSuggestedItems = null;
+
+      function toggleChat(show) {
+        if (show) {
+          if (!chatContainer.classList.contains('show')) {
+            loadHistory();
+            chatContainer.classList.add('show');
+            setTimeout(() => chatInput.focus(), 100);
+          }
+        } else {
+          chatContainer.classList.remove('show');
+        }
+      }
+
+      function renderMessage(role, content, suggestion = null) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = 'chat-message-wrapper';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble ' + (role === 'user' ? 'user-bubble' : 'ai-bubble');
+        bubble.innerText = content;
+        messageWrapper.appendChild(bubble);
+
+        if (role === 'assistant' && suggestion && suggestion.length > 0) {
+          latestSuggestedItems = suggestion;
+          const applyBtn = document.createElement('button');
+          applyBtn.className = 'btn btn-sm btn-outline-success mt-2 chat-action-button';
+          applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý này';
+          applyBtn.onclick = applySuggestion;
+          messageWrapper.appendChild(applyBtn);
+        }
+
+        chatBody.appendChild(messageWrapper);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      function applySuggestion() {
+        if (latestSuggestedItems) {
+          const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
+          if (itemIds.length > 0) {
+            sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
+            window.location.href = '/order/menu';
+          }
+        }
+      }
+
+      function saveHistory() {
+        sessionStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
+      }
+
+      function loadHistory() {
+        const storedHistory = sessionStorage.getItem(chatHistoryKey);
+        chatHistory = storedHistory ? JSON.parse(storedHistory) : [];
+        chatBody.innerHTML = '';
+        if (chatHistory.length === 0) {
+          renderInitialMessage();
+        } else {
+          chatHistory.forEach(msg => renderMessage(msg.role, msg.content, msg.suggestion));
+        }
+      }
+
+      function renderInitialMessage() {
+        const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
+        chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
+        renderMessage('assistant', initialMessage, null);
+      }
+
+      function showTypingIndicator(show) {
+        let indicator = document.getElementById('typing-indicator');
+        if (show && !indicator) {
+          indicator = document.createElement('div');
+          indicator.id = 'typing-indicator';
+          indicator.className = 'chat-message-wrapper';
+          indicator.innerHTML = `<div class="chat-bubble ai-bubble typing-indicator"><span></span><span></span><span></span></div>`;
+          chatBody.appendChild(indicator);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        } else if (!show && indicator) {
+          indicator.remove();
+        }
+      }
+
+      async function handleSend() {
+        const userMessage = chatInput.value.trim();
+        if (userMessage === '') return;
+
+        renderMessage('user', userMessage);
+        const currentHistoryForAPI = chatHistory.slice();
+        chatHistory.push({ role: 'user', content: userMessage, suggestion: null });
+        latestSuggestedItems = null;
+
+        chatInput.value = '';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        showTypingIndicator(true);
+
+        try {
+          const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newMessage: userMessage, history: currentHistoryForAPI })
+          });
+
+          showTypingIndicator(false);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
+          }
+
+          renderMessage('assistant', data.explanation, data.suggestedItems);
+          chatHistory.push({ role: 'assistant', content: data.explanation, suggestion: data.suggestedItems });
+          saveHistory();
+
+        } catch (error) {
+          showTypingIndicator(false);
+          const errorMessage = 'Rất tiếc, đã có lỗi xảy ra: ' + error.message;
+          renderMessage('assistant', errorMessage);
+        } finally {
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+          chatInput.focus();
+        }
+      }
+
+      sendBtn.addEventListener('click', handleSend);
+      chatInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+
+      newChatBtn.addEventListener('click', () => {
+        if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử hiện tại sẽ bị xóa.')) {
+          sessionStorage.removeItem(chatHistoryKey);
+          loadHistory();
+        }
+      });
+
       chatToggleButton.addEventListener('click', () => toggleChat(true));
-    }
-    if (chatCloseBtn) {
       chatCloseBtn.addEventListener('click', () => toggleChat(false));
     }
   });
 </script>
+
 </body>
 </html>
