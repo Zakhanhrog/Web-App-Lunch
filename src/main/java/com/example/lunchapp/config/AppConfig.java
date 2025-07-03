@@ -14,6 +14,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -25,21 +28,29 @@ import java.util.Properties;
 @Configuration
 @ComponentScan(basePackages = {
         "com.example.lunchapp.service",
-        "com.example.lunchapp.repository",
-        "com.example.lunchapp.controller"
+        "com.example.lunchapp.repository"
 })
 @EnableJpaRepositories(basePackages = "com.example.lunchapp.repository")
 @EnableTransactionManagement
 @EnableAspectJAutoProxy
+@EnableWebSecurity
 @PropertySources({
         @PropertySource("classpath:database.properties"),
         @PropertySource("classpath:application.properties")
 })
-@Import({WebSocketConfig.class, SecurityConfig.class})
-public class AppConfig {
+public class AppConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private Environment env;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers("/**").permitAll() // Allow everything for simplicity
+                .and()
+                .csrf().disable();
+    }
 
     @Bean
     public ObjectMapper objectMapper() {

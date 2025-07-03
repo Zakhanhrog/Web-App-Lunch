@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'war'
+    // Plugin to configure Tomcat settings within the WAR
+    id 'org.gretty' version '3.1.0'
 }
 
 group = 'com.example'
@@ -10,103 +12,99 @@ repositories {
     mavenCentral()
 }
 
+// Set Java version for the entire project
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
 ext {
+    // Define all versions in one place for consistency
     springVersion = '5.3.34'
+    springSecurityVersion = '5.7.12' // Using a compatible version for Spring 5.3.x
+    springDataJpaVersion = '2.7.18'
     hibernateVersion = '5.6.15.Final'
-    mysqlConnectorVersion = '8.0.33'
+    thymeleafVersion = '3.1.2.RELEASE'
     lombokVersion = '1.18.30'
     jacksonVersion = '2.15.3'
-    commonsFileUploadVersion = '1.5'
-    commonsIoVersion = '2.11.0'
-    aspectjVersion = '1.9.21'
-    validationApiVersion = '2.0.1.Final'
-    hibernateValidatorVersion = '6.2.5.Final'
     slf4jVersion = '2.0.9'
-    logbackVersion = '1.4.14'
-    junitJupiterVersion = '5.10.0'
-    springDataJpaVersion = '2.7.18'
-    thymeleafVersion = '3.1.2.RELEASE'
-    thymeleafSpring5Version = '3.1.2.RELEASE'
-    thymeleafExtrasJava8timeVersion = '3.0.4.RELEASE'
 }
 
 dependencies {
-    // WebSocket & Messaging
-    implementation "org.springframework:spring-websocket:${springVersion}"
-    implementation "org.springframework:spring-messaging:${springVersion}"
-
-    // HTTP Client for calling AI API
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-
-    // Spring MVC
+    // Spring Core and Web MVC
     implementation "org.springframework:spring-webmvc:${springVersion}"
     implementation "org.springframework:spring-context:${springVersion}"
     implementation "org.springframework:spring-orm:${springVersion}"
     implementation "org.springframework:spring-tx:${springVersion}"
+    implementation "org.springframework:spring-aop:${springVersion}"
 
-    // Spring Data JPA
+    // Spring Security - Unified Version
+    implementation "org.springframework.security:spring-security-web:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-config:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-core:${springSecurityVersion}"
+
+    // Spring WebSocket & Messaging
+    implementation "org.springframework:spring-websocket:${springVersion}"
+    implementation "org.springframework:spring-messaging:${springVersion}"
+
+    // Spring Data JPA & Hibernate
     implementation "org.springframework.data:spring-data-jpa:${springDataJpaVersion}"
-
-    // JPA & Hibernate
-    implementation "javax.persistence:javax.persistence-api:2.2"
     implementation "org.hibernate:hibernate-core:${hibernateVersion}"
     implementation "org.hibernate:hibernate-entitymanager:${hibernateVersion}"
+    implementation "javax.persistence:javax.persistence-api:2.2"
 
-    // Database
-    implementation "mysql:mysql-connector-java:${mysqlConnectorVersion}"
+    // Database Connector
+    implementation "mysql:mysql-connector-java:8.0.33"
 
-    // Thymeleaf
-    implementation "org.thymeleaf:thymeleaf:${thymeleafVersion}"
-    implementation "org.thymeleaf:thymeleaf-spring5:${thymeleafSpring5Version}"
-    implementation "org.thymeleaf.extras:thymeleaf-extras-java8time:${thymeleafExtrasJava8timeVersion}"
+    // Thymeleaf Template Engine
+    implementation "org.thymeleaf:thymeleaf-spring5:${thymeleafVersion}"
+    implementation "org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE"
 
-    // Servlet & JSP API
-    implementation "javax.servlet:javax.servlet-api:4.0.1"
-    implementation "javax.servlet.jsp:javax.servlet.jsp-api:2.3.3"
+    // Servlet API
+    providedCompile "javax.servlet:javax.servlet-api:4.0.1"
 
     // JSON Processing
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
 
     // File Upload
-    implementation "commons-fileupload:commons-fileupload:${commonsFileUploadVersion}"
-    implementation "commons-io:commons-io:${commonsIoVersion}"
+    implementation "commons-fileupload:commons-fileupload:1.5"
+    implementation "commons-io:commons-io:2.11.0"
 
-    // Lombok
+    // Lombok (Annotation Processor)
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    // AOP
-    implementation "org.springframework:spring-aop:${springVersion}"
-    implementation "org.aspectj:aspectjrt:${aspectjVersion}"
-    implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
+    // AOP (AspectJ)
+    implementation "org.aspectj:aspectjrt:1.9.21"
+    implementation "org.aspectj:aspectjweaver:1.9.21"
 
-    // Validation API
-    implementation "javax.validation:validation-api:${validationApiVersion}"
-    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+    // Validation
+    implementation "javax.validation:validation-api:2.0.1.Final"
+    implementation "org.hibernate.validator:hibernate-validator:6.2.5.Final"
 
     // Logging
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
-    implementation "ch.qos.logback:logback-core:${logbackVersion}"
+    implementation "ch.qos.logback:logback-classic:1.4.14"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
-    implementation "org.springframework.security:spring-security-core:5.8.12"
+    // HTTP Client (for AI API)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-    implementation 'org.springframework.security:spring-security-web:5.7.12'
-    implementation 'org.springframework.security:spring-security-config:5.7.12'
+    // Testing
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 }
 
 war {
     archiveFileName = "${project.name}.war"
 }
 
+gretty {
+    httpPort = 8080
+    contextPath = '/'
+    servletContainer = 'tomcat9'
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
 }
 
 test {
