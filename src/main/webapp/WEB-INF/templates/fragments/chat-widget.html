@@ -1,50 +1,279 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-
 <div th:fragment="chat-widget" th:if="${loggedInUser != null and !loggedInUser.isAdmin() and chatAdminUser != null}">
   <style>
-    .chat-widget-container { position: fixed; bottom: 20px; right: 20px; z-index: 1050; }
-    .chat-widget-bubble { width: 60px; height: 60px; background-color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.2s; }
-    .chat-widget-bubble:hover { transform: scale(1.1); }
-    .chat-widget-window { position: absolute; bottom: 90px; right: 0; width: 370px; height: 500px; background-color: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); display: none; flex-direction: column; overflow: hidden; transform-origin: bottom right; animation: scale-up 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
-    @keyframes scale-up { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .chat-widget-window.is-open { display: flex; }
-    .chat-widget-header { padding: 1rem; background-color: #0d6efd; color: white; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-    .chat-widget-header h5 { margin: 0; font-size: 1.1rem; }
-    .chat-widget-header .close-btn { background: none; border: none; color: white; font-size: 24px; line-height: 1; cursor: pointer; padding: 0 .5rem; }
-    .chat-widget-body { flex-grow: 1; padding: 1rem; overflow-y: auto; background-color: #f1f3f5; }
-    .chat-widget-footer { padding: 1rem; border-top: 1px solid #dee2e6; background-color: #fff; flex-shrink: 0; }
-    .widget-message { margin-bottom: 1rem; display: flex; flex-direction: column; }
-    .widget-message-content { padding: 0.6rem 1rem; border-radius: 1.2rem; max-width: 85%; word-wrap: break-word; font-size: 0.9rem; }
-    .widget-message-content img.chat-image-thumbnail { max-width: 200px; max-height: 150px; border-radius: 0.8rem; cursor: pointer; object-fit: cover; transition: transform 0.2s; }
-    .widget-message-content img.chat-image-thumbnail:hover { transform: scale(1.05); }
-    .widget-message-content.image-message { padding: 0.3rem; background-color: transparent !important; }
-    .widget-message-time { font-size: 0.75rem; color: #6c757d; margin-top: 0.25rem; }
-    .widget-message.sent { align-items: flex-end; }
-    .widget-message.sent .widget-message-content:not(.image-message) { background-color: #0d6efd; color: white; border-bottom-right-radius: 0.5rem; }
-    .widget-message.sent .widget-message-time { text-align: right; }
-    .widget-message.received { align-items: flex-start; }
-    .widget-message.received .widget-message-content:not(.image-message) { background-color: #e9ecef; color: #212529; border-bottom-left-radius: 0.5rem; }
-    .image-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1060; padding: 20px; }
-    .image-modal-content { max-width: 90%; max-height: 90%; object-fit: contain; }
-    .close-modal-btn { position: absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; transition: color 0.3s; }
-    .close-modal-btn:hover { color: #bbb; }
+    :root {
+      --widget-bg-color: #ffffff;
+      --widget-body-bg-color: #f7f9fc;
+      --widget-sent-bg: linear-gradient(135deg, #1e90ff 0%, #007bff 100%);
+      --widget-received-bg: #e9eef2;
+      --widget-border-color: #e3e6ea;
+      --widget-primary-color: #007bff;
+      --widget-text-color: #1a1a1a;
+      --widget-radius-lg: 16px;
+      --widget-radius-md: 12px;
+    }
+    .chat-widget-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1050;
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    .chat-widget-bubble {
+      width: 60px;
+      height: 60px;
+      background-image: var(--widget-sent-bg);
+      border-radius: var(--widget-radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-radius 0.2s ease;
+    }
+    .chat-widget-bubble:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+    }
+    .chat-widget-window.is-open ~ .chat-widget-bubble {
+      border-radius: 50%;
+    }
+    .chat-widget-window {
+      position: absolute;
+      bottom: 90px;
+      right: 0;
+      width: 370px;
+      height: 550px;
+      background-color: var(--widget-bg-color);
+      border-radius: var(--widget-radius-lg);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      transform-origin: bottom right;
+      animation: scale-up 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    }
+    @keyframes scale-up {
+      from {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .chat-widget-window.is-open {
+      display: flex;
+    }
+    .chat-widget-header {
+      padding: 1rem;
+      background-color: var(--widget-bg-color);
+      color: var(--widget-text-color);
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--widget-border-color);
+    }
+    .chat-widget-header .contact-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chat-widget-header h5 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .chat-widget-header .close-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 .5rem;
+    }
+    .chat-widget-body {
+      flex-grow: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background-color: var(--widget-body-bg-color);
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-widget-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--widget-border-color);
+      background-color: var(--widget-bg-color);
+      flex-shrink: 0;
+    }
+    .chat-widget-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background-color: #f1f3f5;
+      border-radius: var(--widget-radius-lg);
+      padding: 0.5rem;
+    }
+    .chat-widget-input-wrapper input {
+      border: none;
+      background: transparent;
+      flex-grow: 1;
+      padding: 0.5rem;
+      font-size: 0.95rem;
+      outline: none;
+      box-shadow: none !important;
+    }
+    .chat-widget-input-wrapper .btn {
+      border-radius: var(--widget-radius-md);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .chat-widget-input-wrapper .btn-primary {
+      background-image: var(--widget-sent-bg);
+      border: none;
+    }
+    .widget-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--widget-radius-md);
+      background-color: #ccc;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    .widget-message-group {
+      display: flex;
+      margin-bottom: 1.25rem;
+      max-width: 85%;
+      align-items: flex-start;
+      gap: 10px;
+      animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .widget-message-group.sent {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+    .widget-message-group.received {
+      align-self: flex-start;
+    }
+    .widget-message-bubbles {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .widget-message-bubble {
+      padding: 0.75rem 1rem;
+      border-radius: var(--widget-radius-lg);
+      word-wrap: break-word;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .widget-message-group.sent .widget-message-bubble {
+      background-image: var(--widget-sent-bg);
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+    .widget-message-group.received .widget-message-bubble {
+      background-color: var(--widget-received-bg);
+      color: var(--widget-text-color);
+      border-bottom-left-radius: 5px;
+    }
+    .widget-message-bubble img.chat-image-thumbnail {
+      max-width: 220px;
+      border-radius: var(--widget-radius-md);
+      cursor: pointer;
+    }
+    .widget-message-bubble.image-message {
+      padding: 5px;
+      background: transparent !important;
+    }
+    .widget-message-time {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 5px;
+      padding: 0 10px;
+      display: none;
+    }
+    .widget-message-group.sent .widget-message-time {
+      align-self: flex-end;
+    }
+    .widget-message-group.received .widget-message-time {
+      align-self: flex-start;
+    }
+    .widget-message-group .widget-message-bubbles .widget-message-bubble:last-child + .widget-message-time {
+      display: block;
+    }
+    .widget-message-group.is-grouped {
+      margin-top: -1.0rem;
+    }
+    .widget-message-group.is-grouped .widget-avatar {
+      visibility: hidden;
+    }
+    .image-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1060;
+      padding: 20px;
+    }
+    .image-modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .close-modal-btn:hover {
+      color: #bbb;
+    }
   </style>
 
   <div class="chat-widget-container">
     <div class="chat-widget-window" id="chat-widget-window">
       <div class="chat-widget-header">
-        <h5 id="chat-widget-contact-name">Trò chuyện với Admin</h5>
+        <div class="contact-info">
+          <div class="widget-avatar" id="widget-admin-avatar"></div>
+          <h5>Trò chuyện với Admin</h5>
+        </div>
         <button class="close-btn" id="close-widget-btn">×</button>
       </div>
       <div class="chat-widget-body" id="chat-widget-messages-area">
-        <p class="text-center text-muted">Mở để kết nối...</p>
+        <p class="text-center text-muted p-3">Mở để kết nối...</p>
       </div>
       <div class="chat-widget-footer">
-        <form id="widget-message-form" class="d-flex gap-2">
+        <form id="widget-message-form" class="chat-widget-input-wrapper">
           <input type="file" id="widget-image-input" class="d-none" accept="image/*">
-          <button type="button" id="widget-attach-button" class="btn btn-light border"><i class="fas fa-paperclip"></i></button>
+          <button type="button" id="widget-attach-button" class="btn btn-light"><i class="fas fa-paperclip"></i></button>
           <input type="text" id="widget-message-input" class="form-control" placeholder="Nhập tin nhắn..." autocomplete="off">
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
         </form>
@@ -65,7 +294,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       const currentUser = /*[[${loggedInUser}]]*/ null;
       const adminUser = /*[[${chatAdminUser}]]*/ null;
-
+      if (!currentUser || !adminUser) return;
       const widgetBubble = document.getElementById('chat-widget-bubble');
       const widgetWindow = document.getElementById('chat-widget-window');
       const closeWidgetBtn = document.getElementById('close-widget-btn');
@@ -74,36 +303,36 @@
       const messageInput = document.getElementById('widget-message-input');
       const attachButton = document.getElementById('widget-attach-button');
       const imageInput = document.getElementById('widget-image-input');
+      const adminAvatarContainer = document.getElementById('widget-admin-avatar');
       const imageModalOverlay = document.getElementById('image-modal-overlay');
       const modalImageContent = document.getElementById('modal-image-content');
       const closeModalBtn = document.getElementById('close-modal-btn');
-
       let stompClient = null;
       let hasLoadedHistory = false;
 
+      const createAvatarColor = (username) => {
+        const colors = ['#007bff', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'];
+        const charCodeSum = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return colors[charCodeSum % colors.length];
+      };
+
       const connect = () => {
         if (stompClient && stompClient.active) return;
-
         const wsUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
-
         stompClient = new StompJs.Client({
           brokerURL: wsUrl,
           reconnectDelay: 5000,
           heartbeatIncoming: 10000,
           heartbeatOutgoing: 10000
         });
-
         stompClient.onConnect = (frame) => {
-          console.log('User connected: ' + frame);
           stompClient.subscribe('/user/' + currentUser.username + '/queue/messages', onMessageReceived);
           loadChatHistory();
         };
-
         stompClient.onStompError = (frame) => {
           console.error('Broker reported error: ' + frame.headers['message']);
           console.error('Additional details: ' + frame.body);
         };
-
         stompClient.activate();
       };
 
@@ -114,9 +343,12 @@
           if (!response.ok) throw new Error('Failed to fetch history');
           const messages = await response.json();
           chatMessagesArea.innerHTML = '';
-          messages.forEach(displayMessage);
-          scrollToBottom();
-          if(widgetWindow.classList.contains('is-open')) messageInput.focus();
+          messages.forEach((msg, index) => {
+            const prevMsg = index > 0 ? messages[index - 1] : null;
+            displayMessage(msg, prevMsg);
+          });
+          scrollToBottom('instant');
+          if (widgetWindow.classList.contains('is-open')) messageInput.focus();
           hasLoadedHistory = true;
         } catch (e) {
           chatMessagesArea.innerHTML = '<p class="text-center text-danger">Không thể tải lịch sử trò chuyện.</p>';
@@ -125,19 +357,21 @@
 
       const onMessageReceived = (payload) => {
         const message = JSON.parse(payload.body);
-        if ((message.senderId === currentUser.id && message.recipientId === adminUser.id) ||
-                (message.senderId === adminUser.id && message.recipientId === currentUser.id)) {
-          displayMessage(message);
-          scrollToBottom();
-        }
+        const lastMessageElement = chatMessagesArea.lastElementChild;
+        const prevMsg = lastMessageElement ? { senderId: lastMessageElement.dataset.senderId } : null;
+        displayMessage(message, prevMsg);
+        scrollToBottom('smooth');
       };
 
       const sendMessage = (type, content) => {
         if (content && stompClient && stompClient.active) {
           const chatMessage = {
-            senderId: currentUser.id, senderUsername: currentUser.username,
-            recipientId: adminUser.id, recipientUsername: adminUser.username,
-            content: content, messageType: type
+            senderId: currentUser.id,
+            senderUsername: currentUser.username,
+            recipientId: adminUser.id,
+            recipientUsername: adminUser.username,
+            content: content,
+            messageType: type
           };
           stompClient.publish({
             destination: '/app/chat.sendMessage',
@@ -162,21 +396,46 @@
         event.target.value = '';
       };
 
-      const displayMessage = (message) => {
-        const messageElement = document.createElement('div');
-        messageElement.className = 'widget-message ' + (message.senderId === currentUser.id ? 'sent' : 'received');
-        let contentHtml;
+      const displayMessage = (message, prevMessage) => {
+        const isSent = message.senderId === currentUser.id;
+        const isGrouped = prevMessage && prevMessage.senderId === message.senderId;
+
+        const messageGroup = document.createElement('div');
+        messageGroup.className = `widget-message-group ${isSent ? 'sent' : 'received'} ${isGrouped ? 'is-grouped' : ''}`;
+        messageGroup.dataset.senderId = message.senderId;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'widget-avatar';
+        const avatarOwner = isSent ? currentUser : adminUser;
+        avatar.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${avatarOwner.username}&background=${createAvatarColor(avatarOwner.username).substring(1)}&color=fff&bold=true')`;
+
+        const bubblesContainer = document.createElement('div');
+        bubblesContainer.className = 'widget-message-bubbles';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'widget-message-bubble';
         if (message.messageType === 'IMAGE') {
-          contentHtml = `<div class="widget-message-content image-message"><img src="${message.content}" alt="Ảnh đã gửi" class="chat-image-thumbnail"></div>`;
+          bubble.classList.add('image-message');
+          bubble.innerHTML = `<img src="${message.content}" alt="Ảnh đã gửi" class="chat-image-thumbnail">`;
         } else {
-          contentHtml = `<div class="widget-message-content">${message.content.replace(/\n/g, '<br>')}</div>`;
+          bubble.textContent = message.content;
         }
-        messageElement.innerHTML = `${contentHtml}<div class="widget-message-time">${new Date(message.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>`;
-        chatMessagesArea.appendChild(messageElement);
+        bubblesContainer.appendChild(bubble);
+
+        const time = document.createElement('div');
+        time.className = 'widget-message-time';
+        time.textContent = new Date(message.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        bubblesContainer.appendChild(time);
+
+        messageGroup.appendChild(avatar);
+        messageGroup.appendChild(bubblesContainer);
+        chatMessagesArea.appendChild(messageGroup);
       };
 
-      const scrollToBottom = () => {
-        if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+      const scrollToBottom = (behavior = 'smooth') => {
+        if (chatMessagesArea) {
+          chatMessagesArea.scrollTo({ top: chatMessagesArea.scrollHeight, behavior: behavior });
+        }
       };
 
       const openImageModal = (src) => {
@@ -220,9 +479,10 @@
       imageModalOverlay.addEventListener('click', (event) => {
         if (event.target === imageModalOverlay) closeImageModal();
       });
+
+      adminAvatarContainer.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${adminUser.username}&background=${createAvatarColor(adminUser.username).substring(1)}&color=fff&bold=true')`;
     });
   </script>
 </div>
-
 </body>
 </html>

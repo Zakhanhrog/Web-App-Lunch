@@ -6,6 +6,7 @@
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin/order-list-by-date.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin/user-list.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments/footer.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments/navbar.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/fragments" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/order/menu.html" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/templates/order" />
       </map>
     </option>

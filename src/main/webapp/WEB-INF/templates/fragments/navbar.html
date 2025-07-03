@@ -2,10 +2,50 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+  <style>
+    .navbar-brand.logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-icon {
+      height: 60px;
+      width: auto;
+    }
+    .navbar-brand .logo-text-wrapper {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+      margin-top: -2px;
+    }
+    .navbar-brand .logo-main-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: 4.5px;
+      background: linear-gradient(90deg, #0d8bff 0%, #29c6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+    .navbar-brand .logo-sub-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 100;
+      color: #6c757d;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding-left: 1px;
+    }
+  </style>
   <div class="container-fluid">
-    <a class="navbar-brand brand-premium" th:href="@{/}">
-      <i class="fa-solid fa-utensils"></i>
-      CG LUNCH
+    <a class="navbar-brand logo-container" th:href="@{/}">
+      <img class="logo-icon" th:src="@{/assets/images/logo-icon.png}" alt="Logo">
+      <div class="logo-text-wrapper">
+        <span class="logo-main-text">CG LUNCH</span>
+        <span class="logo-sub-text">LUNCH BREAK - POWER UP!</span>
+      </div>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
