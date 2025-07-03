@@ -19,11 +19,6 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
-import javax.servlet.ServletContext;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {
@@ -34,9 +29,6 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Autowired
     private AdminAuthInterceptor adminAuthInterceptor;
-
-    @Autowired
-    private ServletContext servletContext;
 
     private ApplicationContext applicationContext;
 
@@ -82,15 +74,12 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Phục vụ các file tĩnh trong thư mục webapp (CSS, JS,...)
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
-        String webappRoot = servletContext.getRealPath("/");
-        Path projectRoot = Paths.get(webappRoot).getParent().getParent();
-        String lunchDataPath = projectRoot.resolve("lunch-data").resolve("images").toFile().getAbsolutePath();
-
-        registry.addResourceHandler("/lunch-data/images/**")
-                .addResourceLocations("file:" + lunchDataPath + File.separator);
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:/data/food/");
     }
 
     @Bean(name = "multipartResolver")
