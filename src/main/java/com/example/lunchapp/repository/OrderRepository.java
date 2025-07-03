@@ -39,4 +39,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     boolean existsByUser_Id(Long userId);
 
     long countByOrderDateBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT MAX(o.dailyOrderNumber) FROM Order o WHERE o.orderDate BETWEEN :startOfDay AND :endOfDay")
+    Optional<Long> findMaxDailyOrderNumberByDate(@Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 }

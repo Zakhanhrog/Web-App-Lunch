@@ -6,15 +6,12 @@ import com.example.lunchapp.service.AiChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/api/ai")
 public class AiController {
 
     private final AiChatService aiChatService;
@@ -24,7 +21,15 @@ public class AiController {
         this.aiChatService = aiChatService;
     }
 
-    @PostMapping("/chat")
+    @GetMapping("/ai-chat")
+    public ModelAndView showAiChatPage(HttpSession session) {
+        if (session.getAttribute("loggedInUser") == null) {
+            return new ModelAndView("redirect:/auth/login");
+        }
+        return new ModelAndView("ai-chat");
+    }
+
+    @PostMapping("/api/ai/chat")
     @ResponseBody
     public ResponseEntity<?> getChatResponse(@RequestBody AiChatRequest request, HttpSession session) {
         if (session.getAttribute("loggedInUser") == null) {

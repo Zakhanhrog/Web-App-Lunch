@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chuyện với Chuyên Gia AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ai-chat-bg: #f8f9fa;
+            --user-bubble-bg: #0d6efd;
+            --ai-bubble-bg: #e9ecef;
+            --ai-bubble-text: #212529;
+        }
+        .ai-chat-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-chat-card .card-header .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        .ai-chat-card .card-body {
+            height: 60vh;
+            overflow-y: auto;
+            background-color: var(--ai-chat-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+        .chat-message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            max-width: 80%;
+        }
+        .user-message-wrapper {
+            align-self: flex-end;
+        }
+        .ai-message-wrapper {
+            align-self: flex-start;
+        }
+        .chat-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            word-wrap: break-word;
+        }
+        .user-bubble {
+            background-color: var(--user-bubble-bg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.3rem;
+        }
+        .ai-bubble {
+            background-color: var(--ai-bubble-bg);
+            color: var(--ai-bubble-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 0.3rem;
+        }
+        .chat-action-button {
+            align-self: flex-start;
+            max-width: fit-content;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 1px;
+            background-color: #999;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container my-4">
+    <div class="card shadow-sm ai-chat-card">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fa-solid fa-robot me-2"></i>Chuyên Gia Ẩm Thực AI</h5>
+            <button type="button" class="btn btn-outline-secondary" id="newChatBtn" title="Cuộc trò chuyện mới">
+                <i class="fa-solid fa-plus me-1"></i> Bắt đầu lại
+            </button>
+        </div>
+        <div class="card-body" id="aiChatBody">
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="aiChatInput" class="form-control" placeholder="Hỏi chuyên gia về bữa trưa...">
+                <button class="btn btn-primary" type="button" id="aiSendBtn">
+                    Gửi <i class="fa-solid fa-paper-plane ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatBody = document.getElementById('aiChatBody');
+        const chatInput = document.getElementById('aiChatInput');
+        const sendBtn = document.getElementById('aiSendBtn');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const chatHistoryKey = 'aiChatHistoryV4';
+        let chatHistory = [];
+        let latestSuggestedItems = null;
+
+        function renderMessage(role, content, suggestion = null) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'chat-message-wrapper ' + (role === 'user' ? 'user-message-wrapper' : 'ai-message-wrapper');
+
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble ' + (role === 'user' ? 'user-bubble' : 'ai-bubble');
+            bubble.innerText = content;
+            messageWrapper.appendChild(bubble);
+
+            if (role === 'assistant' && suggestion && suggestion.length > 0) {
+                latestSuggestedItems = suggestion;
+                const applyBtn = document.createElement('button');
+                applyBtn.className = 'btn btn-sm btn-outline-success mt-2 chat-action-button';
+                applyBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Áp dụng gợi ý vào thực đơn';
+                applyBtn.onclick = applySuggestion;
+                messageWrapper.appendChild(applyBtn);
+            }
+
+            chatBody.appendChild(messageWrapper);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function applySuggestion() {
+            if (latestSuggestedItems) {
+                const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
+                if (itemIds.length > 0) {
+                    localStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
+                    alert('Các món ăn đã được thêm vào giỏ hàng của bạn. Chúng tôi sẽ chuyển bạn đến trang đặt món.');
+                    window.location.href = '/order/menu';
+                }
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
+        }
+
+        function loadHistory() {
+            const storedHistory = localStorage.getItem(chatHistoryKey);
+            chatHistory = storedHistory ? JSON.parse(storedHistory) : [];
+            chatBody.innerHTML = '';
+            if (chatHistory.length === 0) {
+                renderInitialMessage();
+            } else {
+                chatHistory.forEach(msg => renderMessage(msg.role, msg.content, msg.suggestion));
+            }
+            chatInput.focus();
+        }
+
+        function renderInitialMessage() {
+            const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
+            chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
+            renderMessage('assistant', initialMessage, null);
+        }
+
+        function showTypingIndicator(show) {
+            let indicator = document.getElementById('typing-indicator');
+            if (show && !indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'typing-indicator';
+                indicator.className = 'chat-message-wrapper ai-message-wrapper';
+                indicator.innerHTML = `<div class="chat-bubble ai-bubble typing-indicator"><span></span><span></span><span></span></div>`;
+                chatBody.appendChild(indicator);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } else if (!show && indicator) {
+                indicator.remove();
+            }
+        }
+
+        async function handleSend() {
+            const userMessage = chatInput.value.trim();
+            if (userMessage === '') return;
+
+            renderMessage('user', userMessage);
+            const currentHistoryForAPI = chatHistory.slice();
+            chatHistory.push({ role: 'user', content: userMessage, suggestion: null });
+            latestSuggestedItems = null;
+
+            chatInput.value = '';
+            chatInput.disabled = true;
+            sendBtn.disabled = true;
+            showTypingIndicator(true);
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newMessage: userMessage, history: currentHistoryForAPI })
+                });
+
+                showTypingIndicator(false);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
+                }
+
+                renderMessage('assistant', data.explanation, data.suggestedItems);
+                chatHistory.push({ role: 'assistant', content: data.explanation, suggestion: data.suggestedItems });
+                saveHistory();
+
+            } catch (error) {
+                showTypingIndicator(false);
+                const errorMessage = 'Rất tiếc, đã có lỗi xảy ra: ' + error.message;
+                renderMessage('assistant', errorMessage);
+            } finally {
+                chatInput.disabled = false;
+                sendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+
+        newChatBtn.addEventListener('click', () => {
+            if (confirm('Bạn có chắc muốn bắt đầu cuộc trò chuyện mới? Lịch sử hiện tại sẽ bị xóa.')) {
+                localStorage.removeItem(chatHistoryKey);
+                loadHistory();
+            }
+        });
+
+        loadHistory();
+    });
+</script>
+</body>
+</html>

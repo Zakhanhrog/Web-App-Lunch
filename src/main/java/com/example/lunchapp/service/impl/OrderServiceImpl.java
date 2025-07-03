@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -61,8 +62,12 @@ public class OrderServiceImpl implements OrderService {
         LocalDate today = order.getOrderDate().toLocalDate();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-        long count = orderRepository.countByOrderDateBetween(startOfDay, endOfDay);
-        order.setDailyOrderNumber(count + 1);
+
+        Optional<Long> maxDailyNumber = orderRepository.findMaxDailyOrderNumberByDate(startOfDay, endOfDay);
+
+        long newDailyNumber = maxDailyNumber.map(max -> max + 1).orElse(1L);
+
+        order.setDailyOrderNumber(newDailyNumber);
     }
 
     @Override
