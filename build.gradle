@@ -94,6 +94,9 @@ dependencies {
     implementation "org.springframework.security:spring-security-core:5.8.12"
 
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    implementation 'org.springframework.security:spring-security-web:5.7.12'
+    implementation 'org.springframework.security:spring-security-config:5.7.12'
 }
 
 war {

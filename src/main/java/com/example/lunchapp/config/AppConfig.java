@@ -35,7 +35,7 @@ import java.util.Properties;
         @PropertySource("classpath:database.properties"),
         @PropertySource("classpath:application.properties")
 })
-@Import(WebSocketConfig.class)
+@Import({WebSocketConfig.class, SecurityConfig.class})
 public class AppConfig {
 
     @Autowired
