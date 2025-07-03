@@ -107,7 +107,6 @@
         .message.received { align-items: flex-start; }
         .message.received .message-content:not(.image-message) { background-color: #e9ecef; color: #212529; border-bottom-left-radius: 0.5rem; }
 
-        /* Styles for Image Modal */
         .image-modal-overlay {
             position: fixed;
             top: 0;
@@ -186,8 +185,7 @@
 </template>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
@@ -206,18 +204,27 @@
         let selectedUser = null;
 
         const connect = () => {
-            const socket = new SockJS('/ws');
-            stompClient = Stomp.over(socket);
-            stompClient.connect({}, onConnected, onError);
-        };
+            const wsUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
 
-        const onConnected = () => {
-            stompClient.subscribe('/user/' + adminUser.username + '/queue/messages', onMessageReceived);
-            loadConversations();
-        };
+            stompClient = new StompJs.Client({
+                brokerURL: wsUrl,
+                reconnectDelay: 5000,
+                heartbeatIncoming: 10000,
+                heartbeatOutgoing: 10000
+            });
 
-        const onError = (error) => {
-            console.error('STOMP Error:', error);
+            stompClient.onConnect = (frame) => {
+                console.log('Admin connected: ' + frame);
+                stompClient.subscribe('/user/' + adminUser.username + '/queue/messages', onMessageReceived);
+                loadConversations();
+            };
+
+            stompClient.onStompError = (frame) => {
+                console.error('Broker reported error: ' + frame.headers['message']);
+                console.error('Additional details: ' + frame.body);
+            };
+
+            stompClient.activate();
         };
 
         const loadConversations = async () => {
@@ -279,7 +286,7 @@
         };
 
         const sendMessage = (type, content, recipientUser) => {
-            if (content && stompClient && recipientUser) {
+            if (content && stompClient && stompClient.active && recipientUser) {
                 const chatMessage = {
                     senderId: adminUser.id,
                     senderUsername: adminUser.username,
@@ -288,7 +295,10 @@
                     content: content,
                     messageType: type
                 };
-                stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
+                stompClient.publish({
+                    destination: '/app/chat.sendMessage',
+                    body: JSON.stringify(chatMessage)
+                });
                 displayMessage({
                     ...chatMessage,
                     timestamp: new Date().toISOString()
