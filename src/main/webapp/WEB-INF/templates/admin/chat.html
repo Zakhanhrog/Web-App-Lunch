@@ -327,11 +327,6 @@
                     destination: '/app/chat.sendMessage',
                     body: JSON.stringify(chatMessage)
                 });
-                displayMessage({
-                    ...chatMessage,
-                    timestamp: new Date().toISOString()
-                }, document.getElementById('chat-messages-area'));
-                scrollToBottom(document.getElementById('chat-messages-area'));
             }
         };
 
