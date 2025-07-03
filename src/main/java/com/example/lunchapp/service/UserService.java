@@ -13,10 +13,10 @@ public interface UserService {
     Optional<User> findById(Long id);
     void changePassword(Long userId, String newPassword);
     User depositMoney(Long userId, BigDecimal amount);
-
     List<User> getAllUsers();
     User updateUserByAdmin(Long userId, User updatedUserPartialInfo, String newPassword, List<Long> roleIds);
     void toggleUserStatus(Long userId);
-    void deleteUserById(Long userId); // Phương thức mới
+    void deleteUserById(Long userId);
     List<User> getAllActiveUsers();
+    User findAdmin();
 }

@@ -32,46 +32,47 @@
     .btn-animated {
       position: relative;
       overflow: hidden;
-    }
-    .btn-animated .content-wrapper {
-      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       z-index: 1;
     }
-    .btn-animated .background-shapes {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      padding: 0;
-      margin: 0;
+    .btn-animated:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4) !important;
     }
-    .btn-animated .background-shapes li {
-      position: absolute;
-      display: block;
-      list-style: none;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      animation: animate-button-shapes 25s linear infinite;
-      bottom: -60px;
-      border-radius: 10px;
+    .btn-animated .btn-content {
+      position: relative;
+      z-index: 2;
     }
-    .btn-animated .background-shapes li:nth-child(1) { left: 15%; width: 45px; height: 45px; animation-delay: 0s; }
-    .btn-animated .background-shapes li:nth-child(2) { left: 70%; width: 15px; height: 15px; animation-delay: 4s; }
-    .btn-animated .background-shapes li:nth-child(3) { left: 40%; width: 30px; height: 30px; animation-delay: 2s; animation-duration: 18s; }
-    .btn-animated .background-shapes li:nth-child(4) { left: 85%; width: 25px; height: 25px; animation-delay: 6s; }
-    .btn-animated .background-shapes li:nth-child(5) { left: 5%; width: 15px; height: 15px; animation-delay: 8s; animation-duration: 20s; }
+    .btn-animated .particles {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      bottom: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      animation: float-up linear infinite;
+      opacity: 0;
+    }
+    .particle.p1 { left: 10%; width: 12px; height: 12px; animation-duration: 8s; animation-delay: 0s; }
+    .particle.p2 { left: 25%; width: 5px; height: 5px; animation-duration: 6s; animation-delay: 1s; }
+    .particle.p3 { left: 40%; width: 9px; height: 9px; animation-duration: 9s; animation-delay: 2s; }
+    .particle.p4 { left: 55%; width: 4px; height: 4px; animation-duration: 7s; animation-delay: 3s; }
+    .particle.p5 { left: 75%; width: 7px; height: 7px; animation-duration: 10s; animation-delay: 1.5s; }
+    .particle.p6 { left: 90%; width: 14px; height: 14px; animation-duration: 6s; animation-delay: 4s; }
 
-
-    @keyframes animate-button-shapes {
+    @keyframes float-up {
       0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0);
+        opacity: 0;
+      }
+      20% {
         opacity: 1;
       }
       100% {
-        transform: translateY(-250px) rotate(360deg);
+        transform: translateY(-100px);
         opacity: 0;
       }
     }
@@ -177,12 +178,13 @@
         <div th:if="${not #lists.isEmpty(groupedFoodItems)}" class="mt-5 sticky-bottom">
           <div class="text-center py-3">
             <button type="button" class="btn btn-primary w-50 py-2 btn-animated shadow" data-bs-toggle="modal" data-bs-target="#orderModal">
-              <ul class="background-shapes">
-                <li></li><li></li><li></li><li></li><li></li>
-              </ul>
-              <span class="content-wrapper">
+              <span class="btn-content">
                   <i class="fa-solid fa-cart-shopping"></i> Đặt Món
               </span>
+              <div class="particles">
+                <span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span>
+                <span class="particle p4"></span><span class="particle p5"></span><span class="particle p6"></span>
+              </div>
             </button>
           </div>
         </div>
@@ -251,6 +253,7 @@
     </div>
   </th:block>
 </main>
+<div th:replace="~{fragments/chat-widget :: chat-widget}"></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

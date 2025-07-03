@@ -19,7 +19,10 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
+import javax.servlet.ServletContext;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Configuration
 @EnableWebMvc
@@ -32,19 +35,14 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
     @Autowired
     private AdminAuthInterceptor adminAuthInterceptor;
 
+    @Autowired
+    private ServletContext servletContext;
+
     private ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    private String getFoodImageUploadDir() {
-        String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
-        if (uploadDir != null && !uploadDir.isEmpty()) {
-            return uploadDir;
-        }
-        return "lunch-data/images/food";
     }
 
     @Override
@@ -87,18 +85,18 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
-        // Cấu hình cho ảnh upload
-        String physicalPath = getFoodImageUploadDir();
-        String physicalPathWithPrefix = "file:" + physicalPath + (physicalPath.endsWith(File.separator) ? "" : File.separator);
+        String webappRoot = servletContext.getRealPath("/");
+        Path projectRoot = Paths.get(webappRoot).getParent().getParent();
+        String lunchDataPath = projectRoot.resolve("lunch-data").resolve("images").toFile().getAbsolutePath();
 
-        registry.addResourceHandler("/uploaded-images/food/**")
-                .addResourceLocations(physicalPathWithPrefix);
+        registry.addResourceHandler("/lunch-data/images/**")
+                .addResourceLocations("file:" + lunchDataPath + File.separator);
     }
 
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-        multipartResolver.setMaxUploadSize(20 * 1024 * 1024);
+        multipartResolver.setMaxUploadSize(20 * 1024 * 1024); // 20MB
         return multipartResolver;
     }
 }

@@ -110,6 +110,15 @@ public class AdminController {
         return adminUser;
     }
 
+    @GetMapping("/chat")
+    public String showAdminChatPage(HttpSession session, Model model) {
+        User adminUser = getCurrentlyLoggedInAdmin(session);
+        if (adminUser == null) {
+            return "redirect:/auth/login";
+        }
+        model.addAttribute("adminUser", new UserDto(adminUser));
+        return "admin/chat";
+    }
 
     @GetMapping("/dashboard")
     public String showAdminDashboard(Model model, HttpSession session) {

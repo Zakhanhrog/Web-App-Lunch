@@ -26,14 +26,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final OrderRepository orderRepository; // Thêm OrderRepository
+    private final OrderRepository orderRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
-        this.orderRepository = orderRepository; // Khởi tạo
+        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -60,18 +60,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUserById(Long userId) {
-        // Kiểm tra xem người dùng có tồn tại không
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("Không tìm thấy người dùng với ID: " + userId);
         }
-        // KIỂM TRA QUAN TRỌNG: Người dùng đã có lịch sử đặt hàng chưa?
         if (orderRepository.existsByUser_Id(userId)) {
             throw new RuntimeException("Không thể xóa người dùng đã có lịch sử đặt hàng. Hãy xem xét việc vô hiệu hóa tài khoản.");
         }
         userRepository.deleteById(userId);
     }
 
-    // Các phương thức còn lại giữ nguyên...
     @Override
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -149,7 +146,6 @@ public class UserServiceImpl implements UserService {
             userToUpdate.setRoles(newRoles);
         }
 
-
         userToUpdate.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(userToUpdate);
     }
@@ -167,5 +163,14 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<User> getAllActiveUsers() {
         return userRepository.findByEnabledTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findAdmin() {
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+                .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found."));
+        return userRepository.findFirstByRolesContains(adminRole)
+                .orElseThrow(() -> new RuntimeException("Admin user not found."));
     }
 }

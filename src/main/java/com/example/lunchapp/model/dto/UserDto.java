@@ -1,11 +1,11 @@
 package com.example.lunchapp.model.dto;
 
+import com.example.lunchapp.model.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.stream.Collectors;
-import com.example.lunchapp.model.entity.User; // Cần import User entity
 
 @Getter
 @Setter
@@ -15,8 +15,8 @@ public class UserDto {
     private String department;
     private BigDecimal balance;
     private Set<String> roles;
+    private boolean admin;
 
-    // Constructor để chuyển từ User entity sang UserDto
     public UserDto(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
@@ -25,5 +25,6 @@ public class UserDto {
         this.roles = user.getRoles().stream()
                 .map(role -> role.getName())
                 .collect(Collectors.toSet());
+        this.admin = this.roles.contains("ROLE_ADMIN");
     }
 }
