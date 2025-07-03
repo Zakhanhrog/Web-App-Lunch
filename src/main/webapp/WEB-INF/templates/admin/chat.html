@@ -24,23 +24,6 @@
             font-family: 'Be Vietnam Pro', sans-serif;
             background-color: #f8f9fa;
         }
-        .navbar-brand.brand-premium {
-            font-family: 'Poppins', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 1.6rem !important;
-            letter-spacing: 0.5px;
-            background: linear-gradient(90deg, #007bff, #1e90ff, #00c6ff) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-            text-fill-color: transparent !important;
-            display: inline-block;
-        }
-        .navbar-brand.brand-premium .fa-utensils {
-            color: #007bff;
-            -webkit-text-fill-color: initial !important;
-            vertical-align: -2px;
-        }
         .chat-container {
             height: calc(100vh - 56px - 2rem);
             display: flex;
@@ -178,6 +161,7 @@
             max-width: 80%;
             align-items: flex-start;
             gap: 10px;
+            position: relative;
             animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         @keyframes slideInUp {
@@ -219,6 +203,12 @@
             color: var(--chat-text-color);
             border-bottom-left-radius: 5px;
         }
+        .message-bubble.retracted {
+            background-color: transparent !important;
+            border: 1px solid var(--chat-border-color);
+            color: #6c757d;
+            font-style: italic;
+        }
         .message-bubble img.chat-image-thumbnail {
             max-width: 250px;
             border-radius: var(--chat-radius-md);
@@ -251,75 +241,63 @@
         .message-group.is-grouped .avatar {
             visibility: hidden;
         }
-        .image-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            display: none;
-            justify-content: center;
+        .retract-btn {
+            background-color: rgba(0,0,0,0.4);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
             align-items: center;
-            z-index: 1060;
-            padding: 20px;
-        }
-        .image-modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }
-        .close-modal-btn {
-            position: absolute;
-            top: 20px;
-            right: 35px;
-            color: #fff;
-            font-size: 40px;
-            font-weight: bold;
+            justify-content: center;
             cursor: pointer;
-            transition: color 0.3s;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
         }
-        .close-modal-btn:hover {
-            color: #bbb;
+        .message-group.sent:hover .retract-btn {
+            opacity: 1;
+            visibility: visible;
         }
+        .message-group.sent .retract-btn {
+            left: -32px;
+        }
+        .image-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); display: none;
+            justify-content: center; align-items: center; z-index: 1060; padding: 20px;
+        }
+        .image-modal-content { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .close-modal-btn {
+            position: absolute; top: 20px; right: 35px; color: #fff;
+            font-size: 40px; font-weight: bold; cursor: pointer; transition: color 0.3s;
+        }
+        .close-modal-btn:hover { color: #bbb; }
         @media (max-width: 767.98px) {
-            body {
-                background-color: #fff;
-            }
-            main.container-fluid {
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+            body { background-color: #fff; }
+            main.container-fluid { padding: 0 !important; margin: 0 !important; }
             .chat-container {
-                height: calc(100vh - 56px);
-                margin: 0 !important;
-                border-radius: 0;
-                box-shadow: none;
-                border: none;
+                height: calc(100vh - 56px); margin: 0 !important;
+                border-radius: 0; box-shadow: none; border: none;
             }
-            .conversation-list {
-                width: 100%;
-                transition: transform 0.3s ease-in-out;
-                border-right: none;
-            }
+            .conversation-list { width: 100%; transition: transform 0.3s ease-in-out; border-right: none; }
             .chat-area {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                transform: translateX(100%);
-                transition: transform 0.3s ease-in-out;
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                transform: translateX(100%); transition: transform 0.3s ease-in-out;
                 background-color: var(--chat-bg-color);
             }
-            .chat-container.chat-view-active .conversation-list {
-                transform: translateX(-100%);
-            }
-            .chat-container.chat-view-active .chat-area {
-                transform: translateX(0);
-            }
-            .chat-header .back-button {
-                display: inline-block;
+            .chat-container.chat-view-active .conversation-list { transform: translateX(-100%); }
+            .chat-container.chat-view-active .chat-area { transform: translateX(0); }
+            .chat-header .back-button { display: inline-block; }
+            .message-group.sent .retract-btn {
+                left: auto;
+                right: 100%;
+                margin-right: 8px;
             }
         }
     </style>
@@ -479,9 +457,11 @@
             attachButton.addEventListener('click', () => imageInput.click());
             imageInput.addEventListener('change', (event) => uploadImage(event, user));
 
+            const chatMessagesArea = document.getElementById('chat-messages-area');
+            chatMessagesArea.addEventListener('click', handleChatAreaClick);
+
             const response = await fetch(`/chat/history/${user.id}`);
             const messages = await response.json();
-            const chatMessagesArea = document.getElementById('chat-messages-area');
             chatMessagesArea.innerHTML = '';
             messages.forEach((msg, index) => {
                 const prevMsg = index > 0 ? messages[index - 1] : null;
@@ -489,6 +469,17 @@
             });
             scrollToBottom(chatMessagesArea, 'instant');
             messageInput.focus();
+        };
+
+        const handleChatAreaClick = (event) => {
+            const retractButton = event.target.closest('.retract-btn');
+            if (retractButton) {
+                const messageId = retractButton.dataset.messageId;
+                if (confirm('Bạn có chắc muốn gỡ tin nhắn này?')) {
+                    fetch(`/chat/messages/${messageId}`, { method: 'DELETE' })
+                        .catch(err => console.error("Error retracting message:", err));
+                }
+            }
         };
 
         const sendMessage = (type, content, recipientUser) => {
@@ -531,6 +522,13 @@
         const onMessageReceived = (payload) => {
             const message = JSON.parse(payload.body);
             loadConversations();
+
+            const existingMessageElement = document.getElementById('message-group-' + message.id);
+            if (existingMessageElement) {
+                updateMessage(message, existingMessageElement);
+                return;
+            }
+
             if (selectedUser && (message.senderId == selectedUser.id || message.recipientId == selectedUser.id)) {
                 const chatMessagesArea = document.getElementById('chat-messages-area');
                 const lastMessageElement = chatMessagesArea.lastElementChild;
@@ -540,12 +538,23 @@
             }
         };
 
+        const updateMessage = (message, element) => {
+            if (message.messageType === 'RETRACTED') {
+                const bubble = element.querySelector('.message-bubble');
+                bubble.textContent = message.content;
+                bubble.className = 'message-bubble retracted';
+                const retractBtn = element.querySelector('.retract-btn');
+                if (retractBtn) retractBtn.remove();
+            }
+        };
+
         const displayMessage = (message, container, prevMessage) => {
             if (!container) return;
             const isSent = message.senderId === adminUser.id;
             const isGrouped = prevMessage && prevMessage.senderId === message.senderId;
 
             const messageGroup = document.createElement('div');
+            messageGroup.id = `message-group-${message.id}`;
             messageGroup.className = `message-group ${isSent ? 'sent' : 'received'} ${isGrouped ? 'is-grouped' : ''}`;
             messageGroup.dataset.senderId = message.senderId;
 
@@ -562,6 +571,9 @@
             if (message.messageType === 'IMAGE') {
                 bubble.classList.add('image-message');
                 bubble.innerHTML = `<img src="${message.content}" alt="Ảnh đã gửi" class="chat-image-thumbnail">`;
+            } else if (message.messageType === 'RETRACTED') {
+                bubble.classList.add('retracted');
+                bubble.textContent = message.content;
             } else {
                 bubble.textContent = message.content;
             }
@@ -574,6 +586,16 @@
 
             messageGroup.appendChild(avatar);
             messageGroup.appendChild(bubblesContainer);
+
+            if (isSent && message.messageType !== 'RETRACTED') {
+                const retractBtn = document.createElement('button');
+                retractBtn.className = 'retract-btn';
+                retractBtn.title = 'Gỡ tin nhắn';
+                retractBtn.dataset.messageId = message.id;
+                retractBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                messageGroup.appendChild(retractBtn);
+            }
+
             container.appendChild(messageGroup);
         };
 

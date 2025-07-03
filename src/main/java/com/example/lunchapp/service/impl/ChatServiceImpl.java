@@ -2,6 +2,7 @@ package com.example.lunchapp.service.impl;
 
 import com.example.lunchapp.model.dto.ChatMessageDto;
 import com.example.lunchapp.model.entity.ChatMessage;
+import com.example.lunchapp.model.entity.MessageType;
 import com.example.lunchapp.model.entity.User;
 import com.example.lunchapp.repository.ChatMessageRepository;
 import com.example.lunchapp.repository.UserRepository;
@@ -12,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +47,23 @@ public class ChatServiceImpl implements ChatService {
 
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
         return convertToDto(savedMessage);
+    }
+
+    @Override
+    @Transactional
+    public ChatMessageDto retractMessage(Long messageId, Long currentUserId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found with id: " + messageId));
+
+        if (!Objects.equals(message.getSender().getId(), currentUserId)) {
+            throw new SecurityException("User does not have permission to retract this message.");
+        }
+
+        message.setMessageType(MessageType.RETRACTED);
+        message.setContent("Tin nhắn đã được gỡ");
+
+        ChatMessage retractedMessage = chatMessageRepository.save(message);
+        return convertToDto(retractedMessage);
     }
 
     @Override

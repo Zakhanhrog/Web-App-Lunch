@@ -9,4 +9,5 @@ public interface ChatService {
     ChatMessageDto saveMessage(ChatMessageDto chatMessageDto);
     List<ChatMessageDto> getChatHistory(Long userId1, Long userId2);
     List<User> findConversations(Long adminId);
+    ChatMessageDto retractMessage(Long messageId, Long currentUserId);
 }

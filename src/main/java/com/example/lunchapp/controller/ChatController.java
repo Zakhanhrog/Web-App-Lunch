@@ -13,8 +13,11 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +54,40 @@ public class ChatController {
                 "/queue/messages",
                 savedMessage
         );
+    }
+
+    @DeleteMapping("/chat/messages/{messageId}")
+    @ResponseBody
+    public ResponseEntity<Void> retractMessage(@PathVariable Long messageId, HttpSession session) {
+        UserDto currentUser = (UserDto) session.getAttribute("loggedInUser");
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            ChatMessageDto retractedMessage = chatService.retractMessage(messageId, currentUser.getId());
+            logger.info("Message {} retracted by user {}. Broadcasting update.", messageId, currentUser.getUsername());
+
+            messagingTemplate.convertAndSendToUser(
+                    retractedMessage.getRecipientUsername(),
+                    "/queue/messages",
+                    retractedMessage
+            );
+
+            messagingTemplate.convertAndSendToUser(
+                    retractedMessage.getSenderUsername(),
+                    "/queue/messages",
+                    retractedMessage
+            );
+
+            return ResponseEntity.ok().build();
+        } catch (SecurityException e) {
+            logger.warn("Unauthorized attempt to retract message {} by user {}", messageId, currentUser.getUsername());
+            return ResponseEntity.status(403).build();
+        } catch (Exception e) {
+            logger.error("Error retracting message " + messageId, e);
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/chat/history/{contactId}")
