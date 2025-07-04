@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom" style="position: relative; z-index: 1030;" th:classappend="${isUserPage} ? 'animate-on-load' : ''">
   <div class="container-fluid">
     <a class="navbar-brand logo-container" th:href="@{/}">
       <img class="logo-icon" th:src="@{/assets/images/logo-icon.png}" alt="Logo">
@@ -15,13 +15,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
+        <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-1' : ''">
           <a class="nav-link" th:href="@{/}">Trang Chủ</a>
         </li>
-        <li class="nav-item" th:if="${session.loggedInUser != null}">
+        <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-2' : ''" th:if="${session.loggedInUser != null}">
           <a class="nav-link" th:href="@{/order/menu}">Đặt Món</a>
         </li>
-        <li class="nav-item dropdown" th:if="${session.loggedInUser != null and session.loggedInUser.admin}">
+        <li class="nav-item dropdown" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-3' : ''" th:if="${session.loggedInUser != null and session.loggedInUser.admin}">
           <a class="nav-link dropdown-toggle" href="#" id="adminMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Quản trị
           </a>
@@ -38,11 +38,11 @@
       </ul>
       <ul class="navbar-nav">
         <th:block th:if="${session.loggedInUser == null}">
-          <li class="nav-item"><a class="nav-link" th:href="@{/auth/register}">Đăng Ký</a></li>
-          <li class="nav-item"><a th:href="@{/auth/login}" class="btn btn-outline-primary ms-2">Đăng Nhập</a></li>
+          <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-4' : ''"><a class="nav-link" th:href="@{/auth/register}">Đăng Ký</a></li>
+          <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-5' : ''"><a th:href="@{/auth/login}" class="btn btn-outline-primary ms-2">Đăng Nhập</a></li>
         </th:block>
         <th:block th:if="${session.loggedInUser != null}">
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-4' : ''">
             <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fa-solid fa-user"></i> <span th:text="${session.loggedInUser.username}"></span>
             </a>

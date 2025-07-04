@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @ControllerAdvice(basePackages = "com.example.lunchapp.controller")
@@ -35,5 +36,14 @@ public class GlobalControllerAdvice {
             System.out.println("Error fetching admin user: " + e.getMessage());
         }
         return null;
+    }
+
+    @ModelAttribute("isUserPage")
+    public boolean isUserPage(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+        String uri = request.getRequestURI();
+        return (uri != null && !uri.startsWith("/admin"));
     }
 }

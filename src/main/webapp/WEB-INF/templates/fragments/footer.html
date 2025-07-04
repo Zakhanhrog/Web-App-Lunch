@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<footer th:fragment="footer" class="bg-light text-muted mt-auto py-3 border-top">
+<footer th:fragment="footer" class="bg-light text-muted mt-auto py-3 border-top" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-7' : ''">
   <div class="container d-flex justify-content-between align-items-center flex-column flex-md-row">
     <div class="text-center text-md-start mb-2 mb-md-0">
       <p class="mb-1">© <span th:text="${#dates.year(#dates.createNow())}">2024</span> CG LUNCH. Dev by Zakhanh - Collab.ThaiHung - Support.TuanAnh</p>

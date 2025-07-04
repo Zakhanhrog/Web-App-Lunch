@@ -17,7 +17,6 @@
       z-index: 1;
       border: 1px solid rgba(0,0,0,0.1);
     }
-    /* Lớp nền: ảnh và lớp phủ sáng, nằm dưới cùng */
     .welcome-jumbotron::before {
       content: '';
       position: absolute;
@@ -30,7 +29,6 @@
       background-size: cover;
       background-position: center;
     }
-    /* Lớp nội dung: chữ và nút bấm, nằm trên cùng */
     .welcome-content {
       position: relative;
       z-index: 2;
@@ -46,11 +44,11 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <main class="container my-4">
-  <div class="p-5 mb-4 rounded-3 welcome-jumbotron position-relative">
+  <div class="p-5 mb-4 rounded-3 welcome-jumbotron position-relative" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-2' : ''">
     <div class="container-fluid py-5 welcome-content">
-      <h1 class="display-5 fw-bold">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
-      <p class="col-md-8 fs-4" th:text="${message}">Thưởng thức bữa trưa ngon miệng và tiện lợi mỗi ngày.</p>
-      <div class="d-flex gap-2">
+      <h1 class="display-5 fw-bold" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-3' : ''">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
+      <p class="col-md-8 fs-4" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-4' : ''" th:text="${message}">Thưởng thức bữa trưa ngon miệng và tiện lợi mỗi ngày.</p>
+      <div class="d-flex gap-2" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-5' : ''">
         <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
         <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
@@ -60,7 +58,7 @@
     </div>
   </div>
 
-  <div th:if="${session.loggedInUser != null}" class="card shadow-sm">
+  <div th:if="${session.loggedInUser != null}" class="card shadow-sm" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-6' : ''">
     <div class="card-header">Thông tin tài khoản</div>
     <div class="card-body">
       <p><strong>Tài khoản:</strong> <span th:text="${session.loggedInUser.username}">User</span></p>
