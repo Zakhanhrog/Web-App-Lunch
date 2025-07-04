@@ -12,35 +12,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
-    /* Đặt canvas làm nền cố định cho toàn bộ trang */
     #fluid {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: -1; /* Luôn nằm dưới cùng */
+      z-index: -1;
     }
 
-    /* Đảm bảo nội dung chính luôn nằm trên canvas */
     main.container {
       position: relative;
       z-index: 2;
     }
 
-    /* Áp dụng hiệu ứng kính mờ cho các card để nhìn thấy nền */
     .welcome-jumbotron, .user-info-card, .dev-card {
-      background-color: rgba(255, 255, 255, 0.5); /* Trong suốt hơn */
-      backdrop-filter: blur(10px); /* Mờ hơn một chút */
+      background-color: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.4); /* Viền mờ hơn */
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
     .welcome-jumbotron::before {
-      display: none; /* Tắt ảnh nền tĩnh của Jumbotron */
+      display: none;
     }
 
-    /* CSS cho card dev mới, tĩnh, không hiệu ứng riêng */
     .dev-card {
       padding: 2rem;
       margin-top: 1.5rem;
@@ -53,11 +49,11 @@
     }
 
     .dev-profile .avatar img {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 1rem;
+      margin: 0 auto 1rem auto;
       border: 3px solid var(--surface-color);
       box-shadow: 0 0 0 2px var(--primary-color);
     }
@@ -73,14 +69,14 @@
       font-size: 0.85rem;
       font-weight: 500;
       color: var(--primary-color);
-      margin: 0.25rem 0 1rem 0;
+      margin: 0.25rem 0 0.75rem 0;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .dev-profile .social-links a {
       color: var(--secondary-color);
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       margin: 0 0.75rem;
       transition: color 0.2s ease;
     }
@@ -89,7 +85,6 @@
       color: var(--primary-hover);
     }
 
-    /* Đường kẻ phân cách giữa 2 card dev */
     .dev-separator {
       border-left: 1px solid var(--border-color);
     }
@@ -104,7 +99,6 @@
   </style>
 </head>
 <body>
-<!-- Canvas sẽ được JS gốc tìm thấy và điều khiển -->
 <canvas id="fluid"></canvas>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -153,14 +147,12 @@
     </div>
   </div>
 
-  <!-- DEV TEAM CARD SECTION -->
   <div class="dev-card animate-on-load animate-delay-7">
     <div class="row align-items-center">
-      <!-- Card 1: Zakhanh -->
       <div class="col-lg-6">
         <div class="dev-profile">
           <div class="avatar">
-            <img src="https://avatars.githubusercontent.com/u/118320498?v=4" alt="Avatar của Zakhanh">
+            <img th:src="@{/assets/images/zakhanh.png}" alt="Avatar của Zakhanh">
           </div>
           <h2 class="name">ZAKHANH</h2>
           <p class="title">Full-stack Developer & UI/UX Enthusiast</p>
@@ -171,11 +163,10 @@
           </div>
         </div>
       </div>
-      <!-- Card 2: Thai Hung -->
       <div class="col-lg-6 dev-separator">
         <div class="dev-profile">
           <div class="avatar">
-            <img src="https://avatars.githubusercontent.com/u/96515811?v=4" alt="Avatar của Thái Hưng">
+            <img th:src="@{/assets/images/zakhanh.png}" alt="Avatar của Thái Hưng">
           </div>
           <h2 class="name">THÁI HƯNG</h2>
           <p class="title">Back-end Developer & System Architect</p>
@@ -188,7 +179,6 @@
       </div>
     </div>
   </div>
-  <!-- END DEV TEAM CARD SECTION -->
 
 </main>
 

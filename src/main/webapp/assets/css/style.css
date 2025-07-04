@@ -353,7 +353,7 @@ a:hover {
 
 .user-info-balance {
     flex-shrink: 0;
-    background: linear-gradient(135deg, #1e90ff, #007bff);
+    background-color: rgba(2, 145, 236, 0.8);
     color: white;
     padding: 1rem 1.25rem;
     display: flex;
