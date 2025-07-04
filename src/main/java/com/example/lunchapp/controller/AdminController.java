@@ -8,11 +8,7 @@ import com.example.lunchapp.model.entity.Order;
 import com.example.lunchapp.model.entity.OrderItem;
 import com.example.lunchapp.model.entity.User;
 import com.example.lunchapp.repository.RoleRepository;
-import com.example.lunchapp.service.AppSettingService;
-import com.example.lunchapp.service.CategoryService;
-import com.example.lunchapp.service.FoodItemService;
-import com.example.lunchapp.service.OrderService;
-import com.example.lunchapp.service.UserService;
+import com.example.lunchapp.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,22 +25,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -60,6 +50,7 @@ public class AdminController {
     private final ServletContext servletContext;
     private final AppSettingService appSettingService;
     private final RoleRepository roleRepository;
+    private final FileStorageService fileStorageService;
 
     public record DailyMenuItemUpdateRequest(boolean available, int quantity) {}
     public record DailyMenuItemBatchUpdateRequest(Long id, boolean available, int quantity) {}
@@ -67,7 +58,8 @@ public class AdminController {
     @Autowired
     public AdminController(UserService userService, FoodItemService foodItemService, OrderService orderService,
                            CategoryService categoryService, ServletContext servletContext,
-                           AppSettingService appSettingService, RoleRepository roleRepository) {
+                           AppSettingService appSettingService, RoleRepository roleRepository,
+                           FileStorageService fileStorageService) {
         this.userService = userService;
         this.foodItemService = foodItemService;
         this.orderService = orderService;
@@ -75,14 +67,7 @@ public class AdminController {
         this.servletContext = servletContext;
         this.appSettingService = appSettingService;
         this.roleRepository = roleRepository;
-    }
-
-    private String getFoodImageUploadDir() {
-        String uploadDir = System.getenv("UPLOAD_DIR_FOOD");
-        if (uploadDir != null && !uploadDir.isEmpty()) {
-            return uploadDir;
-        }
-        return "lunch-data/images/food";
+        this.fileStorageService = fileStorageService;
     }
 
     private User getCurrentlyLoggedInAdmin(HttpSession session) {
@@ -205,23 +190,21 @@ public class AdminController {
             return "admin/food-form";
         }
 
-        if (!imageFile.isEmpty()) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String originalFilename = imageFile.getOriginalFilename();
             if (originalFilename != null && (originalFilename.toLowerCase().endsWith(".png") || originalFilename.toLowerCase().endsWith(".jpg") || originalFilename.toLowerCase().endsWith(".jpeg"))) {
                 try {
-                    String fileName = "food_" + System.currentTimeMillis() + "_" + originalFilename.replaceAll("\\s+", "_");
+                    Path uploadPath = fileStorageService.getFoodImageUploadPath();
+                    String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    String newFileName = "food_" + System.currentTimeMillis() + fileExtension;
 
-                    Path uploadPathDir = Paths.get(getFoodImageUploadDir());
+                    File dest = new File(uploadPath.toFile(), newFileName);
+                    imageFile.transferTo(dest);
 
-                    if (!Files.exists(uploadPathDir)) {
-                        Files.createDirectories(uploadPathDir);
-                    }
-                    Path filePath = uploadPathDir.resolve(fileName);
-                    try (InputStream inputStream = imageFile.getInputStream()) {
-                        Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                    foodItem.setImageUrl("/uploaded-images/food/" + fileName);
-                    logger.debug("AdminController: Saved image {} to path {}", fileName, filePath);
+                    String webPath = fileStorageService.getWebUploadPath() + "/food/" + newFileName;
+                    foodItem.setImageUrl(webPath);
+                    logger.debug("AdminController: Saved image and set web path to: {}", webPath);
+
                 } catch (IOException e) {
                     logger.error("Không thể lưu file ảnh: " + originalFilename, e);
                     bindingResult.rejectValue("imageUrl", "error.foodItem", "Không thể tải lên ảnh: " + e.getMessage());

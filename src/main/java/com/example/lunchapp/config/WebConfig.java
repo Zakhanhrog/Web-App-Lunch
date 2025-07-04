@@ -1,6 +1,7 @@
 package com.example.lunchapp.config;
 
 import com.example.lunchapp.interceptor.AdminAuthInterceptor;
+import com.example.lunchapp.service.FileStorageService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,12 +24,16 @@ import org.thymeleaf.templatemode.TemplateMode;
 @EnableWebMvc
 @ComponentScan(basePackages = {
         "com.example.lunchapp.controller",
+        "com.example.lunchapp.service",
         "com.example.lunchapp.interceptor"
 })
 public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Autowired
     private AdminAuthInterceptor adminAuthInterceptor;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     private ApplicationContext applicationContext;
 
@@ -74,12 +79,14 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Phục vụ các file tĩnh trong thư mục webapp (CSS, JS,...)
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
 
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:/data/food/");
+        String uploadDir = fileStorageService.getUploadDirectory();
+        String webUploadPath = fileStorageService.getWebUploadPath();
+
+        registry.addResourceHandler(webUploadPath + "/**")
+                .addResourceLocations("file:" + uploadDir + "/");
     }
 
     @Bean(name = "multipartResolver")

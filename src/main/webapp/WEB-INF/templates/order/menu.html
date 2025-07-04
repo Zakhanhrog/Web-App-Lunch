@@ -151,7 +151,7 @@
             <div th:each="item : ${entry.value}" class="col">
               <div class="card h-100 food-card" th:classappend="${(item.dailyQuantity == null || item.dailyQuantity < 1) ? 'food-card_disabled' : ''}">
                 <div class="position-relative">
-                  <img th:if="${item.imageUrl != null && !item.imageUrl.isEmpty()}" th:src="${item.imageUrl}" class="card-img-top food-card__image" th:alt="${item.name}">
+                  <img th:if="${item.imageUrl != null && !item.imageUrl.isEmpty()}" th:src="@{${item.imageUrl}}" class="card-img-top food-card__image" th:alt="${item.name}">
                   <div th:unless="${item.imageUrl != null && !item.imageUrl.isEmpty()}" class="food-card__no-image d-flex align-items-center justify-content-center">
                     <i class="fa-solid fa-image fa-2x text-muted"></i>
                   </div>

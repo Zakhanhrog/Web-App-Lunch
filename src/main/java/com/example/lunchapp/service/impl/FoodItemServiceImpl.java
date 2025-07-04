@@ -5,7 +5,6 @@ import com.example.lunchapp.model.entity.Category;
 import com.example.lunchapp.model.entity.FoodItem;
 import com.example.lunchapp.repository.FoodItemRepository;
 import com.example.lunchapp.service.FoodItemService;
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,24 +31,13 @@ public class FoodItemServiceImpl implements FoodItemService {
     @Override
     @Transactional(readOnly = true)
     public List<FoodItem> getAvailableFoodItemsForToday() {
-        List<FoodItem> foodItems = foodItemRepository.findAllAvailableTodayWithStock();
-        foodItems.forEach(item -> {
-            if (item.getCategory() != null) {
-                Hibernate.initialize(item.getCategory());
-            }
-        });
-        return foodItems;
+        return foodItemRepository.findAllAvailableTodayWithStock();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Map<Category, List<FoodItem>> getGroupedAvailableFoodItemsForToday() {
         List<FoodItem> foodItems = foodItemRepository.findAllAvailableTodayWithStock();
-        foodItems.forEach(item -> {
-            if (item.getCategory() != null) {
-                Hibernate.initialize(item.getCategory());
-            }
-        });
         return foodItems.stream()
                 .collect(Collectors.groupingBy(FoodItem::getCategory));
     }
@@ -57,25 +45,13 @@ public class FoodItemServiceImpl implements FoodItemService {
     @Override
     @Transactional(readOnly = true)
     public Optional<FoodItem> findById(Long id) {
-        Optional<FoodItem> foodItemOpt = foodItemRepository.findById(id);
-        foodItemOpt.ifPresent(foodItem -> {
-            if (foodItem.getCategory() != null) {
-                Hibernate.initialize(foodItem.getCategory());
-            }
-        });
-        return foodItemOpt;
+        return foodItemRepository.findById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<FoodItem> getAllFoodItems() {
-        List<FoodItem> foodItems = foodItemRepository.findAll();
-        foodItems.forEach(item -> {
-            if (item.getCategory() != null) {
-                Hibernate.initialize(item.getCategory());
-            }
-        });
-        return foodItems;
+        return foodItemRepository.findAll();
     }
 
     @Override
@@ -93,27 +69,13 @@ public class FoodItemServiceImpl implements FoodItemService {
     @Override
     @Transactional(readOnly = true)
     public List<FoodItem> findByCategory(Category category) {
-        List<FoodItem> foodItems = foodItemRepository.findByCategory(category);
-        foodItems.forEach(item -> {
-            if (item.getCategory() != null) {
-                Hibernate.initialize(item.getCategory());
-            }
-        });
-        return foodItems;
+        return foodItemRepository.findByCategory(category);
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
     public List<FoodItem> findByNameContaining(String name) {
-        List<FoodItem> foodItems = foodItemRepository.findByNameContainingIgnoreCase(name);
-        foodItems.forEach(item -> {
-            if (item.getCategory() != null) {
-                Hibernate.initialize(item.getCategory());
-            }
-        });
-        return foodItems;
+        return foodItemRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Override

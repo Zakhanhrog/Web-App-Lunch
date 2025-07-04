@@ -11,68 +11,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
   <style>
-    @keyframes rotate-line {
-      to {
-        transform: rotate(360deg);
-      }
-    }
     .welcome-jumbotron {
       position: relative;
       overflow: hidden;
-      background: transparent; /* Nền trong suốt để hiển thị viền chạy */
       z-index: 1;
+      border: 1px solid rgba(0,0,0,0.1);
     }
-
-    /* Lớp giả ::before sẽ tạo ra đường line xanh phát sáng và xoay */
+    /* Lớp nền: ảnh và lớp phủ sáng, nằm dưới cùng */
     .welcome-jumbotron::before {
       content: '';
       position: absolute;
-      z-index: -2; /* Đặt dưới lớp nền trắng của content */
-
-      /* Tăng kích thước bao phủ để đường line dày hơn */
-      top: -4px;
-      left: -4px;
-      width: calc(100% + 8px);
-      height: calc(100% + 8px);
-
-      /* Điều chỉnh gradient để phần màu sáng rộng hơn một chút */
-      background: conic-gradient(
-              from 0deg,
-              transparent 0%,
-              rgba(0, 191, 255, 0.15) 5%, /* Màu xanh nhạt hơn, bắt đầu sớm hơn */
-              rgba(0, 123, 255, 0.9) 15%, /* Đỉnh màu xanh đậm nhất, mạnh hơn */
-              rgba(0, 123, 255, 0.9) 25%, /* Giữ đỉnh màu xanh đậm hơn trong khoảng này */
-              rgba(0, 191, 255, 0.15) 35%, /* Kết thúc mờ dần xanh, trễ hơn */
-              transparent 45%, /* Quay lại trong suốt hoàn toàn */
-              transparent 100%
-      );
-      border-radius: inherit;
-      animation: rotate-line 8s linear infinite; /* Giữ tốc độ chậm và mượt mà */
-      filter: blur(4px); /* Tăng độ mờ nhẹ để tạo hiệu ứng glow tự nhiên cho đường line dày hơn */
-      box-shadow: 0 0 12px rgba(0, 123, 255, 0.4), 0 0 25px rgba(0, 123, 255, 0.2); /* Tăng đổ bóng để hiệu ứng phát sáng mạnh hơn */
+      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('/assets/images/welcome_background.png');
+      background-size: cover;
+      background-position: center;
     }
-
-    /* Lớp giả ::after sẽ tạo nền trắng và đổ bóng cho nội dung bên trong */
-    .welcome-jumbotron::after {
-      content: '';
-      position: absolute;
-      z-index: -1; /* Đặt dưới nội dung, trên lớp line xoay */
-
-      /* Điều chỉnh vị trí để lộ phần viền dày hơn */
-      top: 4px;
-      left: 4px;
-      width: calc(100% - 8px);
-      height: calc(100% - 8px);
-
-      background: white; /* Nền trắng cho phần nội dung */
-      border-radius: inherit;
-      box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); /* Đổ bóng tương tự như shadow-sm của Bootstrap */
-    }
-
-    /* Đảm bảo nội dung luôn hiển thị ở lớp trên cùng */
+    /* Lớp nội dung: chữ và nút bấm, nằm trên cùng */
     .welcome-content {
       position: relative;
       z-index: 2;
+    }
+    .welcome-content h1,
+    .welcome-content p {
+      color: var(--heading-color);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>

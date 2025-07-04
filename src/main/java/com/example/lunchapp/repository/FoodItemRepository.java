@@ -7,21 +7,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
+
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category")
+    @Override
+    List<FoodItem> findAll();
+
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category WHERE f.id = :id")
+    @Override
+    Optional<FoodItem> findById(Long id);
+
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category c WHERE c = :category")
     List<FoodItem> findByCategory(Category category);
 
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category WHERE lower(f.name) LIKE lower(concat('%', :name, '%'))")
     List<FoodItem> findByNameContainingIgnoreCase(String name);
 
-    // Lấy các món ăn được chọn cho menu hôm nay
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category WHERE f.availableToday = true")
     List<FoodItem> findByAvailableTodayTrue();
 
-    // Lấy các món ăn cho menu hôm nay thuộc một category cụ thể
-    @Query("SELECT f FROM FoodItem f WHERE f.availableToday = true AND f.category = :category AND f.dailyQuantity > 0")
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category c WHERE f.availableToday = true AND c = :category AND f.dailyQuantity > 0")
     List<FoodItem> findAvailableTodayByCategoryAndStock(Category category);
 
-    // Lấy tất cả các món ăn được đánh dấu availableToday = true và còn hàng (dailyQuantity > 0)
-    @Query("SELECT f FROM FoodItem f WHERE f.availableToday = true AND f.dailyQuantity > 0")
+    @Query("SELECT f FROM FoodItem f LEFT JOIN FETCH f.category WHERE f.availableToday = true AND f.dailyQuantity > 0")
     List<FoodItem> findAllAvailableTodayWithStock();
 }
