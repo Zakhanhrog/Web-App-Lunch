@@ -57,7 +57,7 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container">
-  <div class="card auth-card shadow-sm">
+  <div class="card auth-card">
     <div class="card-body p-4">
       <h1 class="card-title text-center mb-4">Tạo Tài Khoản Mới</h1>
       <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
