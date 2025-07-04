@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,20 +85,18 @@ public class FoodItemServiceImpl implements FoodItemService {
     @Transactional
     public void setFoodItemsForToday(List<Long> foodItemIds, Map<Long, Integer> dailyQuantities) {
         List<FoodItem> allItems = foodItemRepository.findAll();
-        for (FoodItem item : allItems) {
-            item.setAvailableToday(false);
-            item.setDailyQuantity(0);
-        }
-        foodItemRepository.saveAll(allItems);
+        Set<Long> selectedIds = (foodItemIds != null) ? new HashSet<>(foodItemIds) : Collections.emptySet();
 
-        if (foodItemIds != null && !foodItemIds.isEmpty()) {
-            List<FoodItem> selectedItems = foodItemRepository.findAllById(foodItemIds);
-            for (FoodItem item : selectedItems) {
+        for (FoodItem item : allItems) {
+            if (selectedIds.contains(item.getId())) {
                 item.setAvailableToday(true);
                 item.setDailyQuantity(dailyQuantities.getOrDefault(item.getId(), 0));
+            } else {
+                item.setAvailableToday(false);
+                item.setDailyQuantity(0);
             }
-            foodItemRepository.saveAll(selectedItems);
         }
+        foodItemRepository.saveAll(allItems);
     }
 
     @Override
@@ -122,21 +123,28 @@ public class FoodItemServiceImpl implements FoodItemService {
     @Override
     @Transactional
     public void updateDailyMenuItemsInBatch(List<AdminController.DailyMenuItemBatchUpdateRequest> updates) {
-        if (updates == null || updates.isEmpty()) {
+        if (updates == null) {
+            logger.warn("Received a null list for batch update. No action taken.");
             return;
         }
-        List<Long> foodItemIds = updates.stream().map(AdminController.DailyMenuItemBatchUpdateRequest::id).collect(Collectors.toList());
-        Map<Long, FoodItem> foodItemsMap = foodItemRepository.findAllById(foodItemIds).stream()
-                .collect(Collectors.toMap(FoodItem::getId, Function.identity()));
 
-        for (AdminController.DailyMenuItemBatchUpdateRequest update : updates) {
-            FoodItem foodItem = foodItemsMap.get(update.id());
-            if (foodItem != null) {
-                foodItem.setAvailableToday(update.available());
-                foodItem.setDailyQuantity(update.quantity());
+        Map<Long, AdminController.DailyMenuItemBatchUpdateRequest> updateMap = updates.stream()
+                .collect(Collectors.toMap(AdminController.DailyMenuItemBatchUpdateRequest::id, Function.identity()));
+
+        List<FoodItem> allItems = foodItemRepository.findAll();
+
+        for (FoodItem item : allItems) {
+            AdminController.DailyMenuItemBatchUpdateRequest update = updateMap.get(item.getId());
+            if (update != null) {
+                item.setAvailableToday(update.available());
+                item.setDailyQuantity(update.quantity());
             } else {
-                logger.warn("Không tìm thấy FoodItem với ID {} trong khi cập nhật hàng loạt.", update.id());
+                item.setAvailableToday(false);
+                item.setDailyQuantity(0);
             }
         }
+
+        foodItemRepository.saveAll(allItems);
+        logger.info("Batch update completed. Processed {} total items based on {} updates.", allItems.size(), updates.size());
     }
 }
