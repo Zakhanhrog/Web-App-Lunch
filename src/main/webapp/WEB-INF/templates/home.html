@@ -58,12 +58,32 @@
     </div>
   </div>
 
-  <div th:if="${session.loggedInUser != null}" class="card shadow-sm" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-6' : ''">
-    <div class="card-header">Thông tin tài khoản</div>
-    <div class="card-body">
-      <p><strong>Tài khoản:</strong> <span th:text="${session.loggedInUser.username}">User</span></p>
-      <p><strong>Đơn vị:</strong> <span th:text="${session.loggedInUser.department}">Department</span></p>
-      <p><strong>Số dư:</strong> <strong class="text-success"><span th:text="${#numbers.formatDecimal(session.loggedInUser.balance, 0, 'COMMA', 0, 'POINT')}">0</span> VND</strong></p>
+  <div th:if="${session.loggedInUser != null}" class="user-info-card" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-6' : ''">
+    <div class="user-info-card-body">
+      <div class="user-info-item">
+        <i class="fa-solid fa-user-circle fa-fw user-info-icon"></i>
+        <div>
+          <span class="user-info-label">Tài khoản</span>
+          <span class="user-info-value" th:text="${session.loggedInUser.username}">User</span>
+        </div>
+      </div>
+      <div class="user-info-item">
+        <i class="fa-solid fa-building fa-fw user-info-icon"></i>
+        <div>
+          <span class="user-info-label">Đơn vị</span>
+          <span class="user-info-value" th:text="${session.loggedInUser.department}">Department</span>
+        </div>
+      </div>
+    </div>
+    <div class="user-info-balance">
+      <i class="fa-solid fa-wallet fa-fw balance-icon"></i>
+      <div class="balance-text">
+        <span class="balance-label">Số dư khả dụng</span>
+        <strong class="balance-amount"><span th:text="${#numbers.formatDecimal(session.loggedInUser.balance, 0, 'COMMA', 0, 'POINT')}">0</span> VND</strong>
+      </div>
+      <a th:href="@{/user/deposit}" class="btn btn-sm btn-light deposit-btn">
+        Nạp tiền <i class="fa-solid fa-arrow-right-long fa-xs"></i>
+      </a>
     </div>
   </div>
 </main>

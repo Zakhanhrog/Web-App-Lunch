@@ -431,6 +431,7 @@ a:hover {
     padding-left: 1px;
 }
 
+/* ---- HIỆU ỨNG XUẤT HIỆN ĐẲNG CẤP ---- */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -455,3 +456,101 @@ a:hover {
 .animate-delay-6 { animation-delay: 0.6s; }
 .animate-delay-7 { animation-delay: 0.7s; }
 .animate-delay-8 { animation-delay: 0.8s; }
+/* ---- KẾT THÚC HIỆU ỨNG ---- */
+
+/* ---- USER INFO CARD STYLES ---- */
+.user-info-card {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.user-info-card-body {
+    flex-grow: 1;
+    display: flex;
+    padding: 1rem 1.25rem;
+    gap: 1.5rem;
+}
+
+.user-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-info-icon {
+    font-size: 1.75rem;
+    color: var(--secondary-color);
+    opacity: 0.6;
+}
+
+.user-info-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+    margin-bottom: -2px;
+}
+
+.user-info-value {
+    font-weight: 600;
+    color: var(--heading-color);
+}
+
+.user-info-balance {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #1e90ff, #007bff);
+    color: white;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 320px;
+}
+
+.balance-icon {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.balance-text {
+    flex-grow: 1;
+}
+
+.balance-label {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: -2px;
+}
+
+.balance-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.deposit-btn {
+    font-weight: 600 !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    transition: background-color 0.2s ease !important;
+}
+.deposit-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+    .user-info-card-body {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .user-info-balance {
+        width: 100%;
+        min-width: auto;
+    }
+}
