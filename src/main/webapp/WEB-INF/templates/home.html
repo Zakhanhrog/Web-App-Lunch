@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     .welcome-jumbotron {
       position: relative;
@@ -37,6 +38,107 @@
     .welcome-content p {
       color: var(--heading-color);
       text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    }
+
+    /* --- CSS FOR SIGNATURE CARD (LIGHT THEME) --- */
+    .signature-card-root {
+      /* Biến màu cho theme sáng, sử dụng màu từ style.css */
+      --card-glow-color: rgba(0, 123, 255, 0.15); /* Ánh sáng xanh dương rất nhạt */
+      --card-border-color: var(--border-color);
+      --card-bg-color: var(--surface-color); /* Nền trắng */
+      --card-text-name: var(--heading-color); /* Chữ chính màu tối */
+      --card-text-title: var(--primary-color); /* Chức danh màu xanh dương */
+      --card-text-secondary: var(--secondary-color); /* Chữ phụ màu xám */
+      --card-icon-hover: var(--primary-hover); /* Hover màu xanh đậm hơn */
+    }
+
+    .card-container {
+      perspective: 1500px;
+      margin-top: 1.5rem;
+    }
+
+    .signature-card {
+      width: 100%;
+      position: relative;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      background: var(--card-bg-color);
+      border: 1px solid var(--card-border-color);
+      box-shadow: var(--shadow-md); /* Dùng shadow của app */
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+      overflow: hidden;
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .signature-card::before {
+      content: '';
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, var(--card-glow-color), transparent 60%);
+      border-radius: 50%;
+      top: var(--mouse-y, -175px);
+      left: var(--mouse-x, -175px);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card-container:hover .signature-card::before {
+      opacity: 1;
+    }
+
+    .signature-card .card-content {
+      transform: translateZ(30px);
+      text-align: center;
+    }
+
+    .signature-card .avatar img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--surface-color);
+      box-shadow: 0 0 0 2px var(--primary-color);
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    .signature-card .name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 1px;
+      color: var(--card-text-name);
+    }
+
+    .signature-card .title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--card-text-title);
+      margin: 5px 0 15px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .signature-card .quote {
+      font-style: italic;
+      color: var(--card-text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+    }
+
+    .signature-card .social-links a {
+      color: var(--card-text-secondary);
+      font-size: 1.5rem;
+      margin: 0 15px;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .signature-card .social-links a:hover {
+      color: var(--card-icon-hover);
+      transform: scale(1.2) translateY(-2px);
     }
   </style>
 </head>
@@ -86,6 +188,27 @@
       </a>
     </div>
   </div>
+
+  <!-- SIGNATURE CARD SECTION -->
+  <div class="card-container signature-card-root">
+    <div class="signature-card">
+      <div class="card-content">
+        <div class="avatar">
+          <img src="https://avatars.githubusercontent.com/u/118320498?v=4" alt="Avatar của Zakhanh">
+        </div>
+        <h2 class="name">ZAKHANH</h2>
+        <p class="title">Full-stack Developer & UI/UX Enthusiast</p>
+        <p class="quote">"Crafting digital experiences with code and coffee."</p>
+        <div class="social-links">
+          <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://zakhanh.dev" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END SIGNATURE CARD SECTION -->
+
 </main>
 
 <div th:replace="~{fragments/guide_modal :: guide_modal}"></div>
@@ -109,5 +232,41 @@
     }
   });
 </script>
+
+<script>
+  // SCRIPT FOR SIGNATURE CARD
+  document.addEventListener('DOMContentLoaded', () => {
+    const cardContainer = document.querySelector('.card-container');
+    const card = document.querySelector('.signature-card');
+
+    if (!cardContainer || !card) {
+      console.error("Không tìm thấy card container hoặc signature card.");
+      return;
+    }
+
+    cardContainer.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      const maxRotate = 8; // Giảm độ nghiêng một chút cho tinh tế hơn
+      const rotateY = (x / (rect.width / 2)) * maxRotate;
+      const rotateX = -(y / (rect.height / 2)) * maxRotate;
+      card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`; // Giảm độ phóng to
+    });
+
+    cardContainer.addEventListener('mouseleave', () => {
+      card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+    });
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+</script>
+
 </body>
 </html>
