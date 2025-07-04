@@ -42,33 +42,36 @@
 
     /* --- CSS FOR SIGNATURE CARD (LIGHT THEME) --- */
     .signature-card-root {
-      /* Biến màu cho theme sáng, sử dụng màu từ style.css */
-      --card-glow-color: rgba(0, 123, 255, 0.15); /* Ánh sáng xanh dương rất nhạt */
+      --card-glow-color: rgba(0, 123, 255, 0.15);
       --card-border-color: var(--border-color);
-      --card-bg-color: var(--surface-color); /* Nền trắng */
-      --card-text-name: var(--heading-color); /* Chữ chính màu tối */
-      --card-text-title: var(--primary-color); /* Chức danh màu xanh dương */
-      --card-text-secondary: var(--secondary-color); /* Chữ phụ màu xám */
-      --card-icon-hover: var(--primary-hover); /* Hover màu xanh đậm hơn */
+      --card-bg-color: var(--surface-color);
+      --card-text-name: var(--heading-color);
+      --card-text-title: var(--primary-color);
+      --card-text-secondary: var(--secondary-color);
+      --card-icon-hover: var(--primary-hover);
     }
 
     .card-container {
       perspective: 1500px;
-      margin-top: 1.5rem;
+      height: 100%;
     }
 
     .signature-card {
       width: 100%;
+      height: 100%;
       position: relative;
       padding: 30px;
       border-radius: var(--border-radius);
       background: var(--card-bg-color);
       border: 1px solid var(--card-border-color);
-      box-shadow: var(--shadow-md); /* Dùng shadow của app */
+      box-shadow: var(--shadow-md);
       transform-style: preserve-3d;
       transition: transform 0.1s ease-out;
       overflow: hidden;
       font-family: 'Be Vietnam Pro', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .signature-card::before {
@@ -146,11 +149,11 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <main class="container my-4">
-  <div class="p-5 mb-4 rounded-3 welcome-jumbotron position-relative" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-2' : ''">
+  <div class="p-5 mb-4 rounded-3 welcome-jumbotron position-relative animate-on-load animate-delay-2">
     <div class="container-fluid py-5 welcome-content">
-      <h1 class="display-5 fw-bold" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-3' : ''">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
-      <p class="col-md-8 fs-4" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-4' : ''" th:text="${message}">Thưởng thức bữa trưa ngon miệng và tiện lợi mỗi ngày.</p>
-      <div class="d-flex gap-2" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-5' : ''">
+      <h1 class="display-5 fw-bold animate-on-load animate-delay-3">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
+      <p class="col-md-8 fs-4 animate-on-load animate-delay-4" th:text="${message}">Thưởng thức bữa trưa ngon miệng và tiện lợi mỗi ngày.</p>
+      <div class="d-flex gap-2 animate-on-load animate-delay-5">
         <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
         <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
@@ -160,7 +163,7 @@
     </div>
   </div>
 
-  <div th:if="${session.loggedInUser != null}" class="user-info-card" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-6' : ''">
+  <div th:if="${session.loggedInUser != null}" class="user-info-card animate-on-load animate-delay-6">
     <div class="user-info-card-body">
       <div class="user-info-item">
         <i class="fa-solid fa-user-circle fa-fw user-info-icon"></i>
@@ -190,24 +193,48 @@
   </div>
 
   <!-- SIGNATURE CARD SECTION -->
-  <div class="card-container signature-card-root">
-    <div class="signature-card">
-      <div class="card-content">
-        <div class="avatar">
-          <img src="https://avatars.githubusercontent.com/u/118320498?v=4" alt="Avatar của Zakhanh">
+  <div class="row g-4 mt-2 signature-card-root">
+    <!-- Card 1: Zakhanh -->
+    <div class="col-lg-6 animate-on-load animate-delay-7">
+      <div class="card-container">
+        <div class="signature-card">
+          <div class="card-content">
+            <div class="avatar">
+              <img src="https://avatars.githubusercontent.com/u/118320498?v=4" alt="Avatar của Zakhanh">
+            </div>
+            <h2 class="name">ZAKHANH</h2>
+            <p class="title">Full-stack Developer & UI/UX Enthusiast</p>
+            <p class="quote">"Crafting digital experiences with code and coffee."</p>
+            <div class="social-links">
+              <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+              <a href="https://zakhanh.dev" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+            </div>
+          </div>
         </div>
-        <h2 class="name">ZAKHANH</h2>
-        <p class="title">Full-stack Developer & UI/UX Enthusiast</p>
-        <p class="quote">"Crafting digital experiences with code and coffee."</p>
-        <div class="social-links">
-          <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-          <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-          <a href="https://zakhanh.dev" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+      </div>
+    </div>
+    <!-- Card 2: Thai Hung -->
+    <div class="col-lg-6 animate-on-load animate-delay-8">
+      <div class="card-container">
+        <div class="signature-card">
+          <div class="card-content">
+            <div class="avatar">
+              <img src="https://avatars.githubusercontent.com/u/96515811?v=4" alt="Avatar của Thái Hưng">
+            </div>
+            <h2 class="name">THÁI HƯNG</h2>
+            <p class="title">Back-end Developer & System Architect</p>
+            <p class="quote">"Turning complex problems into elegant solutions."</p>
+            <div class="social-links">
+              <a href="https://github.com/DThaiHung" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+              <a href="#" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- END SIGNATURE CARD SECTION -->
 
 </main>
 
@@ -234,36 +261,35 @@
 </script>
 
 <script>
-  // SCRIPT FOR SIGNATURE CARD
+  // SCRIPT FOR SIGNATURE CARDS
   document.addEventListener('DOMContentLoaded', () => {
-    const cardContainer = document.querySelector('.card-container');
-    const card = document.querySelector('.signature-card');
+    const cardContainers = document.querySelectorAll('.card-container');
 
-    if (!cardContainer || !card) {
-      console.error("Không tìm thấy card container hoặc signature card.");
-      return;
-    }
+    cardContainers.forEach(container => {
+      const card = container.querySelector('.signature-card');
+      if (!card) return;
 
-    cardContainer.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const maxRotate = 8; // Giảm độ nghiêng một chút cho tinh tế hơn
-      const rotateY = (x / (rect.width / 2)) * maxRotate;
-      const rotateX = -(y / (rect.height / 2)) * maxRotate;
-      card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`; // Giảm độ phóng to
-    });
+      container.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        const maxRotate = 8;
+        const rotateY = (x / (rect.width / 2)) * maxRotate;
+        const rotateX = -(y / (rect.height / 2)) * maxRotate;
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
+      });
 
-    cardContainer.addEventListener('mouseleave', () => {
-      card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
-    });
+      container.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+      });
 
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
     });
   });
 </script>
