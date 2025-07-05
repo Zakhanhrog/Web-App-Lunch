@@ -288,6 +288,7 @@
   }
 </script>
 <script th:inline="javascript">
+  // --- SCRIPT BLOCK CHO LOGIC ĐẶT HÀNG THÔNG THƯỜNG ---
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
     if (!orderForm) return;
@@ -338,54 +339,47 @@
         hiddenMealPriceInput.value = this.value;
       });
     }
+  });
 
-    // --- LOGIC TỰ ĐỘNG ĐẶT HÀNG TỪ AI ---
-    function applyAiSuggestion() {
-      const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
-      if (suggestedItemsJson) {
-        try {
-          const itemIds = JSON.parse(suggestedItemsJson);
-          if (Array.isArray(itemIds) && itemIds.length > 0) {
+  // --- SCRIPT BLOCK RIÊNG BIỆT VÀ AN TOÀN CHO LOGIC TỰ ĐỘNG CỦA AI ---
+  // Sử dụng setTimeout để đảm bảo trình duyệt đã render xong tất cả các phần tử.
+  setTimeout(function() {
+    const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
+    if (suggestedItemsJson) {
+      try {
+        const itemIds = JSON.parse(suggestedItemsJson);
+        if (Array.isArray(itemIds) && itemIds.length > 0) {
 
-            // Đếm xem có bao nhiêu món có thể áp dụng
-            let itemsAppliedCount = 0;
-            itemIds.forEach(id => {
-              const checkbox = document.getElementById('item_check_' + id);
-              if (checkbox && !checkbox.disabled) {
-                checkbox.checked = true;
-                itemsAppliedCount++;
-              }
-            });
-
-            // Nếu ít nhất một món được chọn thành công, tiến hành đặt hàng
-            if (itemsAppliedCount > 0) {
-              const orderForm = document.getElementById('orderForm');
-              const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
-
-              // Đảm bảo là 'Đặt Ngay' bằng cách xóa giá trị mealPrice
-              if (hiddenMealPriceInput) {
-                hiddenMealPriceInput.value = '';
-              }
-
-              // Gửi form đi
-              orderForm.submit();
-            } else {
-              // Nếu không có món nào được chọn (ví dụ: tất cả đều hết hàng), thông báo cho người dùng
-              alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');
+          let itemsAppliedCount = 0;
+          itemIds.forEach(id => {
+            const checkbox = document.getElementById('item_check_' + id);
+            if (checkbox && !checkbox.disabled) {
+              checkbox.checked = true;
+              itemsAppliedCount++;
             }
+          });
+
+          // Nếu có ít nhất một món được áp dụng thành công
+          if (itemsAppliedCount > 0) {
+            // Lấy đối tượng modal từ DOM
+            const orderModalElement = document.getElementById('orderModal');
+            if (orderModalElement) {
+              // Tạo một instance của Bootstrap Modal và hiển thị nó
+              const orderModal = new bootstrap.Modal(orderModalElement);
+              orderModal.show();
+            }
+          } else {
+            alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');
           }
-        } catch (e) {
-          console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
-        } finally {
-          // Luôn xóa key sau khi đã xử lý xong
-          sessionStorage.removeItem('aiSuggestedItems');
         }
+      } catch (e) {
+        console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
+      } finally {
+        // Luôn xóa key sau khi đã xử lý xong
+        sessionStorage.removeItem('aiSuggestedItems');
       }
     }
-
-    // Gọi hàm ngay khi trang được tải xong
-    applyAiSuggestion();
-  });
+  }, 200); // Trì hoãn 200ms để đảm bảo an toàn
 </script>
 </body>
 </html>

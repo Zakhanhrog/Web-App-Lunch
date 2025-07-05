@@ -149,14 +149,16 @@
             if (latestSuggestedItems) {
                 const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
                 if (itemIds.length > 0) {
-                    localStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
-                    alert('Các món ăn đã được thêm vào giỏ hàng của bạn. Chúng tôi sẽ chuyển bạn đến trang đặt món.');
+                    // SỬA TẠI ĐÂY: Dùng sessionStorage
+                    sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
+                    // SỬA TẠI ĐÂY: Xóa alert()
                     window.location.href = '/order/menu';
                 }
             }
         }
 
         function saveHistory() {
+            // Có thể giữ lại localStorage cho lịch sử chat vì nó cần lưu lại giữa các lần mở trình duyệt
             localStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
         }
 
@@ -167,7 +169,10 @@
             if (chatHistory.length === 0) {
                 renderInitialMessage();
             } else {
-                chatHistory.forEach(msg => renderMessage(msg.role, msg.content, msg.suggestion));
+                // Phải tạo lại nút "Áp dụng" khi tải lại lịch sử
+                chatHistory.forEach(msg => {
+                    renderMessage(msg.role, msg.content, msg.suggestion);
+                });
             }
             chatInput.focus();
         }
@@ -176,6 +181,7 @@
             const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
             chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
             renderMessage('assistant', initialMessage, null);
+            saveHistory(); // Lưu tin nhắn chào mừng
         }
 
         function showTypingIndicator(show) {
@@ -220,8 +226,10 @@
                     throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
                 }
 
-                renderMessage('assistant', data.explanation, data.suggestedItems);
-                chatHistory.push({ role: 'assistant', content: data.explanation, suggestion: data.suggestedItems });
+                // Cập nhật lịch sử với suggestion từ AI
+                const aiMessage = { role: 'assistant', content: data.explanation, suggestion: data.suggestedItems };
+                chatHistory.push(aiMessage);
+                renderMessage(aiMessage.role, aiMessage.content, aiMessage.suggestion);
                 saveHistory();
 
             } catch (error) {
