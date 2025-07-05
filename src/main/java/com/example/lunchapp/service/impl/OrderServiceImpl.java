@@ -223,17 +223,15 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
-    @Override
-    @Transactional
-    public void deleteOrderById(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
-
+    private void refundAndRestoreStock(Order order) {
         User userToRefund = order.getOrderedByAdmin() != null ? order.getOrderedByAdmin() : order.getUser();
 
         if (userToRefund != null) {
+            logger.info("Hoàn tiền {} cho người dùng '{}' (ID: {})", order.getTotalAmount(), userToRefund.getUsername(), userToRefund.getId());
             userToRefund.setBalance(userToRefund.getBalance().add(order.getTotalAmount()));
             userRepository.save(userToRefund);
+        } else {
+            logger.warn("Không tìm thấy người dùng để hoàn tiền cho đơn hàng ID: {}", order.getId());
         }
 
         for (OrderItem item : order.getOrderItems()) {
@@ -242,19 +240,33 @@ public class OrderServiceImpl implements OrderService {
                 Integer currentDailyQuantity = foodItem.getDailyQuantity();
                 foodItem.setDailyQuantity(currentDailyQuantity + item.getQuantity());
                 foodItemRepository.save(foodItem);
+                logger.info("Khôi phục số lượng món '{}' (ID: {}) thêm {}", foodItem.getName(), foodItem.getId(), item.getQuantity());
             }
         }
-        orderRepository.delete(order);
     }
 
     @Override
     @Transactional
+    public void deleteOrderById(Long orderId) {
+        Order order = orderRepository.findByIdFetchingAll(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
+
+        refundAndRestoreStock(order);
+
+        logger.info("Xóa đơn hàng ID: {}", orderId);
+        orderRepository.delete(order);
+    }
+
+
+    @Override
+    @Transactional
     public void cancelOrderByIdAndRefund(Long orderId, Long currentUserId) {
-        Order orderToCancel = orderRepository.findById(orderId)
+        Order orderToCancel = orderRepository.findByIdFetchingAll(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId + " để hủy."));
 
         User currentUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng hiện tại."));
+
         if (orderToCancel.getUser() == null || !orderToCancel.getUser().getId().equals(currentUserId) || orderToCancel.getOrderedByAdmin() != null) {
             throw new RuntimeException("Bạn không có quyền hủy đơn hàng này.");
         }
@@ -270,7 +282,10 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Đã ngoài thời gian cho phép hủy đơn hàng hôm nay.");
         }
 
-        deleteOrderById(orderId);
+        refundAndRestoreStock(orderToCancel);
+
+        logger.info("Người dùng '{}' hủy đơn hàng ID: {}", currentUser.getUsername(), orderId);
+        orderRepository.delete(orderToCancel);
     }
 
     @Override

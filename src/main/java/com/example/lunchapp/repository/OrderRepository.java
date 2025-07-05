@@ -42,4 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT MAX(o.dailyOrderNumber) FROM Order o WHERE o.orderDate BETWEEN :startOfDay AND :endOfDay")
     Optional<Long> findMaxDailyOrderNumberByDate(@Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderedByAdmin LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem WHERE o.id = :orderId")
+    Optional<Order> findByIdFetchingAll(@Param("orderId") Long orderId);
 }
