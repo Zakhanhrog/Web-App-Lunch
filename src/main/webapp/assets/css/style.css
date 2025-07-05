@@ -33,7 +33,7 @@ main.container {
     --shadow-md: 0 5px 10px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -2px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 12px 25px -3px rgba(0, 0, 0, 0.2), 0 8px 10px -4px rgba(0, 0, 0, 0.1);
 
-    --border-radius: 0.6rem;
+    --border-radius: 0.8rem;
     --transition: all 0.3s ease-in-out;
 }
 
@@ -423,4 +423,124 @@ footer {
         width: 100%;
         min-width: auto;
     }
+}
+
+/* --- Team Card True Motion Hover Effect --- */
+.team-card {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-card .card-body {
+    position: relative; /* Sân khấu */
+    min-height: 280px; /* Cố định chiều cao để chống giật */
+    padding: 2rem;
+}
+
+.team-avatar, .team-content {
+    position: absolute;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Tốc độ chuyển động */
+}
+
+/* --- TRẠNG THÁI MẶC ĐỊNH (VERTICAL) --- */
+.team-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-color);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    /* Căn giữa ngang, đẩy lên trên */
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.team-content {
+    /* Căn giữa ngang, nằm dưới avatar */
+    top: calc(2rem + 110px + 1rem); /* top avatar + height avatar + margin */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    text-align: center;
+}
+
+.team-description {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    line-height: 1.5;
+    /* Ẩn đi */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-social-links {
+    margin-top: 1rem;
+}
+
+.team-social-links a {
+    font-size: 1.5rem;
+    margin: 0 0.75rem;
+    color: var(--secondary-color);
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.team-social-links a:hover {
+    color: var(--primary-hover);
+    transform: translateY(-3px);
+}
+
+.team-name {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--heading-color);
+}
+
+.team-title {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+}
+
+/* --- TRẠNG THÁI HOVER (HORIZONTAL) --- */
+.team-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(30, 144, 255, 0.5);
+}
+
+.team-card:hover .team-avatar {
+    /* Di chuyển sang trái và căn giữa dọc */
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    left: 2rem;
+    transform: translateY(-50%);
+}
+
+.team-card:hover .team-content {
+    /* Di chuyển sang phải, căn giữa dọc và căn lề trái */
+    top: 50%;
+    left: calc(2rem + 100px + 2rem); /* left avatar + width avatar + gap */
+    transform: translateY(-50%);
+    width: calc(100% - (2rem + 100px + 2rem + 2rem)); /* 100% - left - width avatar - gap - right padding */
+    text-align: left;
+}
+
+.team-card:hover .team-description {
+    /* Hiện ra */
+    max-height: 150px;
+    opacity: 1;
+    margin-top: 0.75rem;
+}
+
+.team-card:hover .team-social-links {
+    margin-top: 1rem;
 }

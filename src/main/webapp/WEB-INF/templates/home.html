@@ -26,75 +26,11 @@
       z-index: 2;
     }
 
-    .welcome-jumbotron, .user-info-card, .dev-card {
+    .welcome-jumbotron, .user-info-card, .team-card {
       background-color: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.4);
-    }
-
-    .welcome-jumbotron::before {
-      display: none;
-    }
-
-    .dev-card {
-      padding: 2rem;
-      margin-top: 1.5rem;
-      border-radius: var(--border-radius);
-    }
-
-    .dev-profile {
-      text-align: center;
-      font-family: 'Be Vietnam Pro', sans-serif;
-    }
-
-    .dev-profile .avatar img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin: 0 auto 1rem auto;
-      border: 3px solid var(--surface-color);
-      box-shadow: 0 0 0 2px var(--primary-color);
-    }
-
-    .dev-profile .name {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--heading-color);
-      margin: 0;
-    }
-
-    .dev-profile .title {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--primary-color);
-      margin: 0.25rem 0 0.75rem 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .dev-profile .social-links a {
-      color: var(--secondary-color);
-      font-size: 1.3rem;
-      margin: 0 0.75rem;
-      transition: color 0.2s ease;
-    }
-
-    .dev-profile .social-links a:hover {
-      color: var(--primary-hover);
-    }
-
-    .dev-separator {
-      border-left: 1px solid var(--border-color);
-    }
-    @media (max-width: 991.98px) {
-      .dev-separator {
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-        padding-top: 2rem;
-        margin-top: 2rem;
-      }
     }
   </style>
 </head>
@@ -147,33 +83,41 @@
     </div>
   </div>
 
-  <div class="dev-card animate-on-load animate-delay-7">
-    <div class="row align-items-center">
-      <div class="col-lg-6">
-        <div class="dev-profile">
-          <div class="avatar">
-            <img th:src="@{/assets/images/zakhanh.png}" alt="Avatar của Zakhanh">
-          </div>
-          <h2 class="name">ZAKHANH</h2>
-          <p class="title">Full-stack Developer & UI/UX Enthusiast</p>
-          <div class="social-links">
-            <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-            <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="https://zakhanh.dev" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+  <div class="row justify-content-between align-items-stretch mt-4 animate-on-load animate-delay-7">
+    <div class="col-lg-6">
+      <div class="card team-card h-100">
+        <div class="card-body">
+          <img th:src="@{/assets/images/zakhanh.png}" class="team-avatar" alt="Avatar của Zakhanh">
+          <div class="team-content">
+            <div class="team-info">
+              <h4 class="team-name">ZAKHANH</h4>
+              <p class="team-title">CREATIVE UI/UX DESIGNER & AI INTEGRATION SPECIALIST</p>
+              <p class="team-description">Đam mê tạo ra các giao diện người dùng đẹp mắt, trực quan và tích hợp trí tuệ nhân tạo để mang lại trải nghiệm đột phá.</p>
+            </div>
+            <div class="team-social-links">
+              <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+              <a href="https://zakhanh.dev" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-6 dev-separator">
-        <div class="dev-profile">
-          <div class="avatar">
-            <img th:src="@{/assets/images/thaihung.png}" alt="Avatar của Thái Hưng">
-          </div>
-          <h2 class="name">THÁI HƯNG</h2>
-          <p class="title">Back-end Developer & System Architect</p>
-          <div class="social-links">
-            <a href="https://github.com/DThaiHung" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-            <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+    </div>
+    <div class="col-lg-6 mt-4 mt-lg-0">
+      <div class="card team-card h-100">
+        <div class="card-body">
+          <img th:src="@{/assets/images/thaihung.png}" class="team-avatar" alt="Avatar của Thái Hưng">
+          <div class="team-content">
+            <div class="team-info">
+              <h4 class="team-name">THÁI HƯNG</h4>
+              <p class="team-title">Back-end Developer & System Architect</p>
+              <p class="team-description">Chuyên gia xây dựng các hệ thống back-end vững chắc, có khả năng mở rộng và đảm bảo hiệu suất hoạt động ổn định cho ứng dụng.</p>
+            </div>
+            <div class="team-social-links">
+              <a href="https://github.com/DThaiHung" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+              <a href="#" target="_blank" aria-label="Portfolio"><i class="fas fa-globe"></i></a>
+            </div>
           </div>
         </div>
       </div>
