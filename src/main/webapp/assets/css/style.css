@@ -46,6 +46,7 @@ body {
     background-color: var(--background-color);
     color: var(--secondary-color);
     line-height: 1.6;
+    padding-top: 72px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -62,14 +63,25 @@ a:hover {
     color: var(--primary-hover);
 }
 
-.navbar.navbar-light {
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow-md);
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color) !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+footer {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
 }
 
 .navbar-brand {
@@ -82,7 +94,7 @@ a:hover {
     font-weight: 400;
     color: var(--secondary-color);
 }
-.navbar .nav-link.active, .navbar .nav-link:hover {
+.navbar .nav-link:hover {
     color: var(--primary-color);
 }
 
@@ -111,6 +123,13 @@ a:hover {
     color: var(--primary-color);
 }
 
+.navbar-separator {
+    height: 28px;
+    border-left: 1px solid var(--border-color);
+    margin-left: 1rem;
+    margin-right: 0.75rem;
+}
+
 .btn {
     border-radius: var(--border-radius);
     font-weight: 600;
@@ -118,7 +137,6 @@ a:hover {
     box-shadow: var(--shadow-sm);
 }
 .btn:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 .btn-primary {
@@ -190,7 +208,7 @@ a:hover {
 }
 
 .food-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-lg) !important;
 }
 
@@ -256,7 +274,7 @@ a:hover {
     gap: 8px;
 }
 .logo-icon {
-    height: 52px;
+    height: 44px;
     width: auto;
 }
 .navbar-brand .logo-text-wrapper {
