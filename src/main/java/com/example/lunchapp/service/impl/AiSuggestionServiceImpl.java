@@ -4,8 +4,11 @@ import com.example.lunchapp.model.dto.AiChatRequest;
 import com.example.lunchapp.model.dto.AiChatResponse;
 import com.example.lunchapp.model.dto.ChatMessage;
 import com.example.lunchapp.model.entity.FoodItem;
+import com.example.lunchapp.model.entity.Order;
+import com.example.lunchapp.model.entity.OrderItem;
 import com.example.lunchapp.service.AiChatService;
 import com.example.lunchapp.service.FoodItemService;
+import com.example.lunchapp.service.OrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +22,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -29,6 +34,7 @@ public class AiSuggestionServiceImpl implements AiChatService {
     private static final Logger logger = LoggerFactory.getLogger(AiSuggestionServiceImpl.class);
 
     private final FoodItemService foodItemService;
+    private final OrderService orderService; // Thêm OrderService để lấy lịch sử
     private final ObjectMapper objectMapper;
     private final OkHttpClient httpClient;
 
@@ -41,8 +47,9 @@ public class AiSuggestionServiceImpl implements AiChatService {
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
     @Autowired
-    public AiSuggestionServiceImpl(FoodItemService foodItemService, ObjectMapper objectMapper) {
+    public AiSuggestionServiceImpl(FoodItemService foodItemService, OrderService orderService, ObjectMapper objectMapper) {
         this.foodItemService = foodItemService;
+        this.orderService = orderService; // Injecct OrderService
         this.objectMapper = objectMapper;
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -52,16 +59,21 @@ public class AiSuggestionServiceImpl implements AiChatService {
     }
 
     @Override
-    public AiChatResponse getChatResponse(AiChatRequest chatRequest) throws IOException {
+    public AiChatResponse getChatResponse(AiChatRequest chatRequest, Long userId) throws IOException {
         if (apiKey == null || apiKey.isEmpty()) {
             logger.error("!!! CRITICAL: Groq API Key is not configured (GROQ_API_KEY).");
             throw new IOException("Dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.");
         }
 
+        // 1. Lấy ngữ cảnh: Thực đơn hôm nay và món ăn yêu thích của người dùng
         List<FoodItem> availableFoodItems = foodItemService.getAvailableFoodItemsForToday();
         String menuJson = convertFoodItemsToJson(availableFoodItems);
-        String systemMessage = buildSystemPrompt(menuJson);
+        String favoriteFoods = extractFavoriteFoods(userId);
 
+        // 2. Xây dựng prompt hệ thống mới, thông minh hơn
+        String systemMessage = buildSystemPrompt(menuJson, favoriteFoods);
+
+        // 3. Gửi yêu cầu đến AI
         ObjectNode requestBodyJson = buildRequestBody(systemMessage, chatRequest.getHistory(), chatRequest.getNewMessage());
         RequestBody body = RequestBody.create(requestBodyJson.toString(), MediaType.get("application/json; charset=utf-8"));
 
@@ -82,15 +94,15 @@ public class AiSuggestionServiceImpl implements AiChatService {
             String cleanJson = cleanupAiResponse(responseBody);
             logger.info("Cleaned JSON from AI: {}", cleanJson);
 
+            // 4. Xử lý phản hồi JSON
             JsonNode root = objectMapper.readTree(cleanJson);
-            String aiResponseText = root.path("choices").get(0).path("message").path("content").asText();
+            String aiResponseContent = root.path("choices").get(0).path("message").path("content").asText();
 
-            String finalCleanJson = cleanupAiResponse(aiResponseText);
+            String finalCleanJson = cleanupAiResponse(aiResponseContent);
             logger.info("Final clean JSON content: {}", finalCleanJson);
 
-            AiChatResponse aiChatResponse = objectMapper.readValue(finalCleanJson, AiChatResponse.class);
-            updateItemIdsFromName(aiChatResponse, availableFoodItems);
-            return aiChatResponse;
+            // 5. Trả về kết quả mà không cần cập nhật ID nữa
+            return objectMapper.readValue(finalCleanJson, AiChatResponse.class);
 
         } catch (Exception e) {
             logger.error("Error calling Groq API or parsing response", e);
@@ -128,51 +140,61 @@ public class AiSuggestionServiceImpl implements AiChatService {
         return requestBody;
     }
 
-    private String buildSystemPrompt(String menuJson) {
-        return "Bạn là 'CG LUNCH AI', một chuyên gia tư vấn ẩm thực và sức khỏe thông minh, thân thiện. Bạn chỉ giao tiếp bằng tiếng Việt."
+    private String buildSystemPrompt(String menuJson, String favoriteFoods) {
+        return "Bạn là 'CG LUNCH AI', một trợ lý đặt cơm trưa thông minh và thân thiện, chỉ giao tiếp bằng tiếng Việt."
                 + "\n\n**BỐI CẢNH:**"
-                + "\nBạn đang trò chuyện với nhân viên trong ứng dụng đặt cơm trưa. Thực đơn hôm nay có các món sau (định dạng JSON): \n" + menuJson
+                + "\n- Thực đơn hôm nay có các món sau (JSON): " + menuJson
+                + "\n- Lịch sử đặt món của người dùng cho thấy họ thường thích các món: " + favoriteFoods
                 + "\n\n**NHIỆM VỤ TỐI THƯỢNG:**"
-                + "\nBạn phải vừa trò chuyện tự nhiên, vừa đưa ra gợi ý món ăn khi cần. ĐẦU RA CỦA BẠN **BẮT BUỘC** PHẢI LÀ MỘT ĐỐI TƯỢNG JSON DUY NHẤT. Không được phép có bất kỳ ký tự nào khác bên ngoài cặp dấu `{}`."
+                + "\nPhân tích yêu cầu của người dùng và trả về một đối tượng JSON DUY NHẤT. Không được phép có bất kỳ ký tự nào khác bên ngoài cặp dấu `{}`."
                 + "\n\n**QUY TẮC VÀNG:**"
-                + "\n1.  **HIỂU Ý ĐỒ:** Phân tích kỹ yêu cầu của người dùng. Nếu họ chỉ chào hỏi hoặc trò chuyện phiếm, hãy trả lời một cách tự nhiên. Nếu họ thể hiện ý muốn ăn uống (vd: 'ăn gì bây giờ', 'gợi ý suất 50k', 'hôm nay mệt quá'), hãy đưa ra một thực đơn cụ thể."
-                + "\n2.  **ĐƯA RA GỢI Ý:** Khi đưa ra gợi ý, hãy chọn các món có trong thực đơn, kết hợp chúng một cách hợp lý và giải thích tại sao bạn chọn chúng trong trường `explanation`."
-                + "\n3.  **QUẢN LÝ NGÂN SÁCH:** Nếu người dùng đưa ra ngân sách, hãy chọn các món có tổng giá tiền gần nhất nhưng không được vượt quá."
-                + "\n4.  **XỬ LÝ TÌNH HUỐNG:**"
-                + "\n    - Nếu chỉ trò chuyện, hãy trả về một `explanation` tự nhiên và để `suggestedItems` là một mảng rỗng `[]`."
-                + "\n    - Nếu không thể đáp ứng yêu cầu (vd: ngân sách quá thấp), hãy giải thích trong `explanation` và để `suggestedItems` rỗng `[]`."
-                + "\n\n**ĐỊNH DẠNG JSON BẮT BUỘC TRẢ VỀ (CỰC KỲ QUAN TRỌNG):**"
+                + "\n1.  **HIỂU & GỢI Ý:** Nếu người dùng muốn gợi ý món ăn, hãy dựa vào cả thực đơn hôm nay và món họ yêu thích để tạo một combo hợp lý. Giải thích ngắn gọn tại sao bạn chọn chúng."
+                + "\n2.  **CHÍNH XÁC TUYỆT ĐỐI:** Khi gợi ý món ăn trong mảng `suggestedItems`, bạn BẮT BUỘC phải sử dụng chính xác `id` và `name` từ JSON thực đơn đã cho."
+                + "\n3.  **TRÒ CHUYỆN TỰ NHIÊN:** Nếu người dùng chỉ chào hỏi hoặc nói chuyện phiếm, hãy trả lời tự nhiên trong trường `explanation` và để `suggestedItems` là một mảng rỗng `[]`."
+                + "\n4.  **XỬ LÝ NGÂN SÁCH:** Nếu người dùng đưa ra ngân sách, chọn các món có tổng giá tiền không vượt quá. Nếu không thể, hãy giải thích và không gợi ý món nào."
+                + "\n\n**ĐỊNH DẠNG JSON TRẢ VỀ BẮT BUỘC:**"
                 + "\n```json\n"
                 + "{\n"
-                + "  \"explanation\": \"Phần trò chuyện và giải thích của bạn ở đây. Ví dụ: 'Chào bạn, hôm nay bạn muốn ăn gì nào?' hoặc 'Dựa trên yêu cầu một bữa ăn giàu năng lượng, mình đã chọn cho bạn cơm sườn và canh cải. Combo này sẽ giúp bạn tỉnh táo suốt buổi chiều đấy!'\",\n"
+                + "  \"explanation\": \"Phần trò chuyện và giải thích của bạn ở đây. Ví dụ: 'Chào bạn, thấy bạn hay ăn cay, hôm nay có món Gà xào sả ớt rất ngon đó, bạn thử nhé!'\",\n"
                 + "  \"suggestedItems\": [\n"
-                + "    {\"id\": 0, \"name\": \"Cơm sườn\"},\n"
-                + "    {\"id\": 0, \"name\": \"Canh cải thịt bằm\"}\n"
+                + "    {\"id\": 15, \"name\": \"Gà xào sả ớt\"}\n"
                 + "  ],\n"
-                + "  \"totalPrice\": 50000\n"
+                + "  \"totalPrice\": 35000\n"
                 + "}\n"
-                + "```\n"
-                + "**LƯU Ý:** `id` trong `suggestedItems` bạn có thể để là 0, hệ thống sẽ tự cập nhật. Chỉ cần `name` chính xác.";
+                + "```";
     }
 
     private String convertFoodItemsToJson(List<FoodItem> items) throws JsonProcessingException {
-        if (items.isEmpty()) {
+        if (items == null || items.isEmpty()) {
             return "[]";
         }
         List<SimpleFoodItem> simpleItems = items.stream()
-                .map(item -> new SimpleFoodItem(item.getName(), item.getPrice().intValue(), item.getCategory() != null ? item.getCategory().getName() : "Khác"))
+                .map(item -> new SimpleFoodItem(item.getId(), item.getName(), item.getPrice().intValue(), item.getCategory() != null ? item.getCategory().getName() : "Khác"))
                 .collect(Collectors.toList());
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simpleItems);
+        return objectMapper.writeValueAsString(simpleItems);
     }
 
-    private void updateItemIdsFromName(AiChatResponse response, List<FoodItem> availableItems) {
-        if (response.getSuggestedItems() == null) return;
+    private String extractFavoriteFoods(Long userId) {
+        try {
+            List<Order> orderHistory = orderService.getOrderHistory(userId);
+            if (orderHistory.isEmpty()) {
+                return "Chưa có dữ liệu.";
+            }
+            // Đếm số lần xuất hiện của mỗi món ăn
+            Map<String, Long> foodFrequency = orderHistory.stream()
+                    .flatMap(order -> order.getOrderItems().stream())
+                    .map(OrderItem::getFoodItem)
+                    .collect(Collectors.groupingBy(FoodItem::getName, Collectors.counting()));
 
-        for (AiChatResponse.SuggestedItem suggestedItem : response.getSuggestedItems()) {
-            availableItems.stream()
-                    .filter(foodItem -> foodItem.getName().equalsIgnoreCase(suggestedItem.getName()))
-                    .findFirst()
-                    .ifPresent(foodItem -> suggestedItem.setId(foodItem.getId()));
+            // Sắp xếp và lấy ra 3 món hàng đầu
+            return foodFrequency.entrySet().stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(3)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.joining(", "));
+        } catch (Exception e) {
+            logger.warn("Không thể lấy lịch sử đặt món cho người dùng ID {}: {}", userId, e.getMessage());
+            return "Không thể truy cập.";
         }
     }
 
@@ -185,14 +207,25 @@ public class AiSuggestionServiceImpl implements AiChatService {
         return text.trim();
     }
 
+    // Lớp nội tại để đơn giản hóa đối tượng gửi cho AI
     private static class SimpleFoodItem {
+        public Long id; // THÊM ID VÀO ĐÂY
         public String name;
         public int price;
         public String category;
-        public SimpleFoodItem(String name, int price, String category) {
+        public SimpleFoodItem(Long id, String name, int price, String category) {
+            this.id = id;
             this.name = name;
             this.price = price;
             this.category = category;
         }
+    }
+
+    // Ghi đè phương thức từ interface
+    @Override
+    public AiChatResponse getChatResponse(AiChatRequest chatRequest) throws IOException {
+        // Phương thức này sẽ không được sử dụng trực tiếp, nhưng cần để tương thích interface.
+        // Hoặc tốt hơn là cập nhật interface.
+        throw new UnsupportedOperationException("Please provide userId to get a personalized response.");
     }
 }

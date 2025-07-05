@@ -339,32 +339,51 @@
       });
     }
 
+    // --- LOGIC TỰ ĐỘNG ĐẶT HÀNG TỪ AI ---
     function applyAiSuggestion() {
       const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
       if (suggestedItemsJson) {
         try {
           const itemIds = JSON.parse(suggestedItemsJson);
           if (Array.isArray(itemIds) && itemIds.length > 0) {
-            document.querySelectorAll('input[name="selectedItemCheck"]:checked').forEach(checkbox => {
-              checkbox.checked = false;
-            });
+
+            // Đếm xem có bao nhiêu món có thể áp dụng
+            let itemsAppliedCount = 0;
             itemIds.forEach(id => {
               const checkbox = document.getElementById('item_check_' + id);
               if (checkbox && !checkbox.disabled) {
                 checkbox.checked = true;
+                itemsAppliedCount++;
               }
             });
-            const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
-            orderModal.show();
+
+            // Nếu ít nhất một món được chọn thành công, tiến hành đặt hàng
+            if (itemsAppliedCount > 0) {
+              const orderForm = document.getElementById('orderForm');
+              const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
+
+              // Đảm bảo là 'Đặt Ngay' bằng cách xóa giá trị mealPrice
+              if (hiddenMealPriceInput) {
+                hiddenMealPriceInput.value = '';
+              }
+
+              // Gửi form đi
+              orderForm.submit();
+            } else {
+              // Nếu không có món nào được chọn (ví dụ: tất cả đều hết hàng), thông báo cho người dùng
+              alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');
+            }
           }
         } catch (e) {
-          console.error("Lỗi khi phân tích gợi ý từ AI:", e);
+          console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
         } finally {
+          // Luôn xóa key sau khi đã xử lý xong
           sessionStorage.removeItem('aiSuggestedItems');
         }
       }
     }
 
+    // Gọi hàm ngay khi trang được tải xong
     applyAiSuggestion();
   });
 </script>

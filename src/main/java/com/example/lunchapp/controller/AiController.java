@@ -2,6 +2,7 @@ package com.example.lunchapp.controller;
 
 import com.example.lunchapp.model.dto.AiChatRequest;
 import com.example.lunchapp.model.dto.AiChatResponse;
+import com.example.lunchapp.model.dto.UserDto; // Cần import UserDto
 import com.example.lunchapp.service.AiChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +33,14 @@ public class AiController {
     @PostMapping("/api/ai/chat")
     @ResponseBody
     public ResponseEntity<?> getChatResponse(@RequestBody AiChatRequest request, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) {
+        UserDto loggedInUser = (UserDto) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
             return ResponseEntity.status(401).body("Vui lòng đăng nhập để sử dụng tính năng này.");
         }
 
         try {
-            AiChatResponse response = aiChatService.getChatResponse(request);
+            // Truyền userId xuống service
+            AiChatResponse response = aiChatService.getChatResponse(request, loggedInUser.getId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             AiChatResponse errorResponse = new AiChatResponse();
