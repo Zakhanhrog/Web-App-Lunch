@@ -10,7 +10,11 @@
 </head>
 <body>
 
-<div id="page-transition-overlay"></div>
+<div id="page-transition-overlay">
+  <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
+  </svg>
+</div>
 <div id="preloader">
   <div class="preloader-content">
     <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
@@ -68,6 +72,7 @@
 <div th:replace="~{fragments/chat-widget :: chat-widget}"></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script th:src="@{/assets/js/transition.js}"></script>
 

@@ -86,7 +86,12 @@
     </style>
 </head>
 <body>
-<div id="page-transition-overlay"></div>
+
+<div id="page-transition-overlay">
+    <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
+    </svg>
+</div>
 <div id="preloader">
     <div class="preloader-content">
         <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
@@ -161,16 +166,13 @@
             if (latestSuggestedItems) {
                 const itemIds = latestSuggestedItems.map(item => item.id).filter(id => id > 0);
                 if (itemIds.length > 0) {
-                    // SỬA TẠI ĐÂY: Dùng sessionStorage
                     sessionStorage.setItem('aiSuggestedItems', JSON.stringify(itemIds));
-                    // SỬA TẠI ĐÂY: Xóa alert()
                     window.location.href = '/order/menu';
                 }
             }
         }
 
         function saveHistory() {
-            // Có thể giữ lại localStorage cho lịch sử chat vì nó cần lưu lại giữa các lần mở trình duyệt
             localStorage.setItem(chatHistoryKey, JSON.stringify(chatHistory));
         }
 
@@ -181,7 +183,6 @@
             if (chatHistory.length === 0) {
                 renderInitialMessage();
             } else {
-                // Phải tạo lại nút "Áp dụng" khi tải lại lịch sử
                 chatHistory.forEach(msg => {
                     renderMessage(msg.role, msg.content, msg.suggestion);
                 });
@@ -193,7 +194,7 @@
             const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
             chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
             renderMessage('assistant', initialMessage, null);
-            saveHistory(); // Lưu tin nhắn chào mừng
+            saveHistory();
         }
 
         function showTypingIndicator(show) {
@@ -238,7 +239,6 @@
                     throw new Error(data.explanation || 'Có lỗi xảy ra từ phía server.');
                 }
 
-                // Cập nhật lịch sử với suggestion từ AI
                 const aiMessage = { role: 'assistant', content: data.explanation, suggestion: data.suggestedItems };
                 chatHistory.push(aiMessage);
                 renderMessage(aiMessage.role, aiMessage.content, aiMessage.suggestion);
@@ -270,5 +270,6 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script th:src="@{/assets/js/transition.js}"></script>
+
 </body>
 </html>
