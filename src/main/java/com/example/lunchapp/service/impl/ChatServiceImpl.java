@@ -1,7 +1,6 @@
 package com.example.lunchapp.service.impl;
 
 import com.example.lunchapp.model.dto.ChatMessageDto;
-import com.example.lunchapp.model.dto.NotificationDto;
 import com.example.lunchapp.model.entity.ChatMessage;
 import com.example.lunchapp.model.entity.MessageType;
 import com.example.lunchapp.model.entity.User;
@@ -9,7 +8,6 @@ import com.example.lunchapp.repository.ChatMessageRepository;
 import com.example.lunchapp.repository.UserRepository;
 import com.example.lunchapp.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -23,22 +21,20 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
-    private final SimpMessagingTemplate messagingTemplate; // Thêm vào
 
     @Autowired
-    public ChatServiceImpl(ChatMessageRepository chatMessageRepository, UserRepository userRepository, SimpMessagingTemplate messagingTemplate) {
+    public ChatServiceImpl(ChatMessageRepository chatMessageRepository, UserRepository userRepository) {
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
-        this.messagingTemplate = messagingTemplate; // Thêm vào
     }
 
     @Override
     @Transactional
     public ChatMessageDto saveMessage(ChatMessageDto chatMessageDto) {
         User sender = userRepository.findById(chatMessageDto.getSenderId())
-                .orElseThrow(() -> new RuntimeException("Sender not found"));
+                .orElseThrow(() -> new RuntimeException("Sender not found with id: " + chatMessageDto.getSenderId()));
         User recipient = userRepository.findById(chatMessageDto.getRecipientId())
-                .orElseThrow(() -> new RuntimeException("Recipient not found"));
+                .orElseThrow(() -> new RuntimeException("Recipient not found with id: " + chatMessageDto.getRecipientId()));
 
         ChatMessage chatMessage = ChatMessage.builder()
                 .sender(sender)
@@ -50,16 +46,6 @@ public class ChatServiceImpl implements ChatService {
                 .build();
 
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
-
-        // Gửi thông báo đến topic chung
-        NotificationDto notification = new NotificationDto(
-                recipient.getId(),
-                sender.getId(),
-                sender.getUsername(),
-                chatMessage.getContent()
-        );
-        messagingTemplate.convertAndSend("/topic/notifications", notification);
-
         return convertToDto(savedMessage);
     }
 

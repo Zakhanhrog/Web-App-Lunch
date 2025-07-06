@@ -392,6 +392,7 @@
       const currentUser = /*[[${loggedInUser}]]*/ null;
       const adminUser = /*[[${chatAdminUser}]]*/ null;
       if (!currentUser || !adminUser) return;
+
       const widgetBubble = document.getElementById('chat-widget-bubble');
       const widgetWindow = document.getElementById('chat-widget-window');
       const notificationDot = document.getElementById('widget-notification-dot');
@@ -405,8 +406,10 @@
       const imageModalOverlay = document.getElementById('image-modal-overlay');
       const modalImageContent = document.getElementById('modal-image-content');
       const closeModalBtn = document.getElementById('close-modal-btn');
+
       let stompClient = null;
       let hasLoadedHistory = false;
+      let isWindowOpen = false;
 
       const createAvatarColor = (username) => {
         const colors = ['#007bff', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'];
@@ -416,9 +419,14 @@
 
       const connect = () => {
         if (stompClient && stompClient.active) {
-          if (!hasLoadedHistory) loadChatHistory();
+          console.log('STOMP client is already active.');
+          if (isWindowOpen && !hasLoadedHistory) {
+            loadChatHistory();
+          }
           return;
-        };
+        }
+
+        console.log('Connecting STOMP client...');
         const wsUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
         stompClient = new StompJs.Client({
           brokerURL: wsUrl,
@@ -426,28 +434,56 @@
           heartbeatIncoming: 10000,
           heartbeatOutgoing: 10000
         });
+
         stompClient.onConnect = (frame) => {
+          console.log('STOMP client connected.');
           stompClient.subscribe('/user/' + currentUser.username + '/queue/messages', onMessageReceived);
           stompClient.subscribe('/user/' + currentUser.username + '/queue/notifications', onNotificationReceived);
-          if (!hasLoadedHistory) {
+          if (isWindowOpen && !hasLoadedHistory) {
             loadChatHistory();
           }
         };
+
         stompClient.onStompError = (frame) => {
-          console.error('Broker reported error: ' + frame.headers['message'], frame.body);
+          console.error('Broker reported error: ' + frame.headers['message'], 'Additional details: ' + frame.body);
         };
+
         stompClient.activate();
       };
 
       const onNotificationReceived = (payload) => {
-        console.log('[Notification Received]', JSON.parse(payload.body));
         const notification = JSON.parse(payload.body);
-        if (notification.recipientId === currentUser.id && !widgetWindow.classList.contains('is-open')) {
+        console.log('[Notification Received]', notification);
+        if (notification.recipientId === currentUser.id && !isWindowOpen) {
+          console.log('Displaying notification dot.');
           notificationDot.style.display = 'block';
         }
       };
 
+      const onMessageReceived = (payload) => {
+        const message = JSON.parse(payload.body);
+        console.log('[Message Received]', message);
+
+        if (!isWindowOpen) {
+          console.log('Window is not open, showing notification dot.');
+          notificationDot.style.display = 'block';
+          return;
+        }
+
+        const existingMessageElement = document.getElementById('widget-message-group-' + message.id);
+        if (existingMessageElement) {
+          updateMessage(message, existingMessageElement);
+          return;
+        }
+
+        const lastMessageElement = chatMessagesArea.lastElementChild;
+        const prevMsg = lastMessageElement ? { senderId: lastMessageElement.dataset.senderId } : null;
+        displayMessage(message, prevMsg);
+        scrollToBottom('smooth');
+      };
+
       const loadChatHistory = async () => {
+        console.log('Loading chat history...');
         try {
           const response = await fetch(`/chat/history/${adminUser.id}`);
           if (!response.ok) throw new Error('Failed to fetch history');
@@ -458,34 +494,11 @@
             displayMessage(msg, prevMsg);
           });
           scrollToBottom('instant');
-          if (widgetWindow.classList.contains('is-open')) messageInput.focus();
           hasLoadedHistory = true;
+          console.log('Chat history loaded successfully.');
         } catch (e) {
+          console.error('Error loading chat history:', e);
           chatMessagesArea.innerHTML = '<p class="text-center text-danger">Không thể tải lịch sử trò chuyện.</p>';
-        }
-      };
-
-      const onMessageReceived = (payload) => {
-        console.log('[Message Received]', JSON.parse(payload.body));
-        const message = JSON.parse(payload.body);
-        const existingMessageElement = document.getElementById('widget-message-group-' + message.id);
-        if (existingMessageElement) {
-          updateMessage(message, existingMessageElement);
-          return;
-        }
-        const lastMessageElement = chatMessagesArea.lastElementChild;
-        const prevMsg = lastMessageElement ? { senderId: lastMessageElement.dataset.senderId } : null;
-        displayMessage(message, prevMsg);
-        scrollToBottom('smooth');
-      };
-
-      const updateMessage = (message, element) => {
-        if (message.messageType === 'RETRACTED') {
-          const bubble = element.querySelector('.widget-message-bubble');
-          bubble.textContent = message.content;
-          bubble.className = 'widget-message-bubble retracted';
-          const retractBtn = element.querySelector('.widget-retract-btn');
-          if (retractBtn) retractBtn.remove();
         }
       };
 
@@ -503,23 +516,20 @@
             destination: '/app/chat.sendMessage',
             body: JSON.stringify(chatMessage)
           });
+          console.log('Sent message:', chatMessage);
+        } else {
+          console.error('Cannot send message, STOMP client not active or content is empty.');
         }
       };
 
-      const uploadImage = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-          const response = await fetch('/upload/image/chat', { method: 'POST', body: formData });
-          if (!response.ok) throw new Error('Upload failed');
-          const result = await response.json();
-          sendMessage('IMAGE', result.url);
-        } catch (error) {
-          alert('Tải ảnh lên thất bại.');
+      const updateMessage = (message, element) => {
+        if (message.messageType === 'RETRACTED') {
+          const bubble = element.querySelector('.widget-message-bubble');
+          bubble.textContent = message.content;
+          bubble.className = 'widget-message-bubble retracted';
+          const retractBtn = element.querySelector('.widget-retract-btn');
+          if (retractBtn) retractBtn.remove();
         }
-        event.target.value = '';
       };
 
       const displayMessage = (message, prevMessage) => {
@@ -572,6 +582,22 @@
         chatMessagesArea.appendChild(messageGroup);
       };
 
+      const uploadImage = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const response = await fetch('/upload/image/chat', { method: 'POST', body: formData });
+          if (!response.ok) throw new Error('Upload failed');
+          const result = await response.json();
+          sendMessage('IMAGE', result.url);
+        } catch (error) {
+          alert('Tải ảnh lên thất bại.');
+        }
+        event.target.value = '';
+      };
+
       const handleWidgetChatAreaClick = (event) => {
         const retractButton = event.target.closest('.widget-retract-btn');
         if (retractButton) {
@@ -600,12 +626,14 @@
       };
 
       widgetBubble.addEventListener('click', () => {
+        isWindowOpen = true;
         widgetWindow.classList.add('is-open');
         notificationDot.style.display = 'none';
         connect();
       });
 
       closeWidgetBtn.addEventListener('click', () => {
+        isWindowOpen = false;
         widgetWindow.classList.remove('is-open');
       });
 

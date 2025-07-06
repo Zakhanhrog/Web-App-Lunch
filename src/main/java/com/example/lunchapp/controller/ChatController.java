@@ -57,10 +57,10 @@ public class ChatController {
         );
 
         NotificationDto notification = new NotificationDto(
-                savedMessage.getSenderId(),
                 savedMessage.getRecipientId(),
-                "Bạn có tin nhắn mới từ " + savedMessage.getSenderUsername(),
-                savedMessage.getSenderUsername()
+                savedMessage.getSenderId(),
+                savedMessage.getSenderUsername(),
+                "Bạn có tin nhắn mới từ " + savedMessage.getSenderUsername()
         );
 
         messagingTemplate.convertAndSendToUser(
@@ -68,7 +68,7 @@ public class ChatController {
                 "/queue/notifications",
                 notification
         );
-        logger.info("Sent notification to {}", savedMessage.getRecipientUsername());
+        logger.info("Sent notification to {}: {}", savedMessage.getRecipientUsername(), notification);
     }
 
     @DeleteMapping("/chat/messages/{messageId}")

@@ -544,3 +544,101 @@ footer {
 .team-card:hover .team-social-links {
     margin-top: 1rem;
 }
+/* === Preloader Styling === */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.75s ease, visibility 0.75s ease;
+    -webkit-transition: opacity 0.75s ease, visibility 0.75s ease;
+}
+
+#preloader img {
+    width: 80px;
+    animation: breath-effect 2.2s ease-in-out infinite;
+    -webkit-animation: breath-effect 2.2s ease-in-out infinite;
+}
+
+/* Hiệu ứng "Thở" */
+@keyframes breath-effect {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* Lớp tiện ích để ẩn preloader đi */
+#preloader.preloader-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* === Advanced Preloader Styling === */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: #f8f9fa; /* Màu nền trắng ngà giống web của bạn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preloader-content {
+    text-align: center;
+    color: #007bff; /* Màu xanh chủ đạo của bạn */
+}
+
+.preloader-logo {
+    width: 80px;
+    margin-bottom: 20px;
+    animation: breath-effect 2.2s ease-in-out infinite;
+    -webkit-animation: breath-effect 2.2s ease-in-out infinite;
+}
+
+@keyframes breath-effect {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.preloader-counter {
+    font-size: 2em;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+
+.preloader-progress-bar {
+    width: 150px;
+    height: 4px;
+    background-color: rgba(0, 123, 255, 0.2); /* Màu nền của thanh progress */
+    border-radius: 2px;
+    margin: 15px auto 0;
+    overflow: hidden;
+}
+
+#preloader-progress {
+    width: 0;
+    height: 100%;
+    background-color: #007bff; /* Màu của thanh progress */
+    border-radius: 2px;
+}
