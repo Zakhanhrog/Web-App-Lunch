@@ -79,6 +79,20 @@
   </style>
 </head>
 <body>
+
+<div id="page-transition-overlay"></div>
+<div id="preloader">
+  <div class="preloader-content">
+    <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
+    <div class="preloader-counter">
+      <span id="preloader-number">0</span>%
+    </div>
+    <div class="preloader-progress-bar">
+      <div id="preloader-progress"></div>
+    </div>
+  </div>
+</div>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container my-4">
   <h1 class="mb-4">Thực Đơn Hôm Nay</h1>
@@ -288,7 +302,6 @@
   }
 </script>
 <script th:inline="javascript">
-  // --- SCRIPT BLOCK CHO LOGIC ĐẶT HÀNG THÔNG THƯỜNG ---
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
     if (!orderForm) return;
@@ -341,8 +354,6 @@
     }
   });
 
-  // --- SCRIPT BLOCK RIÊNG BIỆT VÀ AN TOÀN CHO LOGIC TỰ ĐỘNG CỦA AI ---
-  // Sử dụng setTimeout để đảm bảo trình duyệt đã render xong tất cả các phần tử.
   setTimeout(function() {
     const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
     if (suggestedItemsJson) {
@@ -359,12 +370,9 @@
             }
           });
 
-          // Nếu có ít nhất một món được áp dụng thành công
           if (itemsAppliedCount > 0) {
-            // Lấy đối tượng modal từ DOM
             const orderModalElement = document.getElementById('orderModal');
             if (orderModalElement) {
-              // Tạo một instance của Bootstrap Modal và hiển thị nó
               const orderModal = new bootstrap.Modal(orderModalElement);
               orderModal.show();
             }
@@ -375,11 +383,14 @@
       } catch (e) {
         console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
       } finally {
-        // Luôn xóa key sau khi đã xử lý xong
         sessionStorage.removeItem('aiSuggestedItems');
       }
     }
-  }, 200); // Trì hoãn 200ms để đảm bảo an toàn
+  }, 200);
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script th:src="@{/assets/js/transition.js}"></script>
+
 </body>
 </html>

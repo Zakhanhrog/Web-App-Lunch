@@ -642,3 +642,16 @@ footer {
     background-color: #007bff; /* Màu của thanh progress */
     border-radius: 2px;
 }
+
+/* === Page Exit Transition Styling === */
+#page-transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000; /* Phải có z-index cao nhất */
+    background: linear-gradient(180deg, #007bff, #1c8dff); /* Gradient màu xanh chủ đạo của bạn */
+    transform: translateY(-100%); /* Ban đầu ẩn ở phía trên */
+    -webkit-transform: translateY(-100%);
+}

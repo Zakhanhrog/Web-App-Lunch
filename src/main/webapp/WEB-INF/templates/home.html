@@ -36,7 +36,7 @@
 </head>
 <body>
 
-<!-- Preloader Start -->
+<div id="page-transition-overlay"></div>
 <div id="preloader">
   <div class="preloader-content">
     <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
@@ -48,7 +48,6 @@
     </div>
   </div>
 </div>
-<!-- Preloader End -->
 
 <canvas id="fluid"></canvas>
 
@@ -165,53 +164,8 @@
 
 <script th:src="@{/assets/js/original-fluid.js}" defer></script>
 
-<!-- GSAP Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-<!-- Preloader Control Script -->
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const preloader = document.getElementById('preloader');
-    const counterElement = document.getElementById('preloader-number');
-    const progressBar = document.getElementById('preloader-progress');
-    const body = document.querySelector('body');
-
-    if (!preloader || !counterElement || !progressBar) {
-      console.error("Preloader elements not found!");
-      return;
-    }
-
-    body.style.overflow = 'hidden'; // Khóa cuộn trang khi preloader hiển thị
-
-    // GSAP Animation Timeline
-    const tl = gsap.timeline({
-      onComplete: () => {
-        body.style.overflow = ''; // Mở lại cuộn trang khi animation hoàn tất
-      }
-    });
-
-    tl.to(counterElement, {
-      textContent: 100,
-      duration: 2.5,
-      ease: "power2.out",
-      roundProps: "textContent",
-      snap: { textContent: 1 }
-    })
-            .to(progressBar, {
-              width: "100%",
-              duration: 2.5,
-              ease: "power2.out"
-            }, "<") // "<" đảm bảo animation này bắt đầu cùng lúc với animation trước
-            .to(preloader, {
-              opacity: 0,
-              duration: 0.75,
-              ease: "power1.inOut",
-              onComplete: () => {
-                preloader.style.display = 'none';
-              }
-            }, "-=0.5"); // Bắt đầu animation này 0.5s trước khi animation trước kết thúc
-  });
-</script>
+<script th:src="@{/assets/js/transition.js}"></script>
 
 </body>
 </html>

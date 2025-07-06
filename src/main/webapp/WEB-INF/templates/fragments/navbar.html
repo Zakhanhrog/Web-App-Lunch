@@ -3,7 +3,7 @@
 <body>
 <nav th:fragment="navbar" class="navbar navbar-expand-lg" th:classappend="${isUserPage} ? 'animate-on-load' : ''">
   <div class="container-fluid">
-    <a class="navbar-brand logo-container" th:href="@{/}">
+    <a class="navbar-brand logo-container" th:href="@{/}" data-transition="home">
       <img class="logo-icon" th:src="@{/assets/images/logo-icon.png}" alt="Logo">
       <div class="logo-text-wrapper">
         <span class="logo-main-text">CG LUNCH</span>
@@ -17,7 +17,7 @@
       <div class="navbar-separator d-none d-lg-block"></div>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-1' : ''">
-          <a class="nav-link" th:href="@{/}">Trang Chủ</a>
+          <a class="nav-link" th:href="@{/}" data-transition="home">Trang Chủ</a>
         </li>
         <li class="nav-item" th:classappend="${isUserPage} ? 'animate-on-load animate-delay-2' : ''" th:if="${session.loggedInUser != null}">
           <a class="nav-link" th:href="@{/order/menu}">Đặt Món</a>
