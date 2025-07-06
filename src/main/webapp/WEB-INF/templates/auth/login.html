@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <style>
         .navbar-brand.brand-premium {
             font-family: 'Poppins', sans-serif !important;
@@ -31,6 +32,24 @@
     </style>
 </head>
 <body>
+<div id="page-transition-overlay">
+    <div class="transition-particles">
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+    </div>
+    <div class="transition-content">
+        <img th:src="@{/assets/images/logo-icon.png}" alt="Loading..." class="transition-logo"/>
+        <p class="transition-text">Chuẩn bị bữa trưa tuyệt vời...</p>
+    </div>
+    <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
+    </svg>
+</div>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container">
     <div class="card auth-card">
@@ -41,7 +60,7 @@
             </div>
             <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-            <form th:action="@{/auth/login}" th:object="${loginRequestDto}" method="post" novalidate>
+            <form id="loginForm" th:action="@{/auth/login}" th:object="${loginRequestDto}" method="post" novalidate>
                 <div class="mb-3">
                     <label for="username" class="form-label">Tên đăng nhập</label>
                     <input type="text" class="form-control" id="username" th:field="*{username}" th:errorclass="is-invalid" required>
@@ -98,6 +117,44 @@
                 });
             });
             successModal.show();
+        }
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script th:src="@{/assets/js/transition.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
+
+                if (usernameInput.value.trim() !== '' && passwordInput.value.trim() !== '') {
+                    sessionStorage.setItem('isNavigatingHome', 'true');
+                    const transitionOverlay = document.getElementById('page-transition-overlay');
+                    if (transitionOverlay) {
+                        transitionOverlay.style.display = 'block';
+                        gsap.fromTo(transitionOverlay,
+                            { y: '-101%' },
+                            {
+                                y: '0%',
+                                duration: 0.8,
+                                ease: 'power3.inOut',
+                                onComplete: () => {
+                                    loginForm.submit();
+                                }
+                            }
+                        );
+                    } else {
+                        loginForm.submit();
+                    }
+                } else {
+                    loginForm.submit();
+                }
+            });
         }
     });
 </script>

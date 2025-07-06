@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <style>
     .navbar-brand.brand-premium {
       font-family: 'Poppins', sans-serif !important;
@@ -81,6 +82,18 @@
 <body>
 
 <div id="page-transition-overlay">
+  <div class="transition-particles">
+    <span class="particle"></span><span class="particle"></span>
+    <span class="particle"></span><span class="particle"></span>
+    <span class="particle"></span><span class="particle"></span>
+    <span class="particle"></span><span class="particle"></span>
+    <span class="particle"></span><span class="particle"></span>
+    <span class="particle"></span><span class="particle"></span>
+  </div>
+  <div class="transition-content">
+    <img th:src="@{/assets/images/logo-icon.png}" alt="Loading..." class="transition-logo"/>
+    <p class="transition-text">Chuẩn bị bữa trưa tuyệt vời...</p>
+  </div>
   <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
     <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
   </svg>
