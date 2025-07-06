@@ -86,8 +86,20 @@
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div id="page-transition-overlay"></div>
+<div id="preloader">
+    <div class="preloader-content">
+        <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
+        <div class="preloader-counter">
+            <span id="preloader-number">0</span>%
+        </div>
+        <div class="preloader-progress-bar">
+            <div id="preloader-progress"></div>
+        </div>
+    </div>
+</div>
 
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 <main class="container my-4">
     <div class="card shadow-sm ai-chat-card">
         <div class="card-header">
@@ -256,5 +268,7 @@
         loadHistory();
     });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script th:src="@{/assets/js/transition.js}"></script>
 </body>
 </html>

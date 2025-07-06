@@ -80,7 +80,11 @@
 </head>
 <body>
 
-<div id="page-transition-overlay"></div>
+<div id="page-transition-overlay">
+  <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
+  </svg>
+</div>
 <div id="preloader">
   <div class="preloader-content">
     <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
@@ -211,6 +215,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
+                <div class="mb-3 ">
+                  <label class="form-label fw-bold">Các món đã chọn:</label>
+                  <ul id="selected-items-list" class="list-group list-group-flush">
+                    <li id="no-items-selected" class="list-group-item text-muted">Chưa có món nào được chọn.</li>
+                  </ul>
+                </div>
+                <hr/>
                 <input type="hidden" name="mealPrice" id="hiddenMealPrice">
                 <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
                   <ul><li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li></ul>
@@ -306,12 +317,39 @@
     const orderForm = document.getElementById('orderForm');
     if (!orderForm) return;
 
+    const orderModalInstance = new bootstrap.Modal(document.getElementById('orderModal'));
+    const selectedItemsList = document.getElementById('selected-items-list');
+    const noItemsSelectedMsg = document.getElementById('no-items-selected');
+    const openModalButton = document.querySelector('button[data-bs-target="#orderModal"]');
+
     const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
     const customMealPriceInput = document.getElementById('customMealPrice');
     const mealPriceButtons = document.querySelectorAll('#mealPriceButtons .btn');
 
     const placeDirectOrderBtn = document.getElementById('placeDirectOrderBtn');
     const confirmMealPriceBtn = document.getElementById('confirmMealPriceBtn');
+
+    function updateSelectedItemsList() {
+      selectedItemsList.innerHTML = '';
+      const checkedItems = document.querySelectorAll('input[name="selectedItemCheck"]:checked');
+      if (checkedItems.length === 0) {
+        selectedItemsList.appendChild(noItemsSelectedMsg.cloneNode(true));
+        return;
+      }
+      checkedItems.forEach(checkbox => {
+        const card = checkbox.closest('.food-card');
+        const itemName = card.querySelector('.food-card__title').textContent;
+        const itemPrice = card.querySelector('.food-card__price').textContent;
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `<span>${itemName}</span><span class="badge bg-primary rounded-pill">${itemPrice}</span>`;
+        selectedItemsList.appendChild(li);
+      });
+    }
+
+    if (openModalButton) {
+      openModalButton.addEventListener('click', updateSelectedItemsList);
+    }
 
     if (placeDirectOrderBtn) {
       placeDirectOrderBtn.addEventListener('click', () => {
@@ -323,7 +361,6 @@
     if (confirmMealPriceBtn) {
       confirmMealPriceBtn.addEventListener('click', () => {
         let selectedPrice = hiddenMealPriceInput.value;
-
         if (!selectedPrice || parseInt(selectedPrice, 10) <= 0) {
           alert('Vui lòng chọn hoặc nhập một giá suất hợp lệ.');
           return;
@@ -360,7 +397,6 @@
       try {
         const itemIds = JSON.parse(suggestedItemsJson);
         if (Array.isArray(itemIds) && itemIds.length > 0) {
-
           let itemsAppliedCount = 0;
           itemIds.forEach(id => {
             const checkbox = document.getElementById('item_check_' + id);
@@ -369,12 +405,13 @@
               itemsAppliedCount++;
             }
           });
-
           if (itemsAppliedCount > 0) {
             const orderModalElement = document.getElementById('orderModal');
             if (orderModalElement) {
-              const orderModal = new bootstrap.Modal(orderModalElement);
-              orderModal.show();
+              const openModalButton = document.querySelector('button[data-bs-target="#orderModal"]');
+              if(openModalButton) {
+                openModalButton.click();
+              }
             }
           } else {
             alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');

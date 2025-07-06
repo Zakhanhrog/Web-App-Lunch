@@ -655,3 +655,23 @@ footer {
     transform: translateY(-100%); /* Ban đầu ẩn ở phía trên */
     -webkit-transform: translateY(-100%);
 }
+
+/* Custom styling for selected items list in order modal */
+#selected-items-list.list-group {
+    border-radius: 0.5rem; /* Bo tròn góc cho toàn bộ khung ul */
+    overflow: hidden; /* Đảm bảo các item bên trong cũng bị cắt theo góc bo */
+    border: 1px solid #dee2e6; /* Thêm viền nhẹ cho đẹp hơn */
+}
+
+#selected-items-list .list-group-item {
+    border-left: none; /* Bỏ viền trái của các item */
+    border-right: none; /* Bỏ viền phải của các item */
+}
+
+#selected-items-list .list-group-item:first-child {
+    border-top: none; /* Bỏ viền trên của item đầu tiên */
+}
+
+#selected-items-list .list-group-item:last-child {
+    border-bottom: none; /* Bỏ viền dưới của item cuối cùng */
+}
