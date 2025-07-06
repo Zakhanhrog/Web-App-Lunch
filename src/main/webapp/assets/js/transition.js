@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const timeline = gsap.timeline({
             onComplete: () => {
-                body.style.overflow = '';
+                body.classList.remove('body-no-scroll');
                 if (preloader) preloader.style.display = 'none';
             }
         });
@@ -25,12 +25,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         if (transitionOverlay) {
-            gsap.to(transitionOverlay, {
-                y: '-101%',
-                duration: 0.8,
-                ease: 'power3.inOut',
-            });
+            transitionOverlay.style.display = 'none';
         }
+
+        body.classList.add('body-no-scroll');
 
         timeline
             .to(".preloader-container", {
@@ -55,7 +53,8 @@ document.addEventListener("DOMContentLoaded", function() {
             timeline.fromTo(
                 char, {
                     y: "0px",
-                    opacity: 0
+                    opacity: 0,
+                    rotation: 0
                 }, {
                     y: "-85px",
                     opacity: 1,
@@ -68,6 +67,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 0.6 + Math.random() * 0.5
             );
         });
+
+        setTimeout(() => {
+            body.classList.remove('body-no-scroll');
+        }, 8000);
     }
 
     function setupPageExit() {
@@ -82,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 sessionStorage.setItem('isNavigatingHome', 'true');
 
                 if (transitionOverlay) {
+                    body.classList.add('body-no-scroll');
                     transitionOverlay.style.display = 'block';
                     gsap.fromTo(transitionOverlay, {
                         y: '-101%'
@@ -109,14 +113,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 preloader.style.display = 'none';
             }
             sessionStorage.removeItem('isNavigatingHome');
-            body.style.overflow = 'hidden';
+            body.classList.add('body-no-scroll');
             gsap.to(transitionOverlay, {
                 y: '-101%',
                 duration: 1.2,
                 ease: 'power3.inOut',
                 delay: 0.3,
                 onComplete: () => {
-                    body.style.overflow = '';
+                    body.classList.remove('body-no-scroll');
                     if (transitionOverlay) transitionOverlay.style.display = 'none';
                 }
             });
@@ -127,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
         if (preloader) preloader.style.display = 'none';
         if (transitionOverlay) transitionOverlay.style.display = 'none';
-        body.style.overflow = '';
     }
 
     setupPageExit();

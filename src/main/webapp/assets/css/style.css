@@ -41,7 +41,10 @@ body {
     color: var(--secondary-color);
     line-height: 1.6;
     padding-top: 72px;
-    overflow-y: auto !important;
+}
+
+.body-no-scroll {
+    overflow: hidden !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -537,7 +540,7 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #1e90ff;
+    background: #218fd3;
     z-index: 9999;
     overflow: hidden;
 }
