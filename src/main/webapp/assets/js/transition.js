@@ -32,8 +32,6 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        body.style.overflow = 'hidden';
-
         timeline
             .to(".preloader-container", {
                 y: "0",
