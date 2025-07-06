@@ -4,11 +4,11 @@
 <div th:fragment="chat-widget" th:if="${loggedInUser != null and !loggedInUser.isAdmin() and chatAdminUser != null}">
   <style>
     :root {
-      --widget-bg-color: rgba(255, 255, 255, 0.85); /* Glassmorphism */
-      --widget-body-bg-color: rgba(247, 249, 252, 0.7); /* Glassmorphism */
+      --widget-bg-color: rgba(255, 255, 255, 0.85);
+      --widget-body-bg-color: rgba(247, 249, 252, 0.7);
       --widget-sent-bg:linear-gradient(135deg,#1e90ff 0%,#007bff 100%);
       --widget-received-bg: #e9eef2;
-      --widget-border-color: rgba(227, 230, 234, 0.7); /* Glassmorphism */
+      --widget-border-color: rgba(227, 230, 234, 0.7);
       --widget-primary-color:#007bff;
       --widget-text-color:#1a1a1a;
       --widget-radius-lg:16px;
@@ -54,6 +54,26 @@
       cursor:pointer;
       box-shadow:0 4px 15px rgba(0,123,255,0.4);
       transition:transform 0.2s ease,box-shadow 0.2s ease,border-radius 0.2s ease;
+      position: relative;
+    }
+
+    .chat-widget-bubble .notification-dot {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 12px;
+      height: 12px;
+      background-color: #ef4444;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
 
     .chat-widget-bubble:hover {
@@ -332,9 +352,7 @@
     .close-modal-btn:hover {
       color:#bbb;
     }
-
   </style>
-
 
   <div class="chat-widget-container">
     <div class="chat-widget-window" id="chat-widget-window">
@@ -359,6 +377,7 @@
     </div>
     <div class="chat-widget-bubble" id="chat-widget-bubble">
       <i class="fa-solid fa-comments"></i>
+      <span class="notification-dot" id="widget-notification-dot"></span>
     </div>
   </div>
 
@@ -375,6 +394,7 @@
       if (!currentUser || !adminUser) return;
       const widgetBubble = document.getElementById('chat-widget-bubble');
       const widgetWindow = document.getElementById('chat-widget-window');
+      const notificationDot = document.getElementById('widget-notification-dot');
       const closeWidgetBtn = document.getElementById('close-widget-btn');
       const chatMessagesArea = document.getElementById('chat-widget-messages-area');
       const messageForm = document.getElementById('widget-message-form');
@@ -395,7 +415,10 @@
       };
 
       const connect = () => {
-        if (stompClient && stompClient.active) return;
+        if (stompClient && stompClient.active) {
+          if (!hasLoadedHistory) loadChatHistory();
+          return;
+        };
         const wsUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
         stompClient = new StompJs.Client({
           brokerURL: wsUrl,
@@ -405,17 +428,26 @@
         });
         stompClient.onConnect = (frame) => {
           stompClient.subscribe('/user/' + currentUser.username + '/queue/messages', onMessageReceived);
-          loadChatHistory();
+          stompClient.subscribe('/user/' + currentUser.username + '/queue/notifications', onNotificationReceived);
+          if (!hasLoadedHistory) {
+            loadChatHistory();
+          }
         };
         stompClient.onStompError = (frame) => {
-          console.error('Broker reported error: ' + frame.headers['message']);
-          console.error('Additional details: ' + frame.body);
+          console.error('Broker reported error: ' + frame.headers['message'], frame.body);
         };
         stompClient.activate();
       };
 
+      const onNotificationReceived = (payload) => {
+        console.log('[Notification Received]', JSON.parse(payload.body));
+        const notification = JSON.parse(payload.body);
+        if (notification.recipientId === currentUser.id && !widgetWindow.classList.contains('is-open')) {
+          notificationDot.style.display = 'block';
+        }
+      };
+
       const loadChatHistory = async () => {
-        if (hasLoadedHistory) return;
         try {
           const response = await fetch(`/chat/history/${adminUser.id}`);
           if (!response.ok) throw new Error('Failed to fetch history');
@@ -434,13 +466,13 @@
       };
 
       const onMessageReceived = (payload) => {
+        console.log('[Message Received]', JSON.parse(payload.body));
         const message = JSON.parse(payload.body);
         const existingMessageElement = document.getElementById('widget-message-group-' + message.id);
         if (existingMessageElement) {
           updateMessage(message, existingMessageElement);
           return;
         }
-
         const lastMessageElement = chatMessagesArea.lastElementChild;
         const prevMsg = lastMessageElement ? { senderId: lastMessageElement.dataset.senderId } : null;
         displayMessage(message, prevMsg);
@@ -569,6 +601,7 @@
 
       widgetBubble.addEventListener('click', () => {
         widgetWindow.classList.add('is-open');
+        notificationDot.style.display = 'none';
         connect();
       });
 
@@ -601,6 +634,8 @@
       });
 
       adminAvatarContainer.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${adminUser.username}&background=${createAvatarColor(adminUser.username).substring(1)}&color=fff&bold=true')`;
+
+      connect();
     });
   </script>
 </div>

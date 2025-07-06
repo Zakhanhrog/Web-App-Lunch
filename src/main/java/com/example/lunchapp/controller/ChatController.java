@@ -1,6 +1,7 @@
 package com.example.lunchapp.controller;
 
 import com.example.lunchapp.model.dto.ChatMessageDto;
+import com.example.lunchapp.model.dto.NotificationDto;
 import com.example.lunchapp.model.dto.UserDto;
 import com.example.lunchapp.model.entity.User;
 import com.example.lunchapp.service.ChatService;
@@ -41,7 +42,7 @@ public class ChatController {
     public void sendMessage(@Payload ChatMessageDto chatMessageDto) {
         logger.info("Received message to send: {}", chatMessageDto);
         ChatMessageDto savedMessage = chatService.saveMessage(chatMessageDto);
-        logger.info("Message saved, now sending to recipient and sender. DTO: {}", savedMessage);
+        logger.info("Message saved, now processing. DTO: {}", savedMessage);
 
         messagingTemplate.convertAndSendToUser(
                 savedMessage.getRecipientUsername(),
@@ -54,6 +55,20 @@ public class ChatController {
                 "/queue/messages",
                 savedMessage
         );
+
+        NotificationDto notification = new NotificationDto(
+                savedMessage.getSenderId(),
+                savedMessage.getRecipientId(),
+                "Bạn có tin nhắn mới từ " + savedMessage.getSenderUsername(),
+                savedMessage.getSenderUsername()
+        );
+
+        messagingTemplate.convertAndSendToUser(
+                savedMessage.getRecipientUsername(),
+                "/queue/notifications",
+                notification
+        );
+        logger.info("Sent notification to {}", savedMessage.getRecipientUsername());
     }
 
     @DeleteMapping("/chat/messages/{messageId}")
