@@ -5,14 +5,24 @@ document.addEventListener("DOMContentLoaded", function() {
     const isHomePage = window.location.pathname === '/';
 
     function runHomePageAnimation() {
-        const counterElement = document.getElementById('preloader-number');
-        const progressBar = document.getElementById('preloader-progress');
-        if (!preloader || !counterElement || !progressBar) {
+        if (!preloader) {
             if (transitionOverlay) transitionOverlay.style.display = 'none';
             return;
         }
 
-        body.style.overflow = 'hidden';
+        gsap.registerPlugin(SplitText);
+
+        const timeline = gsap.timeline({
+            onComplete: () => {
+                body.style.overflow = '';
+                if (preloader) preloader.style.display = 'none';
+            }
+        });
+
+        let split = SplitText.create(".preloader-letters", {
+            type: "chars",
+            charsClass: "char"
+        });
 
         if (transitionOverlay) {
             gsap.to(transitionOverlay, {
@@ -22,17 +32,44 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        const tl = gsap.timeline({
-            delay: 0.8,
-            onComplete: () => {
-                body.style.overflow = '';
-                if (transitionOverlay) transitionOverlay.style.display = 'none';
-            }
-        });
+        body.style.overflow = 'hidden';
 
-        tl.to(counterElement, { textContent: 100, duration: 2.5, ease: "power2.out", roundProps: "textContent" })
-            .to(progressBar, { width: "100%", duration: 2.5, ease: "power2.out" }, "<")
-            .to(preloader, { opacity: 0, duration: 0.75, ease: "power1.inOut", onComplete: () => { if (preloader) preloader.style.display = 'none'; } }, "-=0.5");
+        timeline
+            .to(".preloader-container", {
+                y: "0",
+                duration: 1,
+                opacity: 1,
+                ease: "elastic.out(1,0.3)",
+                delay: 0.5
+            })
+            .to(".preloader-loader-bar", {
+                width: "100%",
+                duration: 6,
+                ease: "power1.inOut"
+            }, "-=0.5")
+            .to(preloader, {
+                y: "-100vh",
+                duration: 1.2,
+                ease: "power3.inOut"
+            }, "-=1.0");
+
+        split.chars.forEach((char) => {
+            timeline.fromTo(
+                char, {
+                    y: "0px",
+                    opacity: 0
+                }, {
+                    y: "-85px",
+                    opacity: 1,
+                    rotation: () => gsap.utils.random(-30, 30),
+                    yoyo: true,
+                    repeat: -1,
+                    duration: 0.5,
+                    ease: "power2.out"
+                },
+                0.6 + Math.random() * 0.5
+            );
+        });
     }
 
     function setupPageExit() {
@@ -48,17 +85,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 if (transitionOverlay) {
                     transitionOverlay.style.display = 'block';
-                    gsap.fromTo(transitionOverlay,
-                        { y: '-101%' },
-                        {
-                            y: '0%',
-                            duration: 0.8,
-                            ease: 'power3.inOut',
-                            onComplete: () => {
-                                window.location.href = destination;
-                            }
+                    gsap.fromTo(transitionOverlay, {
+                        y: '-101%'
+                    }, {
+                        y: '0%',
+                        duration: 0.8,
+                        ease: 'power3.inOut',
+                        onComplete: () => {
+                            window.location.href = destination;
                         }
-                    );
+                    });
                 } else {
                     window.location.href = destination;
                 }
@@ -68,14 +104,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (isHomePage) {
         if (sessionStorage.getItem('isNavigatingHome') === 'true') {
-            if(transitionOverlay) {
+            if (transitionOverlay) {
                 gsap.set(transitionOverlay, { y: '0%', display: 'block' });
             }
+            if (preloader) {
+                preloader.style.display = 'none';
+            }
             sessionStorage.removeItem('isNavigatingHome');
+            body.style.overflow = 'hidden';
+            gsap.to(transitionOverlay, {
+                y: '-101%',
+                duration: 1.2,
+                ease: 'power3.inOut',
+                delay: 0.3,
+                onComplete: () => {
+                    body.style.overflow = '';
+                    if (transitionOverlay) transitionOverlay.style.display = 'none';
+                }
+            });
         } else {
             if (transitionOverlay) transitionOverlay.style.display = 'none';
+            runHomePageAnimation();
         }
-        runHomePageAnimation();
     } else {
         if (preloader) preloader.style.display = 'none';
         if (transitionOverlay) transitionOverlay.style.display = 'none';

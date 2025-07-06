@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root {
             --ai-chat-bg: #f8f9fa;
@@ -106,13 +107,10 @@
     </svg>
 </div>
 <div id="preloader">
-    <div class="preloader-content">
-        <img th:src="@{/assets/images/logo-icon.png}" alt="CG LUNCH Loading..." class="preloader-logo">
-        <div class="preloader-counter">
-            <span id="preloader-number">0</span>%
-        </div>
-        <div class="preloader-progress-bar">
-            <div id="preloader-progress"></div>
+    <div class="preloader-container">
+        <p class="preloader-letters">LOADING</p>
+        <div class="preloader-bowl">
+            <div class="preloader-loader-bar"></div>
         </div>
     </div>
 </div>
@@ -282,6 +280,7 @@
     });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/SplitText.min.js"></script>
 <script th:src="@{/assets/js/transition.js}"></script>
 
 </body>

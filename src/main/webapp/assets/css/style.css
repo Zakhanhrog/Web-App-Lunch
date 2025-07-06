@@ -531,58 +531,53 @@ footer {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    background-color: #f8f9fa;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.preloader-content {
-    text-align: center;
-    color: #007bff;
-}
-
-.preloader-logo {
-    width: 80px;
-    margin-bottom: 20px;
-    animation: breath-effect 2.2s ease-in-out infinite;
-    -webkit-animation: breath-effect 2.2s ease-in-out infinite;
-}
-
-@keyframes breath-effect {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.8;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-}
-
-.preloader-counter {
-    font-size: 2em;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-}
-
-.preloader-progress-bar {
-    width: 150px;
-    height: 4px;
-    background-color: rgba(0, 123, 255, 0.2);
-    border-radius: 2px;
-    margin: 15px auto 0;
+    background: #1e90ff;
+    z-index: 9999;
     overflow: hidden;
 }
 
-#preloader-progress {
+#preloader .preloader-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(-200px);
+}
+
+#preloader .preloader-letters {
+    display: flex;
+    justify-content: center;
+    margin-left: 1rem;
+    position: absolute;
+    color: #ffffff;
+    font-family: "Fredoka One", cursive;
+    font-size: 1.5rem;
+    letter-spacing: 1rem;
+    text-align: center;
+}
+
+#preloader .preloader-bowl {
+    width: 15.75rem;
+    height: 6.25rem;
+    background: #f0f0f0;
+    border-radius: 0.4rem 0.34rem 7rem 7rem;
+    border-bottom: 0.4rem solid #d9d9d9;
+    position: relative;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#preloader .preloader-bowl .preloader-loader-bar {
+    position: absolute;
     width: 0;
-    height: 100%;
-    background-color: #007bff;
-    border-radius: 2px;
+    height: 0.5rem;
+    background: #ffffff;
+    top: 0.5rem;
+    border-radius: 0.25rem;
 }
 
 #page-transition-overlay {
