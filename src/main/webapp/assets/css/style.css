@@ -603,8 +603,8 @@ footer {
     top: 55%; /* Điều chỉnh để gạch ngang nằm giữa chữ */
     left: -5%;
     width: 110%;
-    height: 7px; /* Độ dày của đường gạch ngang */
-    background-color: var(--heading-color); /* Màu của đường gạch */
+    height: 6px; /* Độ dày của đường gạch ngang */
+    background-color: #d65e5e; /* Màu của đường gạch */
     transform: translateY(-55%);
 }
 
