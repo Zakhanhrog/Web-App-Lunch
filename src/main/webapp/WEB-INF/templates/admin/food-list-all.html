@@ -63,7 +63,6 @@
       <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
       <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-      <!-- Search Input (Live Search) -->
       <div class="mb-3">
         <div class="input-group">
           <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -98,9 +97,9 @@
                 <td class="text-end" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + ' VND'}"></td>
                 <td class="text-end" th:text="${item.quantity}"></td>
                 <td class="text-center">
-                  <a th:href="@{/admin/food/edit/{id}(id=${item.id})}" class="btn btn-sm btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <a th:href="@{/admin/food/edit/{id}(id=${item.id})}" class="btn btn-action btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
                   <form th:action="@{/admin/food/delete/{id}(id=${item.id})}" method="get" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa món này? Hành động này không thể hoàn tác.');">
-                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                    <button type="submit" class="btn btn-action btn-danger" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                   </form>
                 </td>
               </tr>
@@ -135,12 +134,11 @@
               row.style.display = '';
               visibleRows++;
             } else {
-              row.style.display = 'none'; // Hide row
+              row.style.display = 'none';
             }
           }
         });
 
-        // Show or hide the "no results" message
         if (visibleRows === 0) {
           noResultsMessage.style.display = 'block';
         } else {

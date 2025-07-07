@@ -100,14 +100,14 @@
               <td><span th:each="role, iterStat : ${user.roles}" th:text="${role.name.replace('ROLE_', '') + (iterStat.last ? '' : ', ')}"></span></td>
               <td><span class="badge" th:classappend="${user.enabled ? 'bg-success' : 'bg-danger'}" th:text="${user.enabled ? 'Hoạt động' : 'Vô hiệu'}"></span></td>
               <td class="text-center">
-                <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
-                <a th:href="@{/admin/users/toggle-status/{id}(id=${user.id})}" class="btn btn-sm"
+                <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-action btn-warning" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a th:href="@{/admin/users/toggle-status/{id}(id=${user.id})}" class="btn btn-action"
                    th:classappend="${user.enabled ? 'btn-secondary' : 'btn-success'}"
                    th:title="${user.enabled ? 'Vô hiệu hóa' : 'Kích hoạt'}"
                    onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái của người dùng này?');">
                   <i class="fa-solid" th:classappend="${user.enabled ? 'fa-toggle-off' : 'fa-toggle-on'}"></i>
                 </a>
-                <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-danger" title="Xóa vĩnh viễn"
+                <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-action btn-danger" title="Xóa vĩnh viễn"
                    th:onclick="'return confirm(\'Bạn có chắc chắn muốn XÓA VĨNH VIỄN người dùng này không ?\');'">
                   <i class="fa-solid fa-trash-can"></i>
                 </a>
