@@ -54,8 +54,7 @@
 
 <main class="container my-5">
   <div class="text-center pt-4 pb-5 animate-on-load">
-    <h1 class="display-4 fw-bold animate-on-load animate-delay-1">Chào mừng đến với <br class="d-md-none"/>CG LUNCH tại CODEGYM</h1>
-    <p class="fs-5 text-muted mt-3 animate-on-load animate-delay-2" th:text="${message}">Welcome back, khanh!</p>
+    <h1 class="display-4 fw-bold animate-on-load animate-delay-1">Chào mừng đến với <br class="d-md-none"/><span class="brand-highlight"> CG LUNCH </span> tại CODEGYM</h1>    <p class="fs-5 text-muted mt-3 animate-on-load animate-delay-2" th:text="${message}">Welcome back, khanh!</p>
     <div class="d-flex justify-content-center gap-3 mt-4 animate-on-load animate-delay-3">
       <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
       <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
