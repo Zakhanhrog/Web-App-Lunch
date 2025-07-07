@@ -112,7 +112,7 @@
 <main class="container my-4">
     <div class="card shadow-sm ai-chat-card">
         <div class="card-header">
-            <h5 class="card-title"><i class="fa-solid fa-robot me-2"></i>Chuyên Gia Ẩm Thực AI</h5>
+            <h5 class="card-title"><i class="fa-solid fa-robot me-2"></i>Chuyên Gia Ẩm Thực Và Sức Khoẻ ChiyoCare</h5>
             <button type="button" class="btn btn-outline-secondary" id="newChatBtn" title="Cuộc trò chuyện mới">
                 <i class="fa-solid fa-plus me-1"></i>
             </button>
@@ -195,7 +195,7 @@
         }
 
         function renderInitialMessage() {
-            const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực AI. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
+            const initialMessage = 'Xin chào! Tôi là Chuyên gia ẩm thực ChiyoCare. Bạn muốn ăn gì hôm nay, hay cần tư vấn về sức khỏe không?';
             chatHistory = [{ role: 'assistant', content: initialMessage, suggestion: null }];
             renderMessage('assistant', initialMessage, null);
             saveHistory();

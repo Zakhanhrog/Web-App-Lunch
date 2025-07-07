@@ -58,7 +58,7 @@
     <div class="d-flex justify-content-center gap-3 mt-4 animate-on-load animate-delay-3">
       <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
       <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
+        <i class="fa-solid fa-wand-magic-sparkles"></i> AI ChiyoCare
       </a>
       <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
     </div>
