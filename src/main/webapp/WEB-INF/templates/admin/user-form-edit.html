@@ -32,7 +32,23 @@
     </style>
 </head>
 <body>
-
+<div id="page-transition-overlay">
+    <div class="transition-particles">
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+        <span class="particle"></span><span class="particle"></span>
+    </div>
+    <div class="transition-content">
+        <img th:src="@{/assets/images/logo-icon.png}" alt="Loading..." class="transition-logo"/>
+        <p class="transition-text">Chuẩn bị bữa trưa tuyệt vời...</p>
+    </div>
+    <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
+    </svg>
+</div>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <div class="container-fluid">
@@ -64,8 +80,10 @@
         </main>
     </div>
 </div>
-
+<div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/assets/js/main.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://unpkg.com/gsap@3/dist/SplitText.min.js" defer></script>
+<script th:src="@{/assets/js/transition.js}" defer></script>
 </body>
 </html>

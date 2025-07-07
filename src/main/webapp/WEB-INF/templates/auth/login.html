@@ -11,49 +11,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    <style>
-        .navbar-brand.brand-premium {
-            font-family: 'Poppins', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 1.6rem !important;
-            letter-spacing: 0.5px;
-            background: linear-gradient(90deg, #007bff, #1e90ff, #00c6ff) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-            text-fill-color: transparent !important;
-            display: inline-block;
-        }
-        .navbar-brand.brand-premium .fa-utensils {
-            color: #007bff;
-            -webkit-text-fill-color: initial !important;
-            vertical-align: -2px;
-        }
-    </style>
 </head>
-<body>
-<div id="page-transition-overlay">
-    <div class="transition-particles">
-        <span class="particle"></span><span class="particle"></span>
-        <span class="particle"></span><span class="particle"></span>
-        <span class="particle"></span><span class="particle"></span>
-        <span class="particle"></span><span class="particle"></span>
-        <span class="particle"></span><span class="particle"></span>
-        <span class="particle"></span><span class="particle"></span>
-    </div>
-    <div class="transition-content">
-        <img th:src="@{/assets/images/logo-icon.png}" alt="Loading..." class="transition-logo"/>
-        <p class="transition-text">Chuẩn bị bữa trưa tuyệt vời...</p>
-    </div>
-    <svg id="transition-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
-    </svg>
-</div>
+<body class="auth-page-bg">
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<main class="container">
+
+<main class="auth-layout">
     <div class="card auth-card">
-        <div class="card-body p-4">
+        <div class="card-body p-4 p-md-5">
             <h1 class="card-title text-center mb-4">Đăng Nhập</h1>
             <div th:if="${param.logout}" class="alert alert-info">
                 Bạn đã đăng xuất thành công.
@@ -85,6 +50,7 @@
         </div>
     </div>
 </main>
+
 <div class="modal fade" id="registrationSuccessModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 text-center">
@@ -98,7 +64,11 @@
     </div>
 </div>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
+<footer class="footer mt-auto py-3">
+    <div class="container text-center">
+        <small class="text-muted">© 2025 CG LUNCH. DEV by Zakhanh - Collab.ThaiHung - Support.TuanAnh</small>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -121,17 +91,14 @@
     });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script th:src="@{/assets/js/transition.js}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-
                 const usernameInput = document.getElementById('username');
                 const passwordInput = document.getElementById('password');
-
                 if (usernameInput.value.trim() !== '' && passwordInput.value.trim() !== '') {
                     sessionStorage.setItem('isNavigatingHome', 'true');
                     const transitionOverlay = document.getElementById('page-transition-overlay');

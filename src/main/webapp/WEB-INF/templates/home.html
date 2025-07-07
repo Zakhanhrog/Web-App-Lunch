@@ -13,30 +13,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
-  <style>
-    #fluid {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-
-    main.container {
-      position: relative;
-      z-index: 2;
-    }
-
-    .welcome-jumbotron, .user-info-card, .team-card {
-      background-color: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-    }
-  </style>
 </head>
 <body>
+
+<canvas id="fluid"></canvas>
 
 <div id="page-transition-overlay">
   <div class="transition-particles">
@@ -70,65 +50,30 @@
   </div>
 </div>
 
-<canvas id="fluid"></canvas>
-
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container my-4">
-  <div class="p-5 mb-4 rounded-3 welcome-jumbotron position-relative animate-on-load animate-delay-2">
-    <div class="container-fluid py-5 welcome-content">
-      <h1 class="display-5 fw-bold animate-on-load animate-delay-3">Chào mừng đến với CG LUNCH tại CODEGYM</h1>
-      <p class="col-md-8 fs-4 animate-on-load animate-delay-4" th:text="${message}">Thưởng thức bữa trưa ngon miệng và tiện lợi mỗi ngày.</p>
-      <div class="d-flex gap-2 animate-on-load animate-delay-5">
-        <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
-        <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
-        </a>
-        <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary" type="button">Đăng nhập để đặt món</a>
-      </div>
-    </div>
-  </div>
-
-  <div th:if="${session.loggedInUser != null}" class="user-info-card animate-on-load animate-delay-6">
-    <div class="user-info-card-body">
-      <div class="user-info-item">
-        <i class="fa-solid fa-user-circle fa-fw user-info-icon"></i>
-        <div>
-          <span class="user-info-label">Tài khoản</span>
-          <span class="user-info-value" th:text="${session.loggedInUser.username}">User</span>
-        </div>
-      </div>
-      <div class="user-info-item">
-        <i class="fa-solid fa-building fa-fw user-info-icon"></i>
-        <div>
-          <span class="user-info-label">Đơn vị</span>
-          <span class="user-info-value" th:text="${session.loggedInUser.department}">Department</span>
-        </div>
-      </div>
-    </div>
-    <div class="user-info-balance">
-      <i class="fa-solid fa-wallet fa-fw balance-icon"></i>
-      <div class="balance-text">
-        <span class="balance-label">Số dư khả dụng</span>
-        <strong class="balance-amount"><span th:text="${#numbers.formatDecimal(session.loggedInUser.balance, 0, 'COMMA', 0, 'POINT')}">0</span> VND</strong>
-      </div>
-      <a th:href="@{/user/deposit}" class="btn btn-sm btn-light deposit-btn">
-        Nạp tiền <i class="fa-solid fa-arrow-right-long fa-xs"></i>
+<main class="container my-5">
+  <div class="text-center pt-4 pb-5 animate-on-load">
+    <h1 class="display-4 fw-bold animate-on-load animate-delay-1">Chào mừng đến với <br class="d-md-none"/>CG LUNCH tại CODEGYM</h1>
+    <p class="fs-5 text-muted mt-3 animate-on-load animate-delay-2" th:text="${message}">Welcome back, khanh!</p>
+    <div class="d-flex justify-content-center gap-3 mt-4 animate-on-load animate-delay-3">
+      <a th:if="${session.loggedInUser != null}" th:href="@{/order/menu}" class="btn btn-primary" type="button">Đặt món ngay</a>
+      <a th:if="${session.loggedInUser != null}" th:href="@{/ai-chat}" class="btn btn-success">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Hỏi AI
       </a>
+      <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}" class="btn btn-primary btn-lg" type="button">Đăng nhập để đặt món</a>
     </div>
   </div>
 
-  <div class="row justify-content-between align-items-stretch mt-4 animate-on-load animate-delay-7">
-    <div class="col-lg-6">
+  <div class="row justify-content-center g-4 animate-on-load animate-delay-4">
+    <div class="col-lg-5 col-md-6">
       <div class="card team-card h-100">
         <div class="card-body">
           <img th:src="@{/assets/images/zakhanh.png}" class="team-avatar" alt="Avatar của Zakhanh">
           <div class="team-content">
-            <div class="team-info">
-              <h4 class="team-name">ZAKHANH</h4>
-              <p class="team-title">CREATIVE UI/UX DESIGNER & AI INTEGRATION SPECIALIST</p>
-              <p class="team-description">Đam mê tạo ra các giao diện người dùng đẹp mắt, trực quan và tích hợp trí tuệ nhân tạo để mang lại trải nghiệm đột phá.</p>
-            </div>
+            <h4 class="team-name">ZAKHANH</h4>
+            <p class="team-title">CREATIVE UI/UX DESIGNER & AI INTEGRATION SPECIALIST</p>
+            <p class="team-description">Đam mê tạo ra các giao diện người dùng đẹp mắt, trực quan và tích hợp trí tuệ nhân tạo để mang lại trải nghiệm đột phá.</p>
             <div class="team-social-links">
               <a href="https://github.com/zakhanh" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
               <a href="https://www.linkedin.com/in/zakhanh-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
@@ -138,16 +83,14 @@
         </div>
       </div>
     </div>
-    <div class="col-lg-6 mt-4 mt-lg-0">
+    <div class="col-lg-5 col-md-6">
       <div class="card team-card h-100">
         <div class="card-body">
           <img th:src="@{/assets/images/thaihung.png}" class="team-avatar" alt="Avatar của Thái Hưng">
           <div class="team-content">
-            <div class="team-info">
-              <h4 class="team-name">THÁI HƯNG</h4>
-              <p class="team-title">Back-end Developer & System Architect</p>
-              <p class="team-description">Chuyên gia xây dựng các hệ thống back-end vững chắc, có khả năng mở rộng và đảm bảo hiệu suất hoạt động ổn định cho ứng dụng.</p>
-            </div>
+            <h4 class="team-name">THÁI HƯNG</h4>
+            <p class="team-title">BACK-END DEVELOPER & SYSTEM ARCHITECT</p>
+            <p class="team-description">Chuyên gia xây dựng các hệ thống back-end vững chắc, có khả năng mở rộng và đảm bảo hiệu suất hoạt động ổn định cho ứng dụng.</p>
             <div class="team-social-links">
               <a href="https://github.com/DThaiHung" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
               <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
@@ -158,7 +101,6 @@
       </div>
     </div>
   </div>
-
 </main>
 
 <div th:replace="~{fragments/guide_modal :: guide_modal}"></div>
@@ -183,11 +125,10 @@
   });
 </script>
 
-<script th:src="@{/assets/js/original-fluid.js}" defer></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://unpkg.com/gsap@3/dist/SplitText.min.js" defer></script>
-<script th:src="@{/assets/js/transition.js}"></script>
+<script th:src="@{/assets/js/transition.js}" defer></script>
+<script th:src="@{/assets/js/original-fluid.js}" defer></script>
 
 </body>
 </html>
