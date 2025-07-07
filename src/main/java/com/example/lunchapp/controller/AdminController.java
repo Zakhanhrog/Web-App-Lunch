@@ -1,7 +1,6 @@
 package com.example.lunchapp.controller;
 
-import com.example.lunchapp.model.dto.OrderRequestDto;
-import com.example.lunchapp.model.dto.UserDto;
+import com.example.lunchapp.model.dto.*;
 import com.example.lunchapp.model.entity.Category;
 import com.example.lunchapp.model.entity.FoodItem;
 import com.example.lunchapp.model.entity.Order;
@@ -94,6 +93,27 @@ public class AdminController {
         logger.debug("AdminController: Logged-in admin (from session & DB): ID={}, Username={}", adminUser.getId(), adminUser.getUsername());
         return adminUser;
     }
+
+    @GetMapping("/api/statistics/revenue-last-7-days")
+    @ResponseBody
+    public ResponseEntity<List<RevenueByDate>> getRevenueLast7Days(HttpSession session) {
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<RevenueByDate> revenueData = orderService.getRevenueLast7Days();
+        return ResponseEntity.ok(revenueData);
+    }
+
+    @GetMapping("/api/statistics/top-5-foods")
+    @ResponseBody
+    public ResponseEntity<List<TopFoodItem>> getTop5Foods(HttpSession session) {
+        if (getCurrentlyLoggedInAdmin(session) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<TopFoodItem> topFoodData = orderService.getTop5SellingFoodItemsLast30Days();
+        return ResponseEntity.ok(topFoodData);
+    }
+
 
     @GetMapping("/chat")
     public String showAdminChatPage(HttpSession session, Model model) {

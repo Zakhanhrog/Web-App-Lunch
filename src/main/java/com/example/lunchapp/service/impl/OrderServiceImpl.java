@@ -1,7 +1,9 @@
 package com.example.lunchapp.service.impl;
 
 import com.example.lunchapp.model.dto.OrderRequestDto;
+import com.example.lunchapp.model.dto.RevenueByDate;
 import com.example.lunchapp.model.dto.SelectedFoodItemDto;
+import com.example.lunchapp.model.dto.TopFoodItem;
 import com.example.lunchapp.model.entity.FoodItem;
 import com.example.lunchapp.model.entity.Order;
 import com.example.lunchapp.model.entity.OrderItem;
@@ -14,15 +16,19 @@ import com.example.lunchapp.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -304,5 +310,29 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
         order.setPaid(false);
         orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RevenueByDate> getRevenueLast7Days() {
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(7).with(LocalTime.MIN);
+        List<Object[]> results = orderRepository.findRevenueByDateInRange(startDate, endDate);
+        return results.stream()
+                .map(result -> new RevenueByDate(
+                        ((Date) result[0]).toLocalDate(),
+                        (BigDecimal) result[1]))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TopFoodItem> getTop5SellingFoodItemsLast30Days() {
+        LocalDateTime sinceDate = LocalDateTime.now().minusDays(30);
+        Pageable pageable = PageRequest.of(0, 5);
+        List<Object[]> results = orderRepository.findTopSellingFoodItems(sinceDate, pageable);
+        return results.stream()
+                .map(result -> new TopFoodItem((String) result[0], (Long) result[1]))
+                .collect(Collectors.toList());
     }
 }

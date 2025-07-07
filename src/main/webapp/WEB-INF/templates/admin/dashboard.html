@@ -37,8 +37,6 @@
 
 <div class="container-fluid">
     <div class="row">
-<!--        <div th:replace="~{fragments/admin_sidebar :: sidebar}"></div>-->
-
         <main class="col-md-12 px-md-4">
             <div class="pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Bảng Điều Khiển</h1>
@@ -46,7 +44,7 @@
 
             <div class="alert alert-info">
                 <h4 class="alert-heading">Xin chào, <strong th:text="${adminUser.username}">Admin</strong>!</h4>
-                <p>Đây là khu vực quản trị trung tâm của ứng dụng. Vui lòng sử dụng thanh điều hướng bên trái để truy cập các chức năng.</p>
+                <p>Đây là khu vực quản trị trung tâm của ứng dụng. Vui lòng sử dụng thanh điều hướng bên trên để truy cập các chức năng.</p>
             </div>
 
             <div class="row">
@@ -71,11 +69,134 @@
                     </div>
                 </div>
             </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-7 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Doanh thu 7 ngày qua</h5>
+                            <div id="revenueChart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Top 5 món bán chạy (30 ngày qua)</h5>
+                            <div id="topFoodChart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script th:src="@{/assets/js/main.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function renderRevenueChart() {
+            fetch('/admin/api/statistics/revenue-last-7-days')
+                .then(response => response.json())
+                .then(data => {
+                    const categories = data.map(item => new Date(item.date).toLocaleDateString('vi-VN'));
+                    const seriesData = data.map(item => item.totalRevenue);
+
+                    var options = {
+                        chart: {
+                            type: 'area',
+                            height: 350,
+                            toolbar: { show: false }
+                        },
+                        series: [{
+                            name: 'Doanh thu',
+                            data: seriesData
+                        }],
+                        xaxis: {
+                            categories: categories,
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'VND'
+                            },
+                            labels: {
+                                formatter: function (value) {
+                                    return value.toLocaleString('vi-VN');
+                                }
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        stroke: {
+                            curve: 'smooth'
+                        },
+                        fill: {
+                            type: 'gradient',
+                            gradient: {
+                                shadeIntensity: 1,
+                                opacityFrom: 0.7,
+                                opacityTo: 0.9,
+                                stops: [0, 90, 100]
+                            }
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: function (val) {
+                                    return val.toLocaleString('vi-VN') + " VND"
+                                }
+                            }
+                        }
+                    };
+
+                    var chart = new ApexCharts(document.querySelector("#revenueChart"), options);
+                    chart.render();
+                })
+                .catch(error => console.error('Error fetching revenue data:', error));
+        }
+
+        function renderTopFoodChart() {
+            fetch('/admin/api/statistics/top-5-foods')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        document.querySelector("#topFoodChart").innerHTML = '<p class="text-center text-muted mt-5">Chưa có dữ liệu để hiển thị.</p>';
+                        return;
+                    }
+                    const labels = data.map(item => item.foodName);
+                    const seriesData = data.map(item => item.totalQuantity);
+
+                    var options = {
+                        chart: {
+                            type: 'donut',
+                            height: 350
+                        },
+                        series: seriesData,
+                        labels: labels,
+                        responsive: [{
+                            breakpoint: 480,
+                            options: {
+                                chart: {
+                                    width: 200
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }]
+                    };
+
+                    var chart = new ApexCharts(document.querySelector("#topFoodChart"), options);
+                    chart.render();
+                })
+                .catch(error => console.error('Error fetching top food data:', error));
+        }
+
+        renderRevenueChart();
+        renderTopFoodChart();
+    });
+</script>
 </body>
 </html>

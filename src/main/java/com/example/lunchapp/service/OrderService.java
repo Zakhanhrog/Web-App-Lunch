@@ -1,6 +1,8 @@
 package com.example.lunchapp.service;
 
 import com.example.lunchapp.model.dto.OrderRequestDto;
+import com.example.lunchapp.model.dto.RevenueByDate;
+import com.example.lunchapp.model.dto.TopFoodItem;
 import com.example.lunchapp.model.entity.Order;
 import com.example.lunchapp.model.entity.User;
 
@@ -18,4 +20,6 @@ public interface OrderService {
     void cancelOrderByIdAndRefund(Long orderId, Long currentUserId);
     void markOrderAsPaid(Long orderId);
     void markOrderAsUnpaid(Long orderId);
+    List<RevenueByDate> getRevenueLast7Days();
+    List<TopFoodItem> getTop5SellingFoodItemsLast30Days();
 }

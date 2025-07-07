@@ -2,6 +2,7 @@ package com.example.lunchapp.repository;
 
 import com.example.lunchapp.model.entity.Order;
 import com.example.lunchapp.model.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,4 +46,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderedByAdmin LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.foodItem WHERE o.id = :orderId")
     Optional<Order> findByIdFetchingAll(@Param("orderId") Long orderId);
+
+    @Query("SELECT cast(o.orderDate as date), SUM(o.totalAmount) " +
+            "FROM Order o " +
+            "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY cast(o.orderDate as date) " +
+            "ORDER BY cast(o.orderDate as date) ASC")
+    List<Object[]> findRevenueByDateInRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT oi.foodItem.name, SUM(oi.quantity) as totalQuantity " +
+            "FROM OrderItem oi " +
+            "WHERE oi.order.orderDate >= :sinceDate " +
+            "GROUP BY oi.foodItem.name " +
+            "ORDER BY totalQuantity DESC")
+    List<Object[]> findTopSellingFoodItems(@Param("sinceDate") LocalDateTime sinceDate, Pageable pageable);
 }
