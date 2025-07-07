@@ -12,28 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-
-
   <style>
-    .navbar-brand.brand-premium {
-      font-family: 'Poppins', sans-serif !important;
-      font-weight: 700 !important;
-      font-size: 1.6rem !important;
-      letter-spacing: 0.5px;
-      background: linear-gradient(90deg, #007bff, #1e90ff, #00c6ff) !important;
-      -webkit-background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
-      background-clip: text !important;
-      text-fill-color: transparent !important;
-      display: inline-block;
-    }
     .navbar-brand.brand-premium .fa-utensils {
       color: #007bff;
       -webkit-text-fill-color: initial !important;
       vertical-align: -2px;
-    }
-    .table-row-highlight {
-      animation: highlight-fade 2s ease-out;
     }
     @keyframes highlight-fade {
       from { background-color: #ffc107; }
@@ -60,208 +43,199 @@
   </svg>
 </div>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<div class="container-fluid">
-  <div class="row">
-    <div layout:fragment="content">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Quản lý Đơn hàng Theo ngày</h1>
-      </div>
-      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${successMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-      <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
-        <span th:text="${infoMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
 
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <form th:action="@{/admin/orders/list}" method="get" class="row g-3 align-items-center">
-            <div class="col-auto">
-              <label for="date" class="form-label visually-hidden">Chọn Ngày:</label>
-            </div>
-            <div class="col-auto">
-              <input type="date" id="date" name="date" class="form-control"
-                     th:value="${selectedDate != null ? #temporals.format(selectedDate, 'yyyy-MM-dd') : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"/>
-            </div>
-            <div class="col-auto">
-              <button type="submit" class="btn btn-primary">Xem</button>
-            </div>
-          </form>
+  <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <span th:text="${successMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span th:text="${errorMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+    <span th:text="${infoMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form th:action="@{/admin/orders/list}" method="get" class="row g-3 align-items-center">
+        <div class="col-auto">
+          <label for="date" class="form-label visually-hidden">Chọn Ngày:</label>
         </div>
-      </div>
-
-      <div th:if="${selectedDate}">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Tổng Quan Đơn Hàng Ngày <span
-                    th:text="${#temporals.format(selectedDate, 'dd-MM-yyyy')}"></span></h5>
-            <strong th:if="${totalRevenueForDate != null}">Tổng doanh thu: <span class="text-success"
-                                                                                 th:text="${#numbers.formatDecimal(totalRevenueForDate, 0, 'COMMA', 0, 'POINT') + ' VND'}"></span></strong>
-          </div>
-          <div class="card-body">
-            <p th:if="${ordersForDate == null or #lists.isEmpty(ordersForDate)}" class="text-muted">Không có đơn hàng
-              nào cho ngày này.</p>
-            <div th:if="${ordersForDate != null and not #lists.isEmpty(ordersForDate)}" class="table-responsive">
-              <table class="table table-sm table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>Mã ĐH</th>
-                  <th>Người Nhận Đơn</th>
-                  <th>Đơn Vị (nếu có)</th>
-                  <th>TG Đặt</th>
-                  <th>Người Thực Hiện Đặt</th>
-                  <th>Chi Tiết Món</th>
-                  <th>Ghi Chú</th>
-                  <th class="text-end">Tổng Tiền</th>
-                  <th class="text-center">Thanh Toán</th>
-                  <th class="text-center">Hành Động</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="order : ${ordersForDate}" th:id="${'order-' + order.id}">
-                  <td th:text="${order.dailyOrderNumber}"></td>
-                  <td>
-                  <span th:if="${order.user != null and order.recipientName == null}"
-                        th:text="${order.user.username}"></span>
-                    <span th:if="${order.recipientName != null}"
-                          th:text="${order.recipientName + (order.user == null && order.orderedByAdmin == null ? ' (Khách do User đặt hộ)' : (order.user == null ? ' (Khách do Admin đặt hộ)' : ''))}"></span>
-                  </td>
-                  <td th:text="${order.user?.department}"></td>
-                  <td th:text="${#temporals.format(order.orderDate, 'HH:mm')}"></td>
-                  <td>
-                  <span th:if="${order.orderedByAdmin != null}"
-                        th:text="${'Admin: ' + order.orderedByAdmin.username}"></span>
-                    <span th:if="${order.orderedByAdmin == null and order.user != null}"
-                          th:text="${order.user.username}"></span>
-                    <span th:if="${order.orderedByAdmin == null and order.user == null}">Không xác định</span>
-                  </td>
-                  <td>
-                    <ul class="list-unstyled mb-0 small">
-                      <li th:each="item : ${order.orderItems}"
-                          th:text="${item.foodItem?.name + ' (x' + item.quantity + ')'}"></li>
-                    </ul>
-                  </td>
-                  <td th:text="${order.note}"></td>
-                  <td class="text-end fw-bold"
-                      th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></td>
-                  <td class="text-center">
-                    <span th:if="${order.paid}" class="badge bg-success">Đã Thanh Toán</span>
-                    <span th:unless="${order.paid}" class="badge bg-warning text-dark">Chưa Thanh Toán</span>
-                  </td>
-                  <td>
-                    <div class="d-flex justify-content-center gap-1">
-                      <form th:if="${!order.paid}" th:action="@{/admin/orders/mark-as-paid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-success" title="Xác nhận đã thanh toán">
-                          <i class="fa-solid fa-check"></i>
-                        </button>
-                      </form>
-                      <form th:if="${order.paid}" th:action="@{/admin/orders/mark-as-unpaid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy xác nhận thanh toán">
-                          <i class="fa-solid fa-times"></i>
-                        </button>
-                      </form>
-                      <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
-                         class="btn btn-sm btn-danger"
-                         th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
-                        <i class="fa-solid fa-trash"></i>
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="col-auto">
+          <input type="date" id="date" name="date" class="form-control"
+                 th:value="${selectedDate != null ? #temporals.format(selectedDate, 'yyyy-MM-dd') : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"/>
         </div>
-
-        <div class="card shadow-sm" id="detailedOrdersTableContainer">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Chi Tiết Các Đơn Hàng Ngày <span
-                    th:text="${#temporals.format(selectedDate, 'dd-MM-yyyy')}"></span></h5>
-            <div>
-              <button onclick="exportTableToImage('detailedOrdersTableContainer', 'chi_tiet_don_hang_')"
-                      class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-camera"></i> Xuất Ảnh
-              </button>
-              <a th:href="@{/admin/orders/delete-by-date(date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
-                 class="btn btn-sm btn-outline-danger"
-                 onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng của ngày này không?');">
-                <i class="fa-solid fa-trash"></i> Xóa Tất Cả Đơn
-              </a>
-            </div>
-          </div>
-          <div class="card-body">
-            <p th:if="${ordersForDate == null or #lists.isEmpty(ordersForDate)}" class="text-muted">Không có đơn hàng
-              nào cho ngày này.</p>
-            <div th:if="${ordersForDate != null and not #lists.isEmpty(ordersForDate)}" class="table-responsive">
-              <table class="table table-bordered table-striped">
-                <thead class="table-light">
-                <tr>
-                  <th class="text-center" style="width: 1%; white-space: nowrap;">Mã ĐH</th>
-                  <th style="width: 1%; white-space: nowrap;">Ghi Chú</th>
-                  <th>Thực Đơn Đặt</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="order : ${ordersForDate}" th:id="${'detail-order-' + order.id}">
-                  <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.dailyOrderNumber}"></td>
-                  <td class="py-2 align-top" th:text="${order.note}"></td>
-                  <td class="py-2 align-top">
-                    <th:block th:each="item, iterStat : ${order.orderItems}">
-                      <strong><span th:text="${item.foodItem?.name}"></span></strong>
-                      <span th:if="${item.quantity > 1}" th:text="${' (x' + item.quantity + ')'}"></span>
-                      <span th:if="${not iterStat.last}"> / </span>
-                    </th:block>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Xem</button>
         </div>
-      </div>
-      <div th:replace="~{fragments/footer :: footer}"></div>
-      <script th:inline="javascript">
-        function exportTableToImage(tableContainerId, fileNamePrefix) {
-          const summaryElement = document.getElementById(tableContainerId);
-          if (summaryElement) {
-            html2canvas(summaryElement, {scale: 2, useCORS: true, logging: true}).then(canvas => {
-              const link = document.createElement('a');
-              var selectedDateValue = document.getElementById('date').value;
-              var formattedDate = selectedDateValue ? selectedDateValue.replace(/-/g, '') : 'summary';
-              link.download = fileNamePrefix + formattedDate + '.png';
-              link.href = canvas.toDataURL('image/png');
-              link.click();
-            }).catch(err => {
-              console.error("Lỗi xuất ảnh: ", err);
-              alert("Lỗi xuất ảnh: " + err.message);
-            });
-          } else {
-            alert("Không tìm thấy bảng dữ liệu để xuất ảnh với ID: " + tableContainerId);
-          }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-          if (window.location.hash) {
-            const targetId = window.location.hash.substring(1);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-              targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              targetElement.classList.add('table-row-highlight');
-            }
-          }
-        });
-      </script>
+      </form>
     </div>
   </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+
+  <div th:if="${selectedDate}">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Tổng Quan Đơn Hàng Ngày <span
+                th:text="${#temporals.format(selectedDate, 'dd-MM-yyyy')}"></span></h5>
+        <strong th:if="${totalRevenueForDate != null}">Tổng doanh thu: <span class="text-success"
+                                                                             th:text="${#numbers.formatDecimal(totalRevenueForDate, 0, 'COMMA', 0, 'POINT') + ' VND'}"></span></strong>
+      </div>
+      <div class="card-body">
+        <p th:if="${ordersForDate == null or #lists.isEmpty(ordersForDate)}" class="text-muted">Không có đơn hàng
+          nào cho ngày này.</p>
+        <div th:if="${ordersForDate != null and not #lists.isEmpty(ordersForDate)}" class="table-responsive">
+          <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+              <th>Mã ĐH</th>
+              <th>Người Nhận Đơn</th>
+              <th>Đơn Vị (nếu có)</th>
+              <th>TG Đặt</th>
+              <th>Người Thực Hiện Đặt</th>
+              <th>Chi Tiết Món</th>
+              <th>Ghi Chú</th>
+              <th class="text-end">Tổng Tiền</th>
+              <th class="text-center">Thanh Toán</th>
+              <th class="text-center">Hành Động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${ordersForDate}" th:id="${'order-' + order.id}">
+              <td th:text="${order.dailyOrderNumber}"></td>
+              <td>
+                                <span th:if="${order.user != null and order.recipientName == null}"
+                                      th:text="${order.user.username}"></span>
+                <span th:if="${order.recipientName != null}"
+                      th:text="${order.recipientName + (order.user == null && order.orderedByAdmin == null ? ' (Khách do User đặt hộ)' : (order.user == null ? ' (Khách do Admin đặt hộ)' : ''))}"></span>
+              </td>
+              <td th:text="${order.user?.department}"></td>
+              <td th:text="${#temporals.format(order.orderDate, 'HH:mm')}"></td>
+              <td>
+                                <span th:if="${order.orderedByAdmin != null}"
+                                      th:text="${'Admin: ' + order.orderedByAdmin.username}"></span>
+                <span th:if="${order.orderedByAdmin == null and order.user != null}"
+                      th:text="${order.user.username}"></span>
+                <span th:if="${order.orderedByAdmin == null and order.user == null}">Không xác định</span>
+              </td>
+              <td>
+                <ul class="list-unstyled mb-0 small">
+                  <li th:each="item : ${order.orderItems}"
+                      th:text="${item.foodItem?.name + ' (x' + item.quantity + ')'}"></li>
+                </ul>
+              </td>
+              <td th:text="${order.note}"></td>
+              <td class="text-end fw-bold"
+                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+              <td class="text-center">
+                <span th:if="${order.paid}" class="badge bg-success">Đã Thanh Toán</span>
+                <span th:unless="${order.paid}" class="badge bg-warning text-dark">Chưa Thanh Toán</span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <form th:if="${!order.paid}" th:action="@{/admin/orders/mark-as-paid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-success" title="Xác nhận đã thanh toán">
+                      <i class="fa-solid fa-check"></i>
+                    </button>
+                  </form>
+                  <form th:if="${order.paid}" th:action="@{/admin/orders/mark-as-unpaid/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy xác nhận thanh toán">
+                      <i class="fa-solid fa-times"></i>
+                    </button>
+                  </form>
+                  <a th:href="@{/admin/orders/delete/{id}(id=${order.id}, date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
+                     class="btn btn-sm btn-danger"
+                     th:onclick="'return confirm(\'Bạn có chắc chắn muốn xóa đơn hàng này (Mã ĐH: ' + ${order.dailyOrderNumber} + ')? Hành động này sẽ hoàn tiền và số lượng món ăn.\');'">
+                    <i class="fa-solid fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm" id="detailedOrdersTableContainer">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Chi Tiết Các Đơn Hàng Ngày <span
+                th:text="${#temporals.format(selectedDate, 'dd-MM-yyyy')}"></span></h5>
+        <div>
+          <button onclick="exportTableToImage('detailedOrdersTableContainer', 'chi_tiet_don_hang_')"
+                  class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-camera"></i> Xuất Ảnh
+          </button>
+          <a th:href="@{/admin/orders/delete-by-date(date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}"
+             class="btn btn-sm btn-outline-danger"
+             onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng của ngày này không?');">
+            <i class="fa-solid fa-trash"></i> Xóa Tất Cả Đơn
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <p th:if="${ordersForDate == null or #lists.isEmpty(ordersForDate)}" class="text-muted">Không có đơn hàng
+          nào cho ngày này.</p>
+        <div th:if="${ordersForDate != null and not #lists.isEmpty(ordersForDate)}" class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead class="table-light">
+            <tr>
+              <th class="text-center" style="width: 1%; white-space: nowrap;">Mã ĐH</th>
+              <th style="width: 1%; white-space: nowrap;">Ghi Chú</th>
+              <th>Thực Đơn Đặt</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${ordersForDate}" th:id="${'detail-order-' + order.id}">
+              <td class="py-2 align-top text-center" style="width: 1%; white-space: nowrap;" th:text="${order.dailyOrderNumber}"></td>
+              <td class="py-2 align-top" th:text="${order.note}"></td>
+              <td class="py-2 align-top">
+                <th:block th:each="item, iterStat : ${order.orderItems}">
+                  <strong><span th:text="${item.foodItem?.name}"></span></strong>
+                  <span th:if="${item.quantity > 1}" th:text="${' (x' + item.quantity + ')'}"></span>
+                  <span th:if="${not iterStat.last}"> / </span>
+                </th:block>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script th:inline="javascript">
+    function exportTableToImage(tableContainerId, fileNamePrefix) {
+      const summaryElement = document.getElementById(tableContainerId);
+      if (summaryElement) {
+        html2canvas(summaryElement, {scale: 2, useCORS: true, logging: true}).then(canvas => {
+          const link = document.createElement('a');
+          var selectedDateValue = document.getElementById('date').value;
+          var formattedDate = selectedDateValue ? selectedDateValue.replace(/-/g, '') : 'summary';
+          link.download = fileNamePrefix + formattedDate + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }).catch(err => {
+          console.error("Lỗi xuất ảnh: ", err);
+          alert("Lỗi xuất ảnh: " + err.message);
+        });
+      } else {
+        alert("Không tìm thấy bảng dữ liệu để xuất ảnh với ID: " + tableContainerId);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.location.hash) {
+        const targetId = window.location.hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetElement.classList.add('table-row-highlight');
+        }
+      }
+    });
+  </script>
 <script src="https://unpkg.com/gsap@3/dist/SplitText.min.js" defer></script>
-<script th:src="@{/assets/js/transition.js}" defer></script>
+<script th:src="@{/assets/js/transition.js}"></script>
 </body>
 </html>

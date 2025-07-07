@@ -99,21 +99,9 @@
     <path id="transition-path" d="M 0 0 L 100 0 L 100 100 Q 50 100 0 100 L 0 0 Z" />
   </svg>
 </div>
-<div id="preloader">
-  <div class="preloader-container">
-    <p class="preloader-letters">LOADING</p>
-    <div class="preloader-bowl">
-      <div class="preloader-loader-bar"></div>
-      <div class="preloader-bubbles">
-        <span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-  </div>
-</div>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
+
 <main class="container my-4">
   <h1 class="mb-4">Thực Đơn Hôm Nay</h1>
   <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -143,11 +131,10 @@
           <li th:each="item : ${placedOrder.orderItems}" class="list-inline-item" th:text="${item.foodItem?.name + ' (x' + item.quantity + ')'}"></li>
         </ul>
       </div>
-      <form th:action="@{/order/cancel/{orderId}(orderId=${placedOrder.id})}" method="post" class="ms-3">
+      <form th:action="@{/order/cancel/{orderId}(orderId=${placedOrder.id})}" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này không? Tiền sẽ được hoàn vào tài khoản.');">
         <button type="submit" class="btn btn-sm btn-warning"
                 th:disabled="${orderStatus != 'OPEN'}"
-                th:title="${orderStatus == 'OPEN' ? 'Hủy đơn hàng này' : 'Ngoài giờ hủy đơn'}"
-                onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này không? Tiền sẽ được hoàn vào tài khoản.');">
+                th:title="${orderStatus == 'OPEN' ? 'Hủy đơn hàng này' : 'Ngoài giờ hủy đơn'}">
           <i class="fa-solid fa-times"></i>
         </button>
       </form>
@@ -172,7 +159,7 @@
       <div th:if="${countdownSeconds != null && countdownSeconds > 0}" class="alert alert-primary">
         Thời gian còn lại để đặt món: <strong id="countdown-open"></strong>
       </div>
-      <form id="orderForm" th:action="@{/order/place}" method="post" th:object="${orderRequestDto}" novalidate>
+      <form id="orderForm" th:action="@{/order/place}" method="post" novalidate>
         <div th:if="${#lists.isEmpty(groupedFoodItems)}">
           <p class="alert alert-secondary">Hiện không có món nào trong thực đơn hôm nay. Vui lòng quay lại sau!</p>
         </div>
@@ -184,7 +171,7 @@
           <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
             <div th:each="item : ${entry.value}" class="col">
               <div class="card h-100 food-card" th:classappend="${(item.dailyQuantity == null || item.dailyQuantity < 1) ? 'food-card_disabled' : ''}">
-                <div class="position-relative">
+                <div class="position-relative food-card__image-container">
                   <img th:if="${item.imageUrl != null && !item.imageUrl.isEmpty()}" th:src="@{${item.imageUrl}}" class="card-img-top food-card__image" th:alt="${item.name}">
                   <div th:unless="${item.imageUrl != null && !item.imageUrl.isEmpty()}" class="food-card__no-image d-flex align-items-center justify-content-center">
                     <i class="fa-solid fa-image fa-2x text-muted"></i>
@@ -223,91 +210,89 @@
           </div>
         </div>
 
-        <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title w-100 text-center" id="orderModalLabel">Xác Nhận Đặt Hàng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label fw-bold">Các món đã chọn:</label>
-                  <ul id="selected-items-list" class="list-group list-group-flush">
-                    <li id="no-items-selected" class="list-group-item text-muted">Chưa có món nào được chọn.</li>
-                  </ul>
-                </div>
-                <hr/>
-                <input type="hidden" name="mealPrice" id="hiddenMealPrice">
-                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
-                  <ul><li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li></ul>
-                </div>
-                <div th:if="${#fields.hasErrors('selectedItems')}" class="alert alert-danger">
-                  <ul><li th:each="err : ${#fields.errors('selectedItems')}" th:text="${err}"></li></ul>
-                </div>
-
-                <div class="p-3 border rounded mb-3">
-                  <label class="form-label fw-bold">Chọn suất ăn:</label>
-                  <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
-                    <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
-                    <button type="button" class="btn btn-outline-primary" data-price="30000">30,000</button>
-                    <button type="button" class="btn btn-outline-primary" data-price="35000">35,000</button>
-                  </div>
-                  <div>
-                    <label for="customMealPrice" class="form-label small">Hoặc nhập giá khác (chẵn 5,000):</label>
-                    <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="recipientNameInput" class="form-label">Đặt hộ cho (nhập tên người nhận):</label>
-                  <input type="text" id="recipientNameInput" name="recipientName" class="form-control" placeholder="Để trống nếu đặt cho bản thân" th:field="*{recipientName}"/>
-                </div>
-
-                <div class="mb-3">
-                  <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
-                  <textarea id="orderNote" class="form-control" rows="2" name="note" th:field="*{note}"></textarea>
-                </div>
-
-              </div>
-              <div class="modal-footer flex-column align-items-stretch gap-2">
-                <div class="alert alert-secondary p-2 small text-start mb-0 border-0" role="alert">
-                  <strong class="d-block mb-1"><i class="fa-solid fa-circle-info me-1"></i>Phân biệt 2 cách đặt:</strong>
-                  <ul class="list-unstyled mb-0 ps-3">
-                    <li><strong>Đặt Ngay:</strong> Tính tổng tiền chính xác theo các món bạn đã chọn.</li>
-                    <li><strong>Đặt Suất:</strong> Tính tiền theo mức giá suất cố định mà bạn chọn.</li>
-                  </ul>
-                </div>
-                <div class="d-flex justify-content-center gap-3">
-                  <button type="button" id="placeDirectOrderBtn" class="btn btn-primary">
-                    <i class="fa-solid fa-calculator"></i> Đặt Ngay
-                  </button>
-                  <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
-                    <i class="fa-solid fa-check-circle"></i> Đặt Suất
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <input type="hidden" name="mealPrice" id="hiddenMealPrice" th:value="${orderRequestDto?.mealPrice}">
+        <input type="hidden" name="recipientName" id="hiddenRecipientName" th:value="${orderRequestDto?.recipientName}">
+        <input type="hidden" name="note" id="hiddenNote" th:value="${orderRequestDto?.note}">
       </form>
     </div>
   </th:block>
 </main>
 <div th:replace="~{fragments/chat-widget :: chat-widget}"></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title w-100 text-center" id="orderModalLabel">Xác Nhận Đặt Hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Các món đã chọn:</label>
+          <ul id="selected-items-list" class="list-group list-group-flush">
+            <li id="no-items-selected" class="list-group-item text-muted">Chưa có món nào được chọn.</li>
+          </ul>
+        </div>
+        <hr/>
+
+        <div class="p-3 border rounded mb-3">
+          <label class="form-label fw-bold">Chọn suất ăn:</label>
+          <div id="mealPriceButtons" class="btn-group w-100 mb-2" role="group" aria-label="Meal price options">
+            <button type="button" class="btn btn-outline-primary" data-price="25000">25,000</button>
+            <button type="button" class="btn btn-outline-primary" data-price="30000">30,000</button>
+            <button type="button" class="btn btn-outline-primary" data-price="35000">35,000</button>
+          </div>
+          <div>
+            <label for="customMealPrice" class="form-label small">Hoặc nhập giá khác (chẵn 5,000):</label>
+            <input type="number" id="customMealPrice" class="form-control" placeholder="VD: 40000" step="5000" min="25000">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="recipientNameInput" class="form-label">Đặt hộ cho (nhập tên người nhận):</label>
+          <input type="text" id="recipientNameInput" class="form-control" placeholder="Để trống nếu đặt cho bản thân" th:value="${orderRequestDto?.recipientName}"/>
+        </div>
+
+        <div class="mb-3">
+          <label for="orderNote" class="form-label">Ghi chú (ví dụ: không lấy hành, thêm ớt...)</label>
+          <textarea id="orderNote" class="form-control" rows="2" th:text="${orderRequestDto?.note}"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer flex-column align-items-stretch gap-2">
+        <div class="alert alert-secondary p-2 small text-start mb-0 border-0" role="alert">
+          <strong class="d-block mb-1"><i class="fa-solid fa-circle-info me-1"></i>Phân biệt 2 cách đặt:</strong>
+          <ul class="list-unstyled mb-0 ps-3">
+            <li><strong>Đặt Ngay:</strong> Tính tổng tiền chính xác theo các món bạn đã chọn.</li>
+            <li><strong>Đặt Suất:</strong> Tính tiền theo mức giá suất cố định mà bạn chọn.</li>
+          </ul>
+        </div>
+        <div class="d-flex justify-content-center gap-3">
+          <button type="button" id="placeDirectOrderBtn" class="btn btn-primary">
+            <i class="fa-solid fa-calculator"></i> Đặt Ngay
+          </button>
+          <button type="button" id="confirmMealPriceBtn" class="btn btn-success">
+            <i class="fa-solid fa-check-circle"></i> Đặt Suất
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script th:if="${countdownSeconds != null && countdownSeconds > 0}" th:inline="javascript">
-  var countdownTarget = [[${orderStatus}]];
-  var countdownElement = document.getElementById(countdownTarget === 'OPEN' ? 'countdown-open' : 'countdown-early');
+  var countdownTargetId = [[${orderStatus}]] === 'OPEN' ? 'countdown-open' : 'countdown-early';
+  var countdownElement = document.getElementById(countdownTargetId);
   var seconds = parseInt([[${countdownSeconds}]]);
-  var timerInterval;
 
   function updateCountdown() {
     if (seconds <= 0) {
       clearInterval(timerInterval);
-      location.reload();
+      if (countdownElement) {
+        countdownElement.closest('.alert').innerHTML = 'Đã hết giờ. Vui lòng tải lại trang.';
+      }
       return;
     }
     var h = Math.floor(seconds / 3600);
@@ -321,125 +306,170 @@
     seconds--;
   }
 
-  if (seconds > 0 && countdownElement) {
-    updateCountdown();
-    timerInterval = setInterval(updateCountdown, 1000);
-  } else if (countdownElement) {
+  if (countdownElement && seconds > 0) {
+    var timerInterval = setInterval(updateCountdown, 1000);
     updateCountdown();
   }
 </script>
+
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
     if (!orderForm) return;
 
-    const orderModalInstance = new bootstrap.Modal(document.getElementById('orderModal'));
+    const orderModalEl = document.getElementById('orderModal');
     const selectedItemsList = document.getElementById('selected-items-list');
     const noItemsSelectedMsg = document.getElementById('no-items-selected');
-    const openModalButton = document.querySelector('button[data-bs-target="#orderModal"]');
 
-    const hiddenMealPriceInput = document.getElementById('hiddenMealPrice');
-    const customMealPriceInput = document.getElementById('customMealPrice');
+    const hiddenMealPrice = document.getElementById('hiddenMealPrice');
+    const hiddenRecipientName = document.getElementById('hiddenRecipientName');
+    const hiddenNote = document.getElementById('hiddenNote');
+
     const mealPriceButtons = document.querySelectorAll('#mealPriceButtons .btn');
+    const customMealPriceInput = document.getElementById('customMealPrice');
+    const recipientNameInput = document.getElementById('recipientNameInput');
+    const noteInput = document.getElementById('orderNote');
 
     const placeDirectOrderBtn = document.getElementById('placeDirectOrderBtn');
     const confirmMealPriceBtn = document.getElementById('confirmMealPriceBtn');
 
-    function updateSelectedItemsList() {
+    function updateSelectedItemsListInModal() {
       selectedItemsList.innerHTML = '';
-      const checkedItems = document.querySelectorAll('input[name="selectedItemCheck"]:checked');
+      const checkedItems = orderForm.querySelectorAll('input[name="selectedItemCheck"]:checked');
+
       if (checkedItems.length === 0) {
         selectedItemsList.appendChild(noItemsSelectedMsg.cloneNode(true));
         return;
       }
+
       checkedItems.forEach(checkbox => {
         const card = checkbox.closest('.food-card');
         const itemName = card.querySelector('.food-card__title').textContent;
         const itemPrice = card.querySelector('.food-card__price').textContent;
         const li = document.createElement('li');
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `<span>${itemName}</span><span class="badge bg-primary rounded-pill">${itemPrice}</span>`;
+
+        const itemContent = document.createElement('span');
+        itemContent.textContent = itemName;
+
+        const priceAndRemoveContainer = document.createElement('div');
+        priceAndRemoveContainer.className = 'd-flex align-items-center';
+
+        const priceBadge = document.createElement('span');
+        priceBadge.className = 'badge bg-primary rounded-pill me-3';
+        priceBadge.textContent = itemPrice;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-close remove-item-btn';
+        removeBtn.setAttribute('aria-label', 'Remove');
+        removeBtn.dataset.checkboxId = checkbox.id;
+
+        priceAndRemoveContainer.appendChild(priceBadge);
+        priceAndRemoveContainer.appendChild(removeBtn);
+        li.appendChild(itemContent);
+        li.appendChild(priceAndRemoveContainer);
         selectedItemsList.appendChild(li);
       });
+
+      addRemoveButtonListeners();
     }
 
-    if (openModalButton) {
-      openModalButton.addEventListener('click', updateSelectedItemsList);
-    }
-
-    if (placeDirectOrderBtn) {
-      placeDirectOrderBtn.addEventListener('click', () => {
-        hiddenMealPriceInput.value = '';
-        orderForm.submit();
+    function addRemoveButtonListeners() {
+      const removeButtons = selectedItemsList.querySelectorAll('.remove-item-btn');
+      removeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const checkboxId = this.dataset.checkboxId;
+          const checkbox = document.getElementById(checkboxId);
+          if (checkbox) {
+            checkbox.checked = false;
+          }
+          updateSelectedItemsListInModal();
+        });
       });
     }
 
-    if (confirmMealPriceBtn) {
-      confirmMealPriceBtn.addEventListener('click', () => {
-        let selectedPrice = hiddenMealPriceInput.value;
-        if (!selectedPrice || parseInt(selectedPrice, 10) <= 0) {
-          alert('Vui lòng chọn hoặc nhập một giá suất hợp lệ.');
-          return;
-        }
-        if (parseInt(selectedPrice, 10) % 5000 !== 0) {
-          alert('Giá suất tùy chỉnh phải là số chẵn 5,000 (ví dụ: 30000, 35000, 40000).');
-          customMealPriceInput.focus();
-          return;
-        }
-        orderForm.submit();
-      });
+    if(orderModalEl) {
+      orderModalEl.addEventListener('show.bs.modal', updateSelectedItemsListInModal);
     }
+
+    function syncModalDataToHiddenInputs() {
+      hiddenRecipientName.value = recipientNameInput.value;
+      hiddenNote.value = noteInput.value;
+    }
+
+    placeDirectOrderBtn.addEventListener('click', function() {
+      syncModalDataToHiddenInputs();
+      hiddenMealPrice.value = '';
+      orderForm.submit();
+    });
+
+    confirmMealPriceBtn.addEventListener('click', function() {
+      let selectedPrice = customMealPriceInput.value;
+      if (!selectedPrice) {
+        const activeButton = document.querySelector('#mealPriceButtons .btn.active');
+        if (activeButton) {
+          selectedPrice = activeButton.dataset.price;
+        }
+      }
+
+      if (!selectedPrice || parseInt(selectedPrice, 10) <= 0) {
+        alert('Vui lòng chọn hoặc nhập một giá suất hợp lệ.');
+        return;
+      }
+      if (parseInt(selectedPrice, 10) % 5000 !== 0) {
+        alert('Giá suất tùy chỉnh phải là số chẵn 5,000 (ví dụ: 30000, 35000, 40000).');
+        customMealPriceInput.focus();
+        return;
+      }
+
+      hiddenMealPrice.value = selectedPrice;
+      syncModalDataToHiddenInputs();
+      orderForm.submit();
+    });
 
     mealPriceButtons.forEach(button => {
       button.addEventListener('click', function() {
         mealPriceButtons.forEach(btn => btn.classList.remove('active'));
         this.classList.add('active');
-        hiddenMealPriceInput.value = this.dataset.price;
-        if (customMealPriceInput) customMealPriceInput.value = '';
+        customMealPriceInput.value = '';
       });
     });
 
-    if (customMealPriceInput) {
-      customMealPriceInput.addEventListener('input', function() {
-        mealPriceButtons.forEach(btn => btn.classList.remove('active'));
-        hiddenMealPriceInput.value = this.value;
-      });
-    }
-  });
+    customMealPriceInput.addEventListener('input', function() {
+      mealPriceButtons.forEach(btn => btn.classList.remove('active'));
+    });
 
-  setTimeout(function() {
-    const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
-    if (suggestedItemsJson) {
-      try {
-        const itemIds = JSON.parse(suggestedItemsJson);
-        if (Array.isArray(itemIds) && itemIds.length > 0) {
-          let itemsAppliedCount = 0;
-          itemIds.forEach(id => {
-            const checkbox = document.getElementById('item_check_' + id);
-            if (checkbox && !checkbox.disabled) {
-              checkbox.checked = true;
-              itemsAppliedCount++;
-            }
-          });
-          if (itemsAppliedCount > 0) {
-            const orderModalElement = document.getElementById('orderModal');
-            if (orderModalElement) {
-              const openModalButton = document.querySelector('button[data-bs-target="#orderModal"]');
-              if(openModalButton) {
-                openModalButton.click();
+    // AI suggestion logic
+    setTimeout(function() {
+      const suggestedItemsJson = sessionStorage.getItem('aiSuggestedItems');
+      if (suggestedItemsJson) {
+        try {
+          const itemIds = JSON.parse(suggestedItemsJson);
+          if (Array.isArray(itemIds) && itemIds.length > 0) {
+            let itemsAppliedCount = 0;
+            itemIds.forEach(id => {
+              const checkbox = document.getElementById('item_check_' + id);
+              if (checkbox && !checkbox.disabled) {
+                checkbox.checked = true;
+                itemsAppliedCount++;
               }
+            });
+            if (itemsAppliedCount > 0 && orderModalEl) {
+              const modal = new bootstrap.Modal(orderModalEl);
+              modal.show();
+            } else if(itemsAppliedCount === 0) {
+              alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');
             }
-          } else {
-            alert('Rất tiếc, các món ăn được AI gợi ý hiện đã hết hàng hoặc không có sẵn.');
           }
+        } catch (e) {
+          console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
+        } finally {
+          sessionStorage.removeItem('aiSuggestedItems');
         }
-      } catch (e) {
-        console.error("Lỗi khi áp dụng gợi ý từ AI:", e);
-      } finally {
-        sessionStorage.removeItem('aiSuggestedItems');
       }
-    }
-  }, 200);
+    }, 200);
+  });
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

@@ -26,7 +26,7 @@ body:not(.auth-page-bg) {
 }
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 :root {
     --primary-color: #1e90ff;
     --primary-hover: #0ea5e9;
@@ -46,7 +46,7 @@ html {
     font-size: 15px;
 }
 body {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Be Vietnam Pro', sans-serif;
     color: var(--secondary-color);
     line-height: 1.6;
     padding-top: 74px;
@@ -84,7 +84,7 @@ a:hover {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1030;
+    z-index: 1050;
 }
 .auth-page-bg .navbar {
     background-color: var(--surface-color) !important;
@@ -537,3 +537,50 @@ footer {
 .transition-particles .particle:nth-child(10) { left: 80%; width: 18px; height: 18px; animation-duration: 14s; animation-delay: 3.5s; }
 .transition-particles .particle:nth-child(11) { left: 5%; width: 12px; height: 12px; animation-duration: 10s; animation-delay: 6s; }
 .transition-particles .particle:nth-child(12) { left: 95%; width: 45px; height: 45px; animation-duration: 16s; animation-delay: 1s; }
+
+.food-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.food-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+.food-card__image-container {
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+.food-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.food-card__no-image {
+    height: 100%;
+}
+.food-card__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    min-height: 40px;
+    margin-bottom: 0.25rem;
+}
+.food-card__price {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+.food-card_disabled {
+    filter: grayscale(80%);
+    opacity: 0.7;
+}
+
+.remove-item-btn {
+    padding: 0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+}
+.remove-item-btn:hover {
+    opacity: 1;
+}
