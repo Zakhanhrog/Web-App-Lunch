@@ -586,8 +586,6 @@ footer {
     opacity: 1;
 }
 .brand-highlight {
-    position: relative;
-    display: inline-block;
     background: linear-gradient(90deg, var(--primary-color), #29c6ff, #0d8bff, var(--primary-color));
     background-size: 200% 100%;
     -webkit-background-clip: text;
@@ -595,17 +593,6 @@ footer {
     background-clip: text;
     text-fill-color: transparent;
     animation: text-gradient-animation 5s ease infinite;
-}
-
-.brand-highlight::after {
-    content: '';
-    position: absolute;
-    top: 55%; /* Điều chỉnh để gạch ngang nằm giữa chữ */
-    left: -5%;
-    width: 110%;
-    height: 6px; /* Độ dày của đường gạch ngang */
-    background-color: #d65e5e; /* Màu của đường gạch */
-    transform: translateY(-55%);
 }
 
 @keyframes text-gradient-animation {
@@ -617,5 +604,60 @@ footer {
     }
     100% {
         background-position: 0% 50%;
+    }
+}
+/* Thay thế toàn bộ khối CSS cũ cho btn-chasing-border bằng khối này */
+
+.btn-chasing-border {
+    position: relative;
+    color: white;
+    background: transparent;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Lớp này sẽ tạo ra ánh sáng gradient xoay tròn RÕ NÉT HƠN */
+.btn-chasing-border::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 250%; /* Tăng kích thước để viền mượt hơn */
+    padding-top: 250%;
+    transform: translate(-50%, -50%);
+    /* Gradient có điểm sáng trắng ở giữa để tăng độ tương phản */
+    background: conic-gradient(
+            from 180deg at 50% 50%,
+            #1e90ff 0%,
+            #29c6ff 40%,
+            white 50%,
+            #29c6ff 60%,
+            #1e90ff 100%
+    );
+    /* Animation nhanh hơn */
+    animation: rotate-border 3s linear infinite;
+    z-index: -2;
+}
+
+/* Lớp nền màu xanh đặc, nhỏ hơn một chút để lộ viền DÀY HƠN */
+.btn-chasing-border::after {
+    content: '';
+    position: absolute;
+    /* Tạo khoảng trống 3px để lộ viền */
+    top: 3px;
+    left: 3px;
+    width: calc(100% - 6px);
+    height: calc(100% - 6px);
+    background: var(--primary-color);
+    border-radius: calc(var(--border-radius) - 3px);
+    z-index: -1;
+}
+
+@keyframes rotate-border {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
     }
 }
