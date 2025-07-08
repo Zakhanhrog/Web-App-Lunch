@@ -45,6 +45,7 @@ public class UserServiceImpl implements UserService {
         if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
             throw new RuntimeException("Lỗi: Mật khẩu nhập lại không khớp!");
         }
+
         User user = new User();
         user.setUsername(registrationDto.getUsername());
         user.setDepartment(registrationDto.getDepartment());
@@ -52,8 +53,14 @@ public class UserServiceImpl implements UserService {
         user.setBalance(registrationDto.getInitialBalance() != null ? registrationDto.getInitialBalance() : BigDecimal.ZERO);
         user.setEnabled(true);
         user.setCreatedAt(LocalDateTime.now());
-        Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> roleRepository.save(new Role("ROLE_USER")));
-        user.setRoles(new HashSet<>(Set.of(userRole)));
+
+        Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
+            Role newRole = new Role("ROLE_USER");
+            return roleRepository.save(newRole);
+        });
+
+        user.getRoles().add(userRole);
+
         return userRepository.save(user);
     }
 
